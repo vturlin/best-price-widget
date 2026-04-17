@@ -17,6 +17,7 @@
  * ============================================================
  */
 
+
 window.HOTEL_PRICE_WIDGET_CONFIG = {
   /* ----- Positioning ------------------------------------------------- */
   // Where the widget floats on the host page.

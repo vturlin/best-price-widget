@@ -7,7 +7,7 @@
       { "id": "junior-suite",  "name": "Junior Suite"       }
     ],
     "default_room_id": "deluxe-king",
-    "reserveUrl": "https://www-secure-hotel-booking.staging.d-edge.app/d-edge/hotel-le-charles-quint-/247C/fr-FR/RoomSelection?arrivalDate{checkIn}&departureDate=={checkOut}&room={roomId}",
+    "reserveUrl": "https://www-secure-hotel-booking.staging.d-edge.app/d-edge/hotel-le-charles-quint-/247C/fr-FR/RoomSelection?arrivalDate{checkIn}&departureDate=={checkOut}",
     "currency": "EUR",
     "locale": "",
     "brandColor": "#8b5a3c",
