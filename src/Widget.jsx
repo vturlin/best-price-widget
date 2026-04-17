@@ -132,15 +132,35 @@ export default function Widget({ config }) {
   /* Render                                                                */
   /* --------------------------------------------------------------------- */
 
+  /* ----- Fetch CSV once on mount --------------------------------------- */
   useEffect(() => {
     let cancelled = false;
-    loadLocale(localePrimary).then((d) => {
-      if (cancelled) return;
-      setDict(d);
-      setRtl(isRtl(localePrimary));
-    });
-    return () => { cancelled = true; };
-  }, [localePrimary]);
+
+    // Preview mode: skip the CSV fetch and use mock data.
+    // This lets the admin render a realistic-looking widget even if the
+    // preview config has a placeholder CSV URL or no data source at all.
+    if (config._hotelId === 'preview') {
+      setData(buildMockData(config));
+      setStatus('ready');
+      return;
+    }
+
+    loadPriceData(config.csvUrl)
+      .then((d) => {
+        if (cancelled) return;
+        setData(d);
+        setStatus('ready');
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('[hotel-price-widget]', err);
+        setError(err.message || 'Could not load pricing data');
+        setStatus('error');
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [config.csvUrl, config._hotelId]);
 
   const t = useMemo(() => makeT(dict), [dict]);
   const calendarRef = useRef(null);
@@ -558,4 +578,57 @@ function readableInk(hex) {
   const lum = [r, g, b].map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
   const L = 0.2126 * lum[0] + 0.7152 * lum[1] + 0.0722 * lum[2];
   return L > 0.5 ? '#111111' : '#ffffff';
+}
+
+function buildMockData(config) {
+  const channels = Object.keys(config.channelLabels || {
+    booking: 'Booking.com',
+    expedia: 'Expedia',
+    trivago: 'Trivago',
+  });
+
+  // Typical hotel pricing pattern: direct is slightly cheaper than OTAs
+  // (since OTAs take commissions). Numbers are realistic for a mid-range
+  // European hotel.
+  const PER_NIGHT = {
+    direct:    180,
+    booking:   198,
+    expedia:   205,
+    trivago:   192,
+    hotels_com: 210,
+    agoda:     199,
+  };
+
+  // Generate 365 days of data for each room × channel combination
+  const rows = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const rooms = config.roomOptions || [{ id: 'deluxe-king', name: 'Deluxe King' }];
+
+  for (const room of rooms) {
+    // Subtle per-room variation so different rooms show different prices
+    const roomMultiplier = 1 + (room.id.charCodeAt(0) % 10) * 0.03;
+
+    for (let i = 0; i < 365; i++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() + i);
+      const iso = date.toISOString().slice(0, 10);
+
+      const row = {
+        date: iso,
+        room_id: room.id,
+      };
+
+      // direct + all channels
+      for (const key of ['direct', ...channels]) {
+        const base = PER_NIGHT[key] ?? 195;
+        row[key] = Math.round(base * roomMultiplier);
+      }
+
+      rows.push(row);
+    }
+  }
+
+  return { rows, channels };
 }
