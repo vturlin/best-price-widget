@@ -580,55 +580,72 @@ function readableInk(hex) {
   return L > 0.5 ? '#111111' : '#ffffff';
 }
 
+/**
+ * Build a realistic mock dataset for preview mode.
+ * Matches the exact shape returned by loadPriceData():
+ *   - channels: string[]
+ *   - rooms:    Map<roomId, roomName>
+ *   - prices:   Map<"YYYY-MM-DD|roomId", { direct, booking, ...}>
+ *
+ * Prices are deterministic (derived from room id) so the preview stays
+ * stable across re-renders. Direct price sits 5-15% below the cheapest
+ * OTA, giving a believable "you save X" message.
+ */
 function buildMockData(config) {
-  const channels = Object.keys(config.channelLabels || {
-    booking: 'Booking.com',
-    expedia: 'Expedia',
-    trivago: 'Trivago',
-  });
+  // Derive channel list from config.channelLabels. Fallback to a sensible
+  // default if the config didn't list any.
+  const channels = Object.keys(config.channelLabels || {}).length
+    ? Object.keys(config.channelLabels)
+    : ['booking', 'expedia', 'trivago', 'hotels_com', 'agoda'];
 
-  // Typical hotel pricing pattern: direct is slightly cheaper than OTAs
-  // (since OTAs take commissions). Numbers are realistic for a mid-range
-  // European hotel.
+  // Per-channel base prices (per night, €). Direct is intentionally the
+  // cheapest to demo the "book direct" savings story.
   const PER_NIGHT = {
-    direct:    180,
-    booking:   198,
-    expedia:   205,
-    trivago:   192,
+    direct:     180,
+    booking:    198,
+    expedia:    205,
+    trivago:    192,
     hotels_com: 210,
-    agoda:     199,
+    agoda:      199,
   };
 
-  // Generate 365 days of data for each room × channel combination
-  const rows = [];
+  const rooms = new Map();
+  const prices = new Map();
+
+  const roomOptions = config.roomOptions?.length
+    ? config.roomOptions
+    : [{ id: 'deluxe-king', name: 'Deluxe King Room' }];
+
+  // Generate 365 days of data, starting today
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
-  const rooms = config.roomOptions || [{ id: 'deluxe-king', name: 'Deluxe King' }];
+  for (const room of roomOptions) {
+    rooms.set(room.id, room.name);
 
-  for (const room of rooms) {
-    // Subtle per-room variation so different rooms show different prices
-    const roomMultiplier = 1 + (room.id.charCodeAt(0) % 10) * 0.03;
+    // Subtle per-room price variation — fancier rooms slightly pricier
+    const hash = [...room.id].reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    const roomMultiplier = 1 + ((hash % 20) - 5) * 0.02; // ~0.90 to 1.30
 
     for (let i = 0; i < 365; i++) {
-      const date = new Date(today);
-      date.setDate(date.getDate() + i);
-      const iso = date.toISOString().slice(0, 10);
+      const d = new Date(today);
+      d.setDate(d.getDate() + i);
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      const iso = `${y}-${m}-${day}`;
 
-      const row = {
-        date: iso,
-        room_id: room.id,
+      const entry = {
+        direct: Math.round(PER_NIGHT.direct * roomMultiplier),
       };
-
-      // direct + all channels
-      for (const key of ['direct', ...channels]) {
-        const base = PER_NIGHT[key] ?? 195;
-        row[key] = Math.round(base * roomMultiplier);
+      for (const ch of channels) {
+        const base = PER_NIGHT[ch] ?? 195;
+        entry[ch] = Math.round(base * roomMultiplier);
       }
 
-      rows.push(row);
+      prices.set(`${iso}|${room.id}`, entry);
     }
   }
 
-  return { rows, channels };
+  return { channels, rooms, prices };
 }
