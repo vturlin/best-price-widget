@@ -84,6 +84,15 @@ function normalizeConfig(raw) {
 }
 
 export async function loadConfig() {
+  // NEW: preview mode. If the host page URL has ?preview=<base64>, decode
+  // and use that config directly. Used by the admin Streamlit app to render
+  // live previews of configs before publishing.
+  const previewConfig = extractPreviewConfig();
+  if (previewConfig) {
+    previewConfig._hotelId = previewConfig._hotelId || 'preview';
+    return normalizeConfig(previewConfig);
+  }
+
   const id = extractIdFromScript();
 
   if (id) {
@@ -105,6 +114,34 @@ export async function loadConfig() {
       throw err;
     }
   }
+
+  if (window.HOTEL_PRICE_WIDGET_CONFIG) {
+    return normalizeConfig(window.HOTEL_PRICE_WIDGET_CONFIG);
+  }
+
+  throw new Error(
+    'No config found. Load widget.js with ?id=YOUR_ID or set window.HOTEL_PRICE_WIDGET_CONFIG before loading.'
+  );
+}
+
+/**
+ * Read the ?preview=<base64> query param from the host page URL.
+ * Returns the decoded config object, or null if not present / invalid.
+ */
+function extractPreviewConfig() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('preview');
+    if (!encoded) return null;
+    // urlsafe base64 without padding — add padding back if needed
+    const padded = encoded + '='.repeat((4 - encoded.length % 4) % 4);
+    const decoded = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(decoded);
+  } catch (err) {
+    console.warn('[hotel-price-widget] Invalid preview param:', err);
+    return null;
+  }
+}
 
   if (window.HOTEL_PRICE_WIDGET_CONFIG) {
     return normalizeConfig(window.HOTEL_PRICE_WIDGET_CONFIG);
