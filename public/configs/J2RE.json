@@ -1,0 +1,46 @@
+{
+  "position": "bottom-right",
+  "csvUrl": "https://docs.google.com/spreadsheets/d/e/.../pub?output=csv",
+  "roomOptions": [
+    {
+      "id": "deluxe-king",
+      "name": "Deluxe King Room"
+    },
+    {
+      "id": "superior-twin",
+      "name": "Superior Twin Room"
+    },
+    {
+      "id": "junior-suite",
+      "name": "Junior Suite"
+    }
+  ],
+  "default_room_id": "deluxe-king",
+  "reserveUrl": "https://book.hotel-client.com/?arrive={checkIn}&depart={checkOut}&room={roomId}",
+  "currency": "EUR",
+  "locale": "",
+  "brandColor": "#8b5a3c",
+  "backgroundColor": "#faf7f2",
+  "logoUrl": "",
+  "hotelName": "Astotel",
+  "enabledLocales": [
+    "en",
+    "fr",
+    "es",
+    "de",
+    "it"
+  ],
+  "defaultLocale": "en",
+  "channelLabels": {
+    "booking": "Booking.com",
+    "expedia": "Expedia",
+    "trivago": "Trivago",
+    "hotels_com": "Hotels.com",
+    "agoda": "Agoda"
+  },
+  "analytics": {
+    "enabled": true,
+    "dataLayerName": "dataLayer",
+    "eventPrefix": "hotel_widget_"
+  }
+}
