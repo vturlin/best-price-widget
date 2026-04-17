@@ -133,18 +133,47 @@ export default function Widget({ config }) {
   /* --------------------------------------------------------------------- */
 
   /* ----- Fetch CSV once on mount --------------------------------------- */
+  /* ----- Fetch CSV once on mount --------------------------------------- */
   useEffect(() => {
     let cancelled = false;
 
-    // Preview mode: skip the CSV fetch and use mock data.
-    // This lets the admin render a realistic-looking widget even if the
-    // preview config has a placeholder CSV URL or no data source at all.
-    if (config._hotelId === 'preview') {
+    // Preview mode (admin): we always want to show something, so we fall
+    // back to mock data whenever the CSV URL is missing or placeholder,
+    // AND we don't show errors in this context.
+    const isPreview = config._hotelId === 'preview';
+    const isPlaceholderCsv = !config.csvUrl
+      || config.csvUrl.includes('TON_URL')
+      || config.csvUrl.includes('...')
+      || !config.csvUrl.startsWith('http');
+
+    if (isPreview && isPlaceholderCsv) {
       setData(buildMockData(config));
       setStatus('ready');
       return;
     }
 
+    if (isPreview) {
+      // Preview with a real-looking CSV: try to fetch, but on any failure
+      // use mock data instead of showing an error — this is a demo context.
+      loadPriceData(config.csvUrl)
+        .then((d) => {
+          if (cancelled) return;
+          setData(d);
+          setStatus('ready');
+        })
+        .catch((err) => {
+          if (cancelled) return;
+          console.warn('[hotel-price-widget] Preview fetch failed, using mock:', err);
+          setData(buildMockData(config));
+          setStatus('ready');
+        });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    // Production: fetch for real. On failure, show a graceful fallback
+    // state (no fake prices) — handled by the Widget render via status.
     loadPriceData(config.csvUrl)
       .then((d) => {
         if (cancelled) return;
@@ -155,7 +184,7 @@ export default function Widget({ config }) {
         if (cancelled) return;
         console.error('[hotel-price-widget]', err);
         setError(err.message || 'Could not load pricing data');
-        setStatus('error');
+        setStatus('fallback');  // ← new state, not 'error'
       });
     return () => {
       cancelled = true;
