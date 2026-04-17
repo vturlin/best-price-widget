@@ -458,9 +458,24 @@ export default function Widget({ config }) {
             {status === 'loading' && (
               <div className="hpw-skeleton hpw-skeleton-price" />
             )}
-            {status === 'error' && (
-              <div className="hpw-error">
-                {t('couldnt_load_rates')} {error && <span>({error})</span>}
+            {status === 'fallback' && (
+              <div className="hpw-panel hpw-panel-fallback">
+                <div className="hpw-headline">
+                  <div className="hpw-badge-guarantee">
+                    ✓ {t('bestPriceGuaranteed') || 'Best price guaranteed'}
+                  </div>
+                  <p className="hpw-fallback-message">
+                    {t('bookDirectForBestRate') || 'Book direct on our website for the best available rate and exclusive benefits.'}
+                  </p>
+                </div>
+                
+                  href={config.reserveUrl}
+                  className="hpw-reserve-btn"
+                  style={{ background: config.brandColor }}
+                  onClick={() => analytics.reserveClicked(config._hotelId)}
+                >
+                  {t('reserveNow') || 'Reserve now'} →
+                </a>
               </div>
             )}
             {status === 'ready' && !stay?.hasDirect && (

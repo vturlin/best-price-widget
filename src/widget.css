@@ -864,6 +864,29 @@
      .hpw-mobile .hpw-cal-title    { font-size: 14px; }
      .hpw-mobile .hpw-cal-nav      { width: 28px; height: 28px; font-size: 16px; }
    }
+   .hpw-panel-fallback {
+  padding: 24px 20px;
+  text-align: center;
+}
+
+.hpw-badge-guarantee {
+  display: inline-block;
+  padding: 6px 14px;
+  background: #d1fae5;
+  color: #059669;
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  margin-bottom: 12px;
+  letter-spacing: 0.01em;
+}
+
+.hpw-fallback-message {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--hpw-text-primary, #1a1a1a);
+  margin: 0 0 20px;
+}
    
    /* =========================================================================
       ANIMATIONS

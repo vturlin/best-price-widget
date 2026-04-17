@@ -25,5 +25,7 @@
   "open_price_comparison": "Open price comparison",
   "close": "Close",
   "previous_month": "Previous month",
-  "next_month": "Next month"
+  "next_month": "Next month",
+  "bestPriceGuaranteed": "Best price guaranteed",
+  "bookDirectForBestRate": "Book direct on our website for the best available rate and exclusive benefits."
 }
