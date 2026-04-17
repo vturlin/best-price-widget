@@ -1,0 +1,361 @@
+date,room_id,room_name,direct,booking,expedia,trivago,hotels_com,agoda
+2026-04-16,deluxe-king,Deluxe King Room,320,374,406,370,391,375
+2026-04-16,superior-twin,Superior Twin Room,280,333,343,327,346,324
+2026-04-16,junior-suite,Junior Suite,480,568,582,561,569,573
+2026-04-16,terrace-suite,Terrace Suite,720,880,906,858,858,847
+2026-04-17,deluxe-king,Deluxe King Room,370,433,454,432,458,450
+2026-04-17,superior-twin,Superior Twin Room,324,386,396,387,389,382
+2026-04-17,junior-suite,Junior Suite,555,663,678,646,653,645
+2026-04-17,terrace-suite,Terrace Suite,833,967,1014,993,986,964
+2026-04-18,deluxe-king,Deluxe King Room,372,453,452,434,,440
+2026-04-18,superior-twin,Superior Twin Room,326,383,393,384,390,384
+2026-04-18,junior-suite,Junior Suite,558,653,698,630,680,671
+2026-04-18,terrace-suite,Terrace Suite,837,1014,1015,991,989,975
+2026-04-19,deluxe-king,Deluxe King Room,325,388,394,388,389,375
+2026-04-19,superior-twin,Superior Twin Room,285,339,349,326,344,345
+2026-04-19,junior-suite,Junior Suite,488,592,608,559,583,564
+2026-04-19,terrace-suite,Terrace Suite,732,878,921,860,867,853
+2026-04-20,deluxe-king,Deluxe King Room,327,388,398,386,392,382
+2026-04-20,superior-twin,Superior Twin Room,286,335,349,338,355,334
+2026-04-20,junior-suite,Junior Suite,491,588,616,562,611,587
+2026-04-20,terrace-suite,Terrace Suite,736,880,909,872,882,848
+2026-04-21,deluxe-king,Deluxe King Room,329,395,405,389,389,389
+2026-04-21,superior-twin,Superior Twin Room,288,338,364,325,356,350
+2026-04-21,junior-suite,Junior Suite,493,581,599,576,615,585
+2026-04-21,terrace-suite,Terrace Suite,740,874,917,885,910,890
+2026-04-22,deluxe-king,Deluxe King Room,330,400,417,383,403,392
+2026-04-22,superior-twin,Superior Twin Room,289,337,347,327,350,342
+2026-04-22,junior-suite,Junior Suite,496,600,599,562,618,581
+2026-04-22,terrace-suite,Terrace Suite,743,902,935,872,886,902
+2026-04-23,deluxe-king,Deluxe King Room,332,393,420,385,392,389
+2026-04-23,superior-twin,Superior Twin Room,291,345,352,329,362,350
+2026-04-23,junior-suite,Junior Suite,498,606,622,588,587,573
+2026-04-23,terrace-suite,Terrace Suite,747,886,935,892,894,875
+2026-04-24,deluxe-king,Deluxe King Room,384,465,472,433,464,449
+2026-04-24,superior-twin,Superior Twin Room,336,402,409,390,417,386
+2026-04-24,junior-suite,Junior Suite,575,669,717,682,709,672
+2026-04-24,terrace-suite,Terrace Suite,863,1003,1086,997,1027,
+2026-04-25,deluxe-king,Deluxe King Room,385,459,484,447,457,443
+2026-04-25,superior-twin,Superior Twin Room,337,396,406,382,416,387
+2026-04-25,junior-suite,Junior Suite,578,679,726,654,681,674
+2026-04-25,terrace-suite,Terrace Suite,867,1035,1074,989,1046,997
+2026-04-26,deluxe-king,Deluxe King Room,336,398,409,392,415,406
+2026-04-26,superior-twin,Superior Twin Room,294,342,360,340,362,337
+2026-04-26,junior-suite,Junior Suite,505,592,616,573,604,595
+2026-04-26,terrace-suite,Terrace Suite,757,905,918,890,922,892
+2026-04-27,deluxe-king,Deluxe King Room,338,398,422,392,402,388
+2026-04-27,superior-twin,Superior Twin Room,296,360,371,351,360,341
+2026-04-27,junior-suite,Junior Suite,507,587,608,579,618,603
+2026-04-27,terrace-suite,Terrace Suite,760,919,946,871,940,889
+2026-04-28,deluxe-king,Deluxe King Room,339,413,417,399,409,408
+2026-04-28,superior-twin,Superior Twin Room,297,359,359,,350,354
+2026-04-28,junior-suite,Junior Suite,509,624,624,586,602,619
+2026-04-28,terrace-suite,Terrace Suite,763,907,965,891,921,915
+2026-04-29,deluxe-king,Deluxe King Room,340,400,414,399,400,411
+2026-04-29,superior-twin,Superior Twin Room,298,359,367,356,361,351
+2026-04-29,junior-suite,Junior Suite,510,616,612,,635,590
+2026-04-29,terrace-suite,Terrace Suite,765,911,940,871,917,901
+2026-04-30,deluxe-king,Deluxe King Room,341,403,417,407,425,404
+2026-04-30,superior-twin,Superior Twin Room,299,351,378,356,366,353
+2026-04-30,junior-suite,Junior Suite,512,597,621,592,630,614
+2026-04-30,terrace-suite,Terrace Suite,768,938,923,895,957,927
+2026-05-01,deluxe-king,Deluxe King Room,393,467,473,467,475,465
+2026-05-01,superior-twin,Superior Twin Room,344,416,430,389,406,402
+2026-05-01,junior-suite,Junior Suite,590,700,726,694,727,687
+2026-05-01,terrace-suite,Terrace Suite,885,1035,1115,1031,1060,1034
+2026-05-02,deluxe-king,Deluxe King Room,394,483,484,444,485,475
+2026-05-02,superior-twin,Superior Twin Room,345,419,418,410,428,417
+2026-05-02,junior-suite,Junior Suite,592,726,743,692,708,683
+2026-05-02,terrace-suite,Terrace Suite,888,1029,1062,1011,1079,1051
+2026-05-03,deluxe-king,Deluxe King Room,344,408,420,408,415,414
+2026-05-03,superior-twin,Superior Twin Room,301,351,369,354,367,354
+2026-05-03,junior-suite,Junior Suite,516,631,630,587,640,606
+2026-05-03,terrace-suite,Terrace Suite,773,895,970,897,942,924
+2026-05-04,deluxe-king,Deluxe King Room,344,406,434,393,418,395
+2026-05-04,superior-twin,Superior Twin Room,301,353,362,343,367,353
+2026-05-04,junior-suite,Junior Suite,517,620,651,592,627,608
+2026-05-04,terrace-suite,Terrace Suite,775,927,968,887,967,932
+2026-05-05,deluxe-king,Deluxe King Room,345,402,413,391,419,405
+2026-05-05,superior-twin,Superior Twin Room,302,369,376,,366,366
+2026-05-05,junior-suite,Junior Suite,517,629,655,609,618,595
+2026-05-05,terrace-suite,Terrace Suite,776,935,984,891,926,932
+2026-05-06,deluxe-king,Deluxe King Room,345,417,427,397,425,419
+2026-05-06,superior-twin,Superior Twin Room,302,362,373,345,376,347
+2026-05-06,junior-suite,Junior Suite,518,632,630,610,632,602
+2026-05-06,terrace-suite,Terrace Suite,777,937,962,919,958,910
+2026-05-07,deluxe-king,Deluxe King Room,345,419,434,397,430,408
+2026-05-07,superior-twin,Superior Twin Room,302,362,375,346,366,363
+2026-05-07,junior-suite,Junior Suite,518,633,626,599,646,612
+2026-05-07,terrace-suite,Terrace Suite,777,926,960,907,952,936
+2026-05-08,deluxe-king,Deluxe King Room,397,471,477,465,483,461
+2026-05-08,superior-twin,Superior Twin Room,348,418,434,416,420,407
+2026-05-08,junior-suite,Junior Suite,596,731,751,673,704,704
+2026-05-08,terrace-suite,Terrace Suite,894,1069,1123,1015,1052,1059
+2026-05-09,deluxe-king,Deluxe King Room,397,467,478,461,476,477
+2026-05-09,superior-twin,Superior Twin Room,348,408,417,401,417,415
+2026-05-09,junior-suite,Junior Suite,596,718,722,704,726,710
+2026-05-09,terrace-suite,Terrace Suite,894,1089,1104,1057,1072,1028
+2026-05-10,deluxe-king,Deluxe King Room,345,402,436,391,407,418
+2026-05-10,superior-twin,Superior Twin Room,302,369,378,343,356,348
+2026-05-10,junior-suite,Junior Suite,518,620,654,585,618,618
+2026-05-10,terrace-suite,Terrace Suite,777,917,975,877,956,940
+2026-05-11,deluxe-king,Deluxe King Room,345,404,415,403,407,409
+2026-05-11,superior-twin,Superior Twin Room,302,354,372,356,358,355
+2026-05-11,junior-suite,Junior Suite,518,604,638,606,636,623
+2026-05-11,terrace-suite,Terrace Suite,777,949,967,911,963,933
+2026-05-12,deluxe-king,Deluxe King Room,345,411,424,393,409,406
+2026-05-12,superior-twin,Superior Twin Room,302,354,363,361,363,
+2026-05-12,junior-suite,Junior Suite,517,629,631,583,639,603
+2026-05-12,terrace-suite,Terrace Suite,776,898,942,892,923,941
+2026-05-13,deluxe-king,Deluxe King Room,344,420,425,396,423,398
+2026-05-13,superior-twin,Superior Twin Room,301,364,374,339,360,350
+2026-05-13,junior-suite,Junior Suite,517,618,624,611,630,605
+2026-05-13,terrace-suite,Terrace Suite,775,901,938,897,959,897
+2026-05-14,deluxe-king,Deluxe King Room,344,420,414,402,428,403
+2026-05-14,superior-twin,Superior Twin Room,301,358,364,356,356,365
+2026-05-14,junior-suite,Junior Suite,516,616,643,,636,627
+2026-05-14,terrace-suite,Terrace Suite,773,938,974,895,960,907
+2026-05-15,deluxe-king,Deluxe King Room,394,466,481,465,483,460
+2026-05-15,superior-twin,Superior Twin Room,345,411,434,407,427,413
+2026-05-15,junior-suite,Junior Suite,592,719,714,668,739,694
+2026-05-15,terrace-suite,Terrace Suite,888,1061,1099,1015,1054,1048
+2026-05-16,deluxe-king,Deluxe King Room,393,476,475,456,463,467
+2026-05-16,superior-twin,Superior Twin Room,344,415,426,409,427,399
+2026-05-16,junior-suite,Junior Suite,590,686,706,678,728,700
+2026-05-16,terrace-suite,Terrace Suite,885,1029,1063,1040,1088,1075
+2026-05-17,deluxe-king,Deluxe King Room,341,395,410,394,416,404
+2026-05-17,superior-twin,Superior Twin Room,299,356,366,339,363,356
+2026-05-17,junior-suite,Junior Suite,512,625,641,582,618,608
+2026-05-17,terrace-suite,Terrace Suite,768,935,939,915,950,921
+2026-05-18,deluxe-king,Deluxe King Room,340,402,420,386,423,402
+2026-05-18,superior-twin,Superior Twin Room,298,353,372,336,359,348
+2026-05-18,junior-suite,Junior Suite,510,,645,587,626,602
+2026-05-18,terrace-suite,Terrace Suite,765,910,958,900,923,929
+2026-05-19,deluxe-king,Deluxe King Room,339,412,424,401,420,390
+2026-05-19,superior-twin,Superior Twin Room,297,364,368,352,359,346
+2026-05-19,junior-suite,Junior Suite,509,593,619,609,604,615
+2026-05-19,terrace-suite,Terrace Suite,763,907,958,874,906,913
+2026-05-20,deluxe-king,Deluxe King Room,338,396,406,400,414,
+2026-05-20,superior-twin,Superior Twin Room,296,355,374,345,366,344
+2026-05-20,junior-suite,Junior Suite,507,598,626,575,614,601
+2026-05-20,terrace-suite,Terrace Suite,760,909,923,872,896,919
+2026-05-21,deluxe-king,Deluxe King Room,336,390,406,382,419,393
+2026-05-21,superior-twin,Superior Twin Room,294,,366,338,362,348
+2026-05-21,junior-suite,Junior Suite,505,612,628,582,604,586
+2026-05-21,terrace-suite,Terrace Suite,757,883,935,875,898,
+2026-05-22,deluxe-king,Deluxe King Room,385,455,476,441,458,467
+2026-05-22,superior-twin,Superior Twin Room,337,399,421,383,412,400
+2026-05-22,junior-suite,Junior Suite,578,682,713,665,689,
+2026-05-22,terrace-suite,Terrace Suite,867,1046,1047,979,1057,1021
+2026-05-23,deluxe-king,Deluxe King Room,384,459,487,439,475,451
+2026-05-23,superior-twin,Superior Twin Room,336,411,411,391,414,393
+2026-05-23,junior-suite,Junior Suite,575,668,705,652,716,694
+2026-05-23,terrace-suite,Terrace Suite,863,1044,1086,1023,1071,1048
+2026-05-24,deluxe-king,Deluxe King Room,332,404,414,379,410,392
+2026-05-24,superior-twin,Superior Twin Room,291,338,355,340,351,347
+2026-05-24,junior-suite,Junior Suite,498,595,614,588,600,572
+2026-05-24,terrace-suite,Terrace Suite,747,880,941,888,911,885
+2026-05-25,deluxe-king,Deluxe King Room,330,399,401,382,393,389
+2026-05-25,superior-twin,Superior Twin Room,289,336,358,333,342,332
+2026-05-25,junior-suite,Junior Suite,496,602,622,590,610,570
+2026-05-25,terrace-suite,Terrace Suite,743,876,939,864,,861
+2026-05-26,deluxe-king,Deluxe King Room,329,397,404,381,407,395
+2026-05-26,superior-twin,Superior Twin Room,288,336,351,325,345,348
+2026-05-26,junior-suite,Junior Suite,493,571,625,569,610,586
+2026-05-26,terrace-suite,Terrace Suite,740,884,924,857,909,876
+2026-05-27,deluxe-king,Deluxe King Room,327,382,409,378,397,393
+2026-05-27,superior-twin,Superior Twin Room,286,348,362,341,351,343
+2026-05-27,junior-suite,Junior Suite,491,580,594,554,586,588
+2026-05-27,terrace-suite,Terrace Suite,736,881,881,833,877,889
+2026-05-28,deluxe-king,Deluxe King Room,325,,411,377,386,375
+2026-05-28,superior-twin,Superior Twin Room,285,335,354,324,354,341
+2026-05-28,junior-suite,Junior Suite,488,591,619,559,606,560
+2026-05-28,terrace-suite,Terrace Suite,732,873,892,833,884,873
+2026-05-29,deluxe-king,Deluxe King Room,372,449,471,428,444,430
+2026-05-29,superior-twin,Superior Twin Room,326,382,393,379,391,392
+2026-05-29,junior-suite,Junior Suite,558,652,679,666,664,679
+2026-05-29,terrace-suite,Terrace Suite,837,1021,1051,950,1035,1014
+2026-05-30,deluxe-king,Deluxe King Room,370,433,447,419,448,428
+2026-05-30,superior-twin,Superior Twin Room,324,379,396,375,395,377
+2026-05-30,junior-suite,Junior Suite,555,669,701,646,687,650
+2026-05-30,terrace-suite,Terrace Suite,833,993,1026,942,993,959
+2026-05-31,deluxe-king,Deluxe King Room,320,374,393,380,389,383
+2026-05-31,superior-twin,Superior Twin Room,280,339,335,319,336,323
+2026-05-31,junior-suite,Junior Suite,480,561,593,553,587,556
+2026-05-31,terrace-suite,Terrace Suite,720,863,907,844,871,
+2026-06-01,deluxe-king,Deluxe King Room,318,372,381,375,381,378
+2026-06-01,superior-twin,Superior Twin Room,278,340,348,313,331,327
+2026-06-01,junior-suite,Junior Suite,477,565,598,569,573,559
+2026-06-01,terrace-suite,Terrace Suite,716,846,,847,885,834
+2026-06-02,deluxe-king,Deluxe King Room,316,372,396,363,375,384
+2026-06-02,superior-twin,Superior Twin Room,277,335,340,320,333,323
+2026-06-02,junior-suite,Junior Suite,475,567,603,539,560,558
+2026-06-02,terrace-suite,Terrace Suite,712,833,881,818,840,855
+2026-06-03,deluxe-king,Deluxe King Room,315,366,381,358,385,372
+2026-06-03,superior-twin,Superior Twin Room,275,327,332,327,325,319
+2026-06-03,junior-suite,Junior Suite,472,578,582,558,586,541
+2026-06-03,terrace-suite,Terrace Suite,708,844,882,839,879,839
+2026-06-04,deluxe-king,Deluxe King Room,313,374,383,354,389,378
+2026-06-04,superior-twin,Superior Twin Room,274,325,338,326,336,321
+2026-06-04,junior-suite,Junior Suite,469,545,588,546,555,565
+2026-06-04,terrace-suite,Terrace Suite,704,851,871,824,877,842
+2026-06-05,deluxe-king,Deluxe King Room,358,431,441,420,444,421
+2026-06-05,superior-twin,Superior Twin Room,313,383,374,370,379,380
+2026-06-05,junior-suite,Junior Suite,537,646,672,628,632,622
+2026-06-05,terrace-suite,Terrace Suite,805,976,986,955,973,927
+2026-06-06,deluxe-king,Deluxe King Room,356,425,428,421,431,414
+2026-06-06,superior-twin,Superior Twin Room,312,379,382,352,385,371
+2026-06-06,junior-suite,Junior Suite,534,621,661,608,657,642
+2026-06-06,terrace-suite,Terrace Suite,801,951,1008,925,959,928
+2026-06-07,deluxe-king,Deluxe King Room,308,364,391,350,364,355
+2026-06-07,superior-twin,Superior Twin Room,269,321,337,307,333,319
+2026-06-07,junior-suite,Junior Suite,462,548,570,550,548,530
+2026-06-07,terrace-suite,Terrace Suite,693,846,877,819,843,837
+2026-06-08,deluxe-king,Deluxe King Room,306,358,384,355,362,364
+2026-06-08,superior-twin,Superior Twin Room,268,328,326,316,326,308
+2026-06-08,junior-suite,Junior Suite,460,564,570,533,564,547
+2026-06-08,terrace-suite,Terrace Suite,689,827,,782,836,822
+2026-06-09,deluxe-king,Deluxe King Room,305,357,374,,379,351
+2026-06-09,superior-twin,Superior Twin Room,267,311,338,315,331,311
+2026-06-09,junior-suite,Junior Suite,457,534,563,520,558,547
+2026-06-09,terrace-suite,Terrace Suite,686,833,841,804,818,809
+2026-06-10,deluxe-king,Deluxe King Room,304,354,383,361,365,366
+2026-06-10,superior-twin,Superior Twin Room,266,324,334,302,318,319
+2026-06-10,junior-suite,Junior Suite,455,542,561,534,557,524
+2026-06-10,terrace-suite,Terrace Suite,683,804,862,776,843,825
+2026-06-11,deluxe-king,Deluxe King Room,302,363,381,349,360,366
+2026-06-11,superior-twin,Superior Twin Room,264,310,324,311,325,315
+2026-06-11,junior-suite,Junior Suite,453,551,565,,538,550
+2026-06-11,terrace-suite,Terrace Suite,680,820,820,787,839,791
+2026-06-12,deluxe-king,Deluxe King Room,346,405,423,400,416,413
+2026-06-12,superior-twin,Superior Twin Room,303,360,373,355,368,353
+2026-06-12,junior-suite,Junior Suite,519,615,646,593,636,606
+2026-06-12,terrace-suite,Terrace Suite,779,904,980,911,963,921
+2026-06-13,deluxe-king,Deluxe King Room,345,409,433,400,409,398
+2026-06-13,superior-twin,Superior Twin Room,302,357,377,345,372,367
+2026-06-13,junior-suite,Junior Suite,517,633,636,597,628,626
+2026-06-13,terrace-suite,Terrace Suite,776,898,954,900,,900
+2026-06-14,deluxe-king,Deluxe King Room,299,348,365,342,354,362
+2026-06-14,superior-twin,Superior Twin Room,261,303,322,300,316,314
+2026-06-14,junior-suite,Junior Suite,448,547,559,530,552,540
+2026-06-14,terrace-suite,Terrace Suite,672,789,837,777,817,806
+2026-06-15,deluxe-king,Deluxe King Room,298,353,365,341,367,353
+2026-06-15,superior-twin,Superior Twin Room,261,314,324,303,309,303
+2026-06-15,junior-suite,Junior Suite,447,530,546,514,537,513
+2026-06-15,terrace-suite,Terrace Suite,670,798,822,758,832,800
+2026-06-16,deluxe-king,Deluxe King Room,297,360,355,337,362,342
+2026-06-16,superior-twin,Superior Twin Room,260,308,315,310,321,316
+2026-06-16,junior-suite,Junior Suite,445,541,559,511,537,
+2026-06-16,terrace-suite,Terrace Suite,668,819,827,793,824,789
+2026-06-17,deluxe-king,Deluxe King Room,296,356,360,354,362,343
+2026-06-17,superior-twin,Superior Twin Room,259,308,327,303,323,313
+2026-06-17,junior-suite,Junior Suite,444,538,555,515,539,520
+2026-06-17,terrace-suite,Terrace Suite,667,812,846,777,817,776
+2026-06-18,deluxe-king,Deluxe King Room,296,355,369,343,351,346
+2026-06-18,superior-twin,Superior Twin Room,259,313,320,,311,305
+2026-06-18,junior-suite,Junior Suite,443,542,,,522,537
+2026-06-18,terrace-suite,Terrace Suite,665,788,809,772,810,774
+2026-06-19,deluxe-king,Deluxe King Room,339,402,413,399,406,405
+2026-06-19,superior-twin,Superior Twin Room,297,364,363,344,365,342
+2026-06-19,junior-suite,Junior Suite,509,,636,,612,586
+2026-06-19,terrace-suite,Terrace Suite,764,891,937,877,932,889
+2026-06-20,deluxe-king,Deluxe King Room,339,415,423,398,402,403
+2026-06-20,superior-twin,Superior Twin Room,297,350,360,339,351,346
+2026-06-20,junior-suite,Junior Suite,509,618,615,589,625,602
+2026-06-20,terrace-suite,Terrace Suite,763,894,952,860,931,901
+2026-06-21,deluxe-king,Deluxe King Room,295,343,372,338,348,353
+2026-06-21,superior-twin,Superior Twin Room,258,,322,296,312,307
+2026-06-21,junior-suite,Junior Suite,442,515,534,508,523,525
+2026-06-21,terrace-suite,Terrace Suite,663,798,800,,800,763
+2026-06-22,deluxe-king,Deluxe King Room,294,343,353,346,358,357
+2026-06-22,superior-twin,Superior Twin Room,258,302,325,296,311,301
+2026-06-22,junior-suite,Junior Suite,442,514,536,508,535,523
+2026-06-22,terrace-suite,Terrace Suite,662,772,799,753,804,804
+2026-06-23,deluxe-king,Deluxe King Room,294,354,355,345,361,349
+2026-06-23,superior-twin,Superior Twin Room,258,305,326,292,306,
+2026-06-23,junior-suite,Junior Suite,442,528,532,521,550,535
+2026-06-23,terrace-suite,Terrace Suite,662,775,821,789,780,796
+2026-06-24,deluxe-king,Deluxe King Room,295,355,357,350,352,345
+2026-06-24,superior-twin,Superior Twin Room,258,300,315,307,318,313
+2026-06-24,junior-suite,Junior Suite,442,524,530,501,551,521
+2026-06-24,terrace-suite,Terrace Suite,663,784,841,788,796,772
+2026-06-25,deluxe-king,Deluxe King Room,295,344,357,342,354,340
+2026-06-25,superior-twin,Superior Twin Room,258,302,325,291,309,296
+2026-06-25,junior-suite,Junior Suite,442,533,536,500,546,536
+2026-06-25,terrace-suite,Terrace Suite,663,,824,751,818,790
+2026-06-26,deluxe-king,Deluxe King Room,339,411,415,397,409,389
+2026-06-26,superior-twin,Superior Twin Room,297,358,374,347,368,357
+2026-06-26,junior-suite,Junior Suite,509,619,636,602,631,611
+2026-06-26,terrace-suite,Terrace Suite,764,907,949,863,922,895
+2026-06-27,deluxe-king,Deluxe King Room,340,397,421,389,410,400
+2026-06-27,superior-twin,Superior Twin Room,298,347,375,354,354,361
+2026-06-27,junior-suite,Junior Suite,510,605,644,582,633,607
+2026-06-27,terrace-suite,Terrace Suite,765,934,965,900,922,887
+2026-06-28,deluxe-king,Deluxe King Room,296,349,360,341,362,360
+2026-06-28,superior-twin,Superior Twin Room,259,306,325,297,309,307
+2026-06-28,junior-suite,Junior Suite,444,520,548,508,549,520
+2026-06-28,terrace-suite,Terrace Suite,667,778,832,787,790,792
+2026-06-29,deluxe-king,Deluxe King Room,297,344,374,342,349,354
+2026-06-29,superior-twin,Superior Twin Room,260,314,315,303,306,306
+2026-06-29,junior-suite,Junior Suite,445,516,,513,529,513
+2026-06-29,terrace-suite,Terrace Suite,668,785,809,794,790,806
+2026-06-30,deluxe-king,Deluxe King Room,298,346,374,345,371,351
+2026-06-30,superior-twin,Superior Twin Room,261,303,328,303,315,304
+2026-06-30,junior-suite,Junior Suite,447,533,554,510,538,542
+2026-06-30,terrace-suite,Terrace Suite,670,794,801,795,835,780
+2026-07-01,deluxe-king,Deluxe King Room,299,351,377,352,362,
+2026-07-01,superior-twin,Superior Twin Room,261,303,324,305,323,304
+2026-07-01,junior-suite,Junior Suite,448,534,545,,551,537
+2026-07-01,terrace-suite,Terrace Suite,672,799,828,,792,816
+2026-07-02,deluxe-king,Deluxe King Room,300,367,378,345,,365
+2026-07-02,superior-twin,Superior Twin Room,262,307,316,307,322,301
+2026-07-02,junior-suite,Junior Suite,450,547,550,527,547,536
+2026-07-02,terrace-suite,Terrace Suite,675,789,836,788,836,786
+2026-07-03,deluxe-king,Deluxe King Room,346,411,421,401,429,413
+2026-07-03,superior-twin,Superior Twin Room,303,370,365,355,369,367
+2026-07-03,junior-suite,Junior Suite,519,612,647,612,625,625
+2026-07-03,terrace-suite,Terrace Suite,779,904,940,923,933,896
+2026-07-04,deluxe-king,Deluxe King Room,348,427,438,413,426,410
+2026-07-04,superior-twin,Superior Twin Room,304,355,379,356,359,355
+2026-07-04,junior-suite,Junior Suite,521,632,651,597,647,612
+2026-07-04,terrace-suite,Terrace Suite,782,923,937,886,942,906
+2026-07-05,deluxe-king,Deluxe King Room,304,369,380,350,371,359
+2026-07-05,superior-twin,Superior Twin Room,266,308,328,305,326,308
+2026-07-05,junior-suite,Junior Suite,455,539,565,517,539,538
+2026-07-05,terrace-suite,Terrace Suite,683,793,866,803,842,806
+2026-07-06,deluxe-king,Deluxe King Room,305,374,369,353,378,365
+2026-07-06,superior-twin,Superior Twin Room,267,321,324,314,329,322
+2026-07-06,junior-suite,Junior Suite,457,540,566,528,546,530
+2026-07-06,terrace-suite,Terrace Suite,686,797,870,789,830,794
+2026-07-07,deluxe-king,Deluxe King Room,306,364,379,350,381,368
+2026-07-07,superior-twin,Superior Twin Room,268,314,334,315,327,315
+2026-07-07,junior-suite,Junior Suite,460,555,556,520,544,536
+2026-07-07,terrace-suite,Terrace Suite,689,822,868,823,859,801
+2026-07-08,deluxe-king,Deluxe King Room,308,,385,366,363,357
+2026-07-08,superior-twin,Superior Twin Room,269,,337,317,323,322
+2026-07-08,junior-suite,Junior Suite,462,550,570,535,560,532
+2026-07-08,terrace-suite,Terrace Suite,693,848,868,815,837,810
+2026-07-09,deluxe-king,Deluxe King Room,310,380,383,368,379,367
+2026-07-09,superior-twin,Superior Twin Room,271,322,330,307,332,322
+2026-07-09,junior-suite,Junior Suite,464,561,563,545,548,561
+2026-07-09,terrace-suite,Terrace Suite,697,813,857,803,820,848
+2026-07-10,deluxe-king,Deluxe King Room,358,422,448,405,424,423
+2026-07-10,superior-twin,Superior Twin Room,313,376,394,366,385,379
+2026-07-10,junior-suite,Junior Suite,537,637,676,616,647,625
+2026-07-10,terrace-suite,Terrace Suite,805,987,1016,941,,
+2026-07-11,deluxe-king,Deluxe King Room,360,439,450,416,435,437
+2026-07-11,superior-twin,Superior Twin Room,315,372,383,376,378,383
+2026-07-11,junior-suite,Junior Suite,540,639,672,628,650,624
+2026-07-11,terrace-suite,Terrace Suite,810,962,1005,931,988,957
+2026-07-12,deluxe-king,Deluxe King Room,315,372,378,374,384,365
+2026-07-12,superior-twin,Superior Twin Room,275,323,348,311,328,325
+2026-07-12,junior-suite,Junior Suite,472,546,584,549,576,571
+2026-07-12,terrace-suite,Terrace Suite,708,823,853,803,861,860
+2026-07-13,deluxe-king,Deluxe King Room,316,383,384,365,385,371
+2026-07-13,superior-twin,Superior Twin Room,277,334,342,325,333,325
+2026-07-13,junior-suite,Junior Suite,475,550,570,548,567,555
+2026-07-13,terrace-suite,Terrace Suite,712,825,865,812,863,849
+2026-07-14,deluxe-king,Deluxe King Room,318,377,388,372,388,384
+2026-07-14,superior-twin,Superior Twin Room,278,325,343,325,340,323
+2026-07-14,junior-suite,Junior Suite,477,561,576,546,579,574
+2026-07-14,terrace-suite,Terrace Suite,716,829,871,809,863,822
