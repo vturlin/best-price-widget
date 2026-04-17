@@ -1,26 +1,20 @@
 /**
  * Remote config loader.
  *
- * Reads ?id=xxx from the widget.js <script src>, fetches the matching
- * config JSON from a CDN (jsDelivr mirroring a GitHub repo of configs),
- * normalizes it, and returns a ready-to-use config object.
- *
- * Fallback order:
- *   1. ?id in script URL → fetch remote config
- *   2. window.HOTEL_PRICE_WIDGET_CONFIG → use inline config
- *   3. throw (nothing to work with)
+ * Resolves the widget config from (in priority order):
+ *   1. ?preview=<base64> on the host page URL  (used by the admin app)
+ *   2. ?id=xxx in the <script src>             (remote CDN fetch)
+ *   3. window.HOTEL_PRICE_WIDGET_CONFIG        (legacy inline config)
+ *   4. throw                                   (nothing to work with)
  *
  * If remote fetch fails AND inline config exists, we fall back to inline
  * (safer than refusing to render).
  */
 
-// For POC: configs are served from the same directory as widget.js,
-// under a "configs/" subfolder. To point at a remote CDN later,
-// override this with an absolute URL.
+// Configs are served as siblings of widget.js under a "configs/" subfolder.
 const CONFIGS_BASE_URL = resolveConfigsBase();
 
 function resolveConfigsBase() {
-  // Find the <script> that loaded widget.js and build a sibling URL
   const scripts = document.getElementsByTagName('script');
   for (let i = scripts.length - 1; i >= 0; i--) {
     const src = scripts[i].src || '';
@@ -55,6 +49,29 @@ function extractIdFromScript() {
   }
 }
 
+/**
+ * Decode a base64 preview param (urlsafe, no padding) into a config object.
+ * Returns null if not present or invalid.
+ */
+function extractPreviewConfig() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const encoded = params.get('preview');
+    if (!encoded) return null;
+    const padded = encoded + '='.repeat((4 - encoded.length % 4) % 4);
+    const b64 = padded.replace(/-/g, '+').replace(/_/g, '/');
+    // UTF-8-safe decode: atob returns a byte string, reinterpret as UTF-8
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const json = new TextDecoder().decode(bytes);
+    return JSON.parse(json);
+  } catch (err) {
+    console.warn('[hotel-price-widget] Invalid preview param:', err);
+    return null;
+  }
+}
+
 function normalizeConfig(raw) {
   if (!raw || typeof raw !== 'object') {
     throw new Error('Config is not an object');
@@ -84,17 +101,15 @@ function normalizeConfig(raw) {
 }
 
 export async function loadConfig() {
-  // NEW: preview mode. If the host page URL has ?preview=<base64>, decode
-  // and use that config directly. Used by the admin Streamlit app to render
-  // live previews of configs before publishing.
+  // Priority 1: preview mode (admin live preview)
   const previewConfig = extractPreviewConfig();
   if (previewConfig) {
     previewConfig._hotelId = previewConfig._hotelId || 'preview';
     return normalizeConfig(previewConfig);
   }
 
+  // Priority 2: remote config by ID
   const id = extractIdFromScript();
-
   if (id) {
     const url = `${CONFIGS_BASE_URL}${encodeURIComponent(id)}.json`;
     try {
@@ -115,38 +130,12 @@ export async function loadConfig() {
     }
   }
 
+  // Priority 3: inline config
   if (window.HOTEL_PRICE_WIDGET_CONFIG) {
     return normalizeConfig(window.HOTEL_PRICE_WIDGET_CONFIG);
   }
 
-  throw new Error(
-    'No config found. Load widget.js with ?id=YOUR_ID or set window.HOTEL_PRICE_WIDGET_CONFIG before loading.'
-  );
-}
-
-/**
- * Read the ?preview=<base64> query param from the host page URL.
- * Returns the decoded config object, or null if not present / invalid.
- */
-function extractPreviewConfig() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get('preview');
-    if (!encoded) return null;
-    // urlsafe base64 without padding — add padding back if needed
-    const padded = encoded + '='.repeat((4 - encoded.length % 4) % 4);
-    const decoded = atob(padded.replace(/-/g, '+').replace(/_/g, '/'));
-    return JSON.parse(decoded);
-  } catch (err) {
-    console.warn('[hotel-price-widget] Invalid preview param:', err);
-    return null;
-  }
-}
-
-  if (window.HOTEL_PRICE_WIDGET_CONFIG) {
-    return normalizeConfig(window.HOTEL_PRICE_WIDGET_CONFIG);
-  }
-
+  // Priority 4: nothing
   throw new Error(
     'No config found. Load widget.js with ?id=YOUR_ID or set window.HOTEL_PRICE_WIDGET_CONFIG before loading.'
   );
