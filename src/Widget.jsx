@@ -468,7 +468,7 @@ export default function Widget({ config }) {
                     {t('bookDirectForBestRate') || 'Book direct on our website for the best available rate and exclusive benefits.'}
                   </p>
                 </div>
-                
+                <a
                   href={config.reserveUrl}
                   className="hpw-reserve-btn"
                   style={{ background: config.brandColor }}
