@@ -276,6 +276,8 @@ export default function Widget({ config }) {
     return () => clearTimeout(timer);
   }, [status, config.autoOpenDelay, config._hotelId, config._preview, expanded]);
 
+  const positionClass = `hpw-pos-${config.position || 'bottom-right'}`;
+
   return (
     <div
       ref={rootRef}
