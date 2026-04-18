@@ -19,8 +19,8 @@
   "reserveUrl": "https://book.hotel-client.com/?arrive={checkIn}&depart={checkOut}&room={roomId}",
   "currency": "EUR",
   "locale": "",
-  "brandColor": "#6f4125",
-  "backgroundColor": "#f9f8f0",
+  "brandColor": "#2fc64d",
+  "backgroundColor": "#dbc51a",
   "logoUrl": "",
   "hotelName": "Hôtel Demo",
   "enabledLocales": [
@@ -43,6 +43,6 @@
     "dataLayerName": "dataLayer"
   },
   "autoOpenMode": "time",
-  "autoOpenDelay": 5,
+  "autoOpenDelay": 20,
   "autoOpenScrollPercent": 50
 }
