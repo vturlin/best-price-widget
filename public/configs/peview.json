@@ -26,5 +26,6 @@
     "enabled": true,
     "dataLayerName": "dataLayer",
     "eventPrefix": "hotel_widget_"
-  }
+  },
+      "autoOpenDelay": 8
 }
