@@ -132,32 +132,22 @@ export default function Widget({ config }) {
   /* Render                                                                */
   /* --------------------------------------------------------------------- */
 
- /* ----- Fetch CSV once on mount --------------------------------------- */
+/* ----- Fetch CSV once on mount --------------------------------------- */
   useEffect(() => {
     let cancelled = false;
 
-    // Preview mode: skip the fetch and use hardcoded demo prices.
-    // This is used by the admin for live previews where we don't want
-    // to depend on a real CSV being hosted somewhere.
-    if (config._hotelId === 'preview') {
+    // Preview mode — explicit flag in the config. Used by the admin to
+    // render a live preview with hardcoded demo prices, never hits the
+    // network. This flag is NEVER set in a real hotel's production config,
+    // so there's no risk of a real hotel accidentally showing fake prices.
+    if (config._preview === true) {
       setData(buildPreviewData(config));
       setStatus('ready');
       return;
     }
 
-    // Production with placeholder CSV URL (config not finalized): also
-    // use the demo data so the preview on the landing config doesn't look
-    // broken before the hotel fills in the real sheet.
-    const isPlaceholderCsv = !config.csvUrl
-      || config.csvUrl.includes('...')
-      || !config.csvUrl.startsWith('http');
-
-    if (isPlaceholderCsv) {
-      setData(buildPreviewData(config));
-      setStatus('ready');
-      return;
-    }
-
+    // Real production: fetch the CSV. On failure, show the "Best price
+    // guaranteed" fallback (no fake prices).
     loadPriceData(config.csvUrl)
       .then((d) => {
         if (cancelled) return;
@@ -172,7 +162,7 @@ export default function Widget({ config }) {
     return () => {
       cancelled = true;
     };
-  }, [config.csvUrl, config._hotelId]);
+  }, [config.csvUrl, config._preview]);
 
   const t = useMemo(() => makeT(dict), [dict]);
   const calendarRef = useRef(null);

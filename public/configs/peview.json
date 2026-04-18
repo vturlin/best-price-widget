@@ -1,0 +1,30 @@
+{
+  "_preview": true,
+  "position": "bottom-right",
+  "csvUrl": "",
+  "roomOptions": [
+    { "id": "deluxe-king", "name": "Deluxe King Room" },
+    { "id": "superior-twin", "name": "Superior Twin Room" },
+    { "id": "junior-suite", "name": "Junior Suite" }
+  ],
+  "default_room_id": "deluxe-king",
+  "reserveUrl": "https://example.com/reserve",
+  "currency": "EUR",
+  "brandColor": "#8b5a3c",
+  "backgroundColor": "#faf7f2",
+  "hotelName": "Hôtel Demo",
+  "enabledLocales": ["en", "fr", "es", "de", "it"],
+  "defaultLocale": "en",
+  "channelLabels": {
+    "booking": "Booking.com",
+    "expedia": "Expedia",
+    "trivago": "Trivago",
+    "hotels_com": "Hotels.com",
+    "agoda": "Agoda"
+  },
+  "analytics": {
+    "enabled": true,
+    "dataLayerName": "dataLayer",
+    "eventPrefix": "hotel_widget_"
+  }
+}

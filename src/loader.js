@@ -97,6 +97,7 @@ function normalizeConfig(raw) {
       eventPrefix: (raw.analytics && raw.analytics.eventPrefix) || 'hotel_widget_',
     },
     _hotelId: raw._hotelId || null,
+    _preview: raw._preview === true,
   };
 }
 
