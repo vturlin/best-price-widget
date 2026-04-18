@@ -1,0 +1,48 @@
+{
+  "position": "bottom-right",
+  "csvUrl": "blablabla",
+  "roomOptions": [
+    {
+      "id": "deluxe-king",
+      "name": "Deluxe King Room"
+    },
+    {
+      "id": "superior-twin",
+      "name": "Superior Twin Room"
+    },
+    {
+      "id": "junior-suite",
+      "name": "Junior Suite"
+    }
+  ],
+  "default_room_id": "deluxe-king",
+  "reserveUrl": "https://book.hotel-client.com/?arrive={checkIn}&depart={checkOut}&room={roomId}",
+  "currency": "EUR",
+  "locale": "",
+  "brandColor": "#3c868b",
+  "backgroundColor": "#f0f8f9",
+  "logoUrl": "",
+  "hotelName": "test2",
+  "enabledLocales": [
+    "en",
+    "fr",
+    "es",
+    "de",
+    "it"
+  ],
+  "defaultLocale": "en",
+  "channelLabels": {
+    "booking": "Booking.com",
+    "expedia": "Expedia",
+    "trivago": "Trivago",
+    "hotels_com": "Hotels.com",
+    "agoda": "Agoda"
+  },
+  "analytics": {
+    "enabled": true,
+    "dataLayerName": "dataLayerbbb"
+  },
+  "autoOpenMode": "time_or_scroll",
+  "autoOpenDelay": 8,
+  "autoOpenScrollPercent": 50
+}
