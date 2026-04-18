@@ -28,5 +28,7 @@
       "dataLayerName": "dataLayer",
       "eventPrefix": "hotel_widget_"
     },
-      "autoOpenDelay": 8
+    "autoOpenMode": "time_or_scroll",
+    "autoOpenDelay": 8,
+    "autoOpenScrollPercent": 50
   }
