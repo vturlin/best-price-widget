@@ -1,34 +1,49 @@
 {
-    "position": "bottom-right",
-    "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRckcXCc9drXANLvWi95QqIcOQlzvj9hMibxM1bLa6zCO-BF5bbcY-LuKTYiMoPWaWWsn9I7iiBr143/pub?gid=592861194&single=true&output=csv",
-    "roomOptions": [
-      { "id": "deluxe-king",   "name": "Deluxe King Room"   },
-      { "id": "superior-twin", "name": "Superior Twin Room" },
-      { "id": "junior-suite",  "name": "Junior Suite"       }
-    ],
-    "default_room_id": "deluxe-king",
-    "reserveUrl": "https://www-secure-hotel-booking.staging.d-edge.app/d-edge/hotel-le-charles-quint-/247C/fr-FR/RoomSelection?arrivalDate{checkIn}&departureDate=={checkOut}",
-    "currency": "EUR",
-    "locale": "",
-    "brandColor": "#8b5a3c",
-    "backgroundColor": "#faf7f2",
-    "logoUrl": "",
-    "hotelName": "Hôtel Demo",
-    "enabledLocales": ["en", "fr", "es", "de", "it"],
-    "defaultLocale": "en",
-    "channelLabels": {
-      "booking": "Booking.com",
-      "expedia": "Expedia",
-      "trivago": "Trivago",
-      "hotels_com": "Hotels.com",
-      "agoda": "Agoda"
+  "position": "center-left",
+  "csvUrl": "https://docs.google.com/spreadsheets/d/e/.../pub?output=csv",
+  "roomOptions": [
+    {
+      "id": "deluxe-king",
+      "name": "Deluxe King Room"
     },
-    "analytics": {
-      "enabled": true,
-      "dataLayerName": "dataLayer",
-      "eventPrefix": "hotel_widget_"
+    {
+      "id": "superior-twin",
+      "name": "Superior Twin Room"
     },
-    "autoOpenMode": "time_or_scroll",
-    "autoOpenDelay": 8,
-    "autoOpenScrollPercent": 50
-  }
+    {
+      "id": "junior-suite",
+      "name": "Junior Suite"
+    }
+  ],
+  "default_room_id": "deluxe-king",
+  "reserveUrl": "https://book.hotel-client.com/?arrive={checkIn}&depart={checkOut}&room={roomId}",
+  "currency": "EUR",
+  "locale": "",
+  "brandColor": "#d1df0c",
+  "backgroundColor": "#28e2df",
+  "logoUrl": "",
+  "hotelName": "Hôtel Demo",
+  "enabledLocales": [
+    "en",
+    "fr",
+    "es",
+    "de",
+    "it"
+  ],
+  "defaultLocale": "en",
+  "channelLabels": {
+    "booking": "Booking.cool",
+    "expedia": "Expedia.cool",
+    "trivago": "Trivago",
+    "hotels_com": "Hotels.com",
+    "agoda": "Agoda"
+  },
+  "analytics": {
+    "enabled": true,
+    "dataLayerName": "dataLayer",
+    "eventPrefix": "hotel_test"
+  },
+  "autoOpenMode": "scroll",
+  "autoOpenDelay": 8,
+  "autoOpenScrollPercent": 50
+}
