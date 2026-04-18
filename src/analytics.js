@@ -31,7 +31,7 @@ function enabled() {
 function push(eventName, payload = {}) {
   if (!enabled()) return;
   const dlName = configRef.analytics.dataLayerName || 'dataLayer';
-  const prefix = configRef.analytics.eventPrefix || 'hotel_widget_';
+  const prefix =  'dedge_widget_';
 
   window[dlName] = window[dlName] || [];
   window[dlName].push({
