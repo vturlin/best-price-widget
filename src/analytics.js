@@ -50,7 +50,7 @@ export function autoOpened(hotelId, delaySeconds) {
       hotel_id: hotelId,
       delay_seconds: delaySeconds,
     });
-  },
+  }
 
 export function trackRoomChanged(roomId, roomName) {
   push('room_changed', { room_id: roomId, room_name: roomName });
