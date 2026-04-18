@@ -1,5 +1,5 @@
 {
-  "position": "center-left",
+  "position": "bottom-right",
   "csvUrl": "https://docs.google.com/spreadsheets/d/e/.../pub?output=csv",
   "roomOptions": [
     {
@@ -19,8 +19,8 @@
   "reserveUrl": "https://book.hotel-client.com/?arrive={checkIn}&depart={checkOut}&room={roomId}",
   "currency": "EUR",
   "locale": "",
-  "brandColor": "#d1df0c",
-  "backgroundColor": "#28e2df",
+  "brandColor": "#6f4125",
+  "backgroundColor": "#f9f8f0",
   "logoUrl": "",
   "hotelName": "Hôtel Demo",
   "enabledLocales": [
@@ -32,18 +32,17 @@
   ],
   "defaultLocale": "en",
   "channelLabels": {
-    "booking": "Booking.cool",
-    "expedia": "Expedia.cool",
+    "booking": "Booking.com",
+    "expedia": "Expedia",
     "trivago": "Trivago",
     "hotels_com": "Hotels.com",
     "agoda": "Agoda"
   },
   "analytics": {
     "enabled": true,
-    "dataLayerName": "dataLayer",
-    "eventPrefix": "hotel_test"
+    "dataLayerName": "dataLayer"
   },
-  "autoOpenMode": "scroll",
-  "autoOpenDelay": 8,
+  "autoOpenMode": "time",
+  "autoOpenDelay": 5,
   "autoOpenScrollPercent": 50
 }
