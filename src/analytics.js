@@ -13,12 +13,6 @@ export function initAnalytics(config) {
   configRef = config;
   lastSavingsKey = null;
 
-  // === DEBUG LOG — à retirer une fois résolu ===
-  console.log('[HPW DEBUG] initAnalytics called');
-  console.log('[HPW DEBUG]   config received:', config);
-  console.log('[HPW DEBUG]   config.analytics:', config && config.analytics);
-  console.log('[HPW DEBUG]   enabled() returns:', enabled());
-  // === FIN DEBUG ===
 
   if (enabled()) {
     const dlName = config.analytics.dataLayerName || 'dataLayer';
@@ -50,6 +44,13 @@ function push(eventName, payload = {}) {
 export function trackOpened() {
   push('opened');
 }
+
+export function autoOpened(hotelId, delaySeconds) {
+    pushEvent('auto_opened', {
+      hotel_id: hotelId,
+      delay_seconds: delaySeconds,
+    });
+  },
 
 export function trackRoomChanged(roomId, roomName) {
   push('room_changed', { room_id: roomId, room_name: roomName });

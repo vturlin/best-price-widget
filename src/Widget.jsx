@@ -186,27 +186,7 @@ export default function Widget({ config }) {
     });
   }, [expanded, roomId, nights, stay, topComparison]);
 
-  /* ----- Fetch CSV once on mount --------------------------------------- */
-  useEffect(() => {
-    let cancelled = false;
-    loadPriceData(config.csvUrl)
-      .then((d) => {
-        if (cancelled) return;
-        setData(d);
-        setStatus('ready');
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        console.error('[hotel-price-widget]', err);
-        setError(err.message || 'Could not load pricing data');
-        setStatus('error');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [config.csvUrl]);
-
-  /* ----- Close calendar on outside click ------------------------------- */
+  
   /* ----- Close calendar on outside click ------------------------------- */
   useEffect(() => {
     if (!calendarOpen) return;
@@ -229,6 +209,7 @@ export default function Widget({ config }) {
     document.addEventListener('mousedown', handleClick, true);
     return () => document.removeEventListener('mousedown', handleClick, true);
   }, [calendarOpen]);
+
   /* ----- Responsive detection ------------------------------------------ */
   useEffect(() => {
     // We don't rely on CSS alone because some layout decisions (like whether
@@ -265,8 +246,35 @@ export default function Widget({ config }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, [isMobile]);
 
+  /* ----- Auto-open after delay (first visit only) ---------------------- */
+  useEffect(() => {
+    // Preview mode: auto-open immediately, no session persistence.
+    // The admin wants to see the open state without waiting or fighting storage.
+    if (config._preview === true) {
+      setExpanded(true);
+      return;
+    }
 
-  const positionClass = `hpw-pos-${config.position || 'bottom-right'}`;
+    // Disabled when autoOpenDelay is 0 or when data isn't ready yet.
+    if (!config.autoOpenDelay || config.autoOpenDelay <= 0) return;
+    if (status !== 'ready' && status !== 'fallback') return;
+
+    // Already dismissed this session: respect the user's choice.
+    if (isDismissedThisSession(config._hotelId)) return;
+
+    // If already open (e.g. user clicked the pill before the timer fired),
+    // skip the auto-open.
+    if (expanded) return;
+
+    const timer = setTimeout(() => {
+      setExpanded(true);
+      // Optional: track auto-opens separately from manual opens. Reusing
+      // trackOpened is fine for the POC — we can split later if needed.
+      trackOpened();
+    }, config.autoOpenDelay * 1000);
+
+    return () => clearTimeout(timer);
+  }, [status, config.autoOpenDelay, config._hotelId, config._preview, expanded]);
 
   return (
     <div
@@ -350,6 +358,12 @@ export default function Widget({ config }) {
               onClick={() => {
                 setExpanded(false);
                 setCalendarOpen(false);
+                // Persist dismissal so auto-open doesn't fire again in
+                // this session. Skip in preview mode — the admin always
+                // wants to see the open state.
+                if (!config._preview) {
+                  markDismissedThisSession(config._hotelId);
+                }
               }}
               aria-label="Close"
             >
@@ -597,32 +611,26 @@ function readableInk(hex) {
   return L > 0.5 ? '#111111' : '#ffffff';
 }
 
-/**
- * Build a realistic mock dataset for preview mode.
- * Matches the exact shape returned by loadPriceData():
- *   - channels: string[]
- *   - rooms:    Map<roomId, roomName>
- *   - prices:   Map<"YYYY-MM-DD|roomId", { direct, booking, ...}>
- *
- * Prices are deterministic (derived from room id) so the preview stays
- * stable across re-renders. Direct price sits 5-15% below the cheapest
- * OTA, giving a believable "you save X" message.
- */
-/**
- * Build a static preview dataset. In preview mode we don't have real rates,
- * so we bake a small set of prices that produce a clean, predictable demo:
- *   - Direct:  372 €
- *   - Trivago: 434 € (+62)
- *   - Booking: 445 € (+73)
- *   - Agoda:   440 € (+68)
- *   - Expedia: 452 € (+80)
- *   - Hotels:  460 € (+88)
- *
- * These values match what the widget would show with a "typical" CSV and
- * give the savings message ("You save 62 € vs Trivago") that demos well.
- * Prices apply to every date × every room, so the widget works no matter
- * which dates the user picks in the admin preview.
- */
+function getDismissedKey(hotelId) {
+  return `hpw_dismissed_${hotelId || 'default'}`;
+}
+
+function isDismissedThisSession(hotelId) {
+  try {
+    return sessionStorage.getItem(getDismissedKey(hotelId)) === '1';
+  } catch {
+    return false;
+  }
+}
+
+function markDismissedThisSession(hotelId) {
+  try {
+    sessionStorage.setItem(getDismissedKey(hotelId), '1');
+  } catch {
+    // Silently ignore — private browsing or sandboxed context
+  }
+}
+
 function buildPreviewData(config) {
   const DEMO_PRICES = {
     direct:     372,

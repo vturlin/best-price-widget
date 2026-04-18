@@ -96,6 +96,7 @@ function normalizeConfig(raw) {
       dataLayerName: (raw.analytics && raw.analytics.dataLayerName) || 'dataLayer',
       eventPrefix: (raw.analytics && raw.analytics.eventPrefix) || 'hotel_widget_',
     },
+    autoOpenDelay: Number.isFinite(raw.autoOpenDelay) ? raw.autoOpenDelay : 0,
     _hotelId: raw._hotelId || null,
     _preview: raw._preview === true,
   };
