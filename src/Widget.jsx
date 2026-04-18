@@ -132,48 +132,32 @@ export default function Widget({ config }) {
   /* Render                                                                */
   /* --------------------------------------------------------------------- */
 
-  /* ----- Fetch CSV once on mount --------------------------------------- */
-  /* ----- Fetch CSV once on mount --------------------------------------- */
+ /* ----- Fetch CSV once on mount --------------------------------------- */
   useEffect(() => {
     let cancelled = false;
 
-    // Preview mode (admin): we always want to show something, so we fall
-    // back to mock data whenever the CSV URL is missing or placeholder,
-    // AND we don't show errors in this context.
-    const isPreview = config._hotelId === 'preview';
-    const isPlaceholderCsv = !config.csvUrl
-      || config.csvUrl.includes('TON_URL')
-      || config.csvUrl.includes('...')
-      || !config.csvUrl.startsWith('http');
-
-    if (isPreview && isPlaceholderCsv) {
-      setData(buildMockData(config));
+    // Preview mode: skip the fetch and use hardcoded demo prices.
+    // This is used by the admin for live previews where we don't want
+    // to depend on a real CSV being hosted somewhere.
+    if (config._hotelId === 'preview') {
+      setData(buildPreviewData(config));
       setStatus('ready');
       return;
     }
 
-    if (isPreview) {
-      // Preview with a real-looking CSV: try to fetch, but on any failure
-      // use mock data instead of showing an error — this is a demo context.
-      loadPriceData(config.csvUrl)
-        .then((d) => {
-          if (cancelled) return;
-          setData(d);
-          setStatus('ready');
-        })
-        .catch((err) => {
-          if (cancelled) return;
-          console.warn('[hotel-price-widget] Preview fetch failed, using mock:', err);
-          setData(buildMockData(config));
-          setStatus('ready');
-        });
-      return () => {
-        cancelled = true;
-      };
+    // Production with placeholder CSV URL (config not finalized): also
+    // use the demo data so the preview on the landing config doesn't look
+    // broken before the hotel fills in the real sheet.
+    const isPlaceholderCsv = !config.csvUrl
+      || config.csvUrl.includes('...')
+      || !config.csvUrl.startsWith('http');
+
+    if (isPlaceholderCsv) {
+      setData(buildPreviewData(config));
+      setStatus('ready');
+      return;
     }
 
-    // Production: fetch for real. On failure, show a graceful fallback
-    // state (no fake prices) — handled by the Widget render via status.
     loadPriceData(config.csvUrl)
       .then((d) => {
         if (cancelled) return;
@@ -182,9 +166,8 @@ export default function Widget({ config }) {
       })
       .catch((err) => {
         if (cancelled) return;
-        console.error('[hotel-price-widget]', err);
-        setError(err.message || 'Could not load pricing data');
-        setStatus('fallback');  // ← new state, not 'error'
+        console.warn('[hotel-price-widget] CSV fetch failed, showing fallback:', err);
+        setStatus('fallback');
       });
     return () => {
       cancelled = true;
@@ -635,41 +618,51 @@ function readableInk(hex) {
  * stable across re-renders. Direct price sits 5-15% below the cheapest
  * OTA, giving a believable "you save X" message.
  */
-function buildMockData(config) {
-  // Derive channel list from config.channelLabels. Fallback to a sensible
-  // default if the config didn't list any.
-  const channels = Object.keys(config.channelLabels || {}).length
-    ? Object.keys(config.channelLabels)
-    : ['booking', 'expedia', 'trivago', 'hotels_com', 'agoda'];
-
-  // Per-channel base prices (per night, €). Direct is intentionally the
-  // cheapest to demo the "book direct" savings story.
-  const PER_NIGHT = {
-    direct:     180,
-    booking:    198,
-    expedia:    205,
-    trivago:    192,
-    hotels_com: 210,
-    agoda:      199,
+/**
+ * Build a static preview dataset. In preview mode we don't have real rates,
+ * so we bake a small set of prices that produce a clean, predictable demo:
+ *   - Direct:  372 €
+ *   - Trivago: 434 € (+62)
+ *   - Booking: 445 € (+73)
+ *   - Agoda:   440 € (+68)
+ *   - Expedia: 452 € (+80)
+ *   - Hotels:  460 € (+88)
+ *
+ * These values match what the widget would show with a "typical" CSV and
+ * give the savings message ("You save 62 € vs Trivago") that demos well.
+ * Prices apply to every date × every room, so the widget works no matter
+ * which dates the user picks in the admin preview.
+ */
+function buildPreviewData(config) {
+  const DEMO_PRICES = {
+    direct:     372,
+    trivago:    434,
+    agoda:      440,
+    booking:    445,
+    expedia:    452,
+    hotels_com: 460,
   };
 
-  const rooms = new Map();
-  const prices = new Map();
+  // Channel list comes from the config so the preview matches what the
+  // admin set up in the "Analytics" tab. Fallback to a reasonable default.
+  const channels = Object.keys(config.channelLabels || {}).length
+    ? Object.keys(config.channelLabels)
+    : ['booking', 'expedia', 'trivago'];
 
   const roomOptions = config.roomOptions?.length
     ? config.roomOptions
     : [{ id: 'deluxe-king', name: 'Deluxe King Room' }];
 
-  // Generate 365 days of data, starting today
+  const rooms = new Map();
+  const prices = new Map();
+
+  // Generate 365 days of identical prices, for each room × each channel.
+  // Using the same prices every day means no flicker on date changes.
   const today = new Date();
   today.setHours(0, 0, 0, 0);
 
   for (const room of roomOptions) {
     rooms.set(room.id, room.name);
-
-    // Subtle per-room price variation — fancier rooms slightly pricier
-    const hash = [...room.id].reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
-    const roomMultiplier = 1 + ((hash % 20) - 5) * 0.02; // ~0.90 to 1.30
 
     for (let i = 0; i < 365; i++) {
       const d = new Date(today);
@@ -679,12 +672,10 @@ function buildMockData(config) {
       const day = String(d.getDate()).padStart(2, '0');
       const iso = `${y}-${m}-${day}`;
 
-      const entry = {
-        direct: Math.round(PER_NIGHT.direct * roomMultiplier),
-      };
+      const entry = { direct: DEMO_PRICES.direct };
       for (const ch of channels) {
-        const base = PER_NIGHT[ch] ?? 195;
-        entry[ch] = Math.round(base * roomMultiplier);
+        // If the channel isn't in DEMO_PRICES, generate a plausible surcharge
+        entry[ch] = DEMO_PRICES[ch] ?? DEMO_PRICES.direct + 70;
       }
 
       prices.set(`${iso}|${room.id}`, entry);
