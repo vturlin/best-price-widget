@@ -246,35 +246,76 @@ export default function Widget({ config }) {
     return () => window.removeEventListener('scroll', onScroll);
   }, [isMobile]);
 
-  /* ----- Auto-open after delay (first visit only) ---------------------- */
+  /* ----- Auto-open triggers (time, scroll, or both) -------------------- */
   useEffect(() => {
     // Preview mode: auto-open immediately, no session persistence.
-    // The admin wants to see the open state without waiting or fighting storage.
     if (config._preview === true) {
       setExpanded(true);
       return;
     }
 
-    // Disabled when autoOpenDelay is 0 or when data isn't ready yet.
-    if (!config.autoOpenDelay || config.autoOpenDelay <= 0) return;
+    const mode = config.autoOpenMode || 'disabled';
+    if (mode === 'disabled') return;
+
+    // Wait until data is ready (no point opening an empty panel).
     if (status !== 'ready' && status !== 'fallback') return;
 
-    // Already dismissed this session: respect the user's choice.
+    // Respect previous dismissal for both triggers.
     if (isDismissedThisSession(config._hotelId)) return;
 
-    // If already open (e.g. user clicked the pill before the timer fired),
-    // skip the auto-open.
+    // If user already opened manually, don't auto-open.
     if (expanded) return;
 
-    const timer = setTimeout(() => {
-      setExpanded(true);
-      // Optional: track auto-opens separately from manual opens. Reusing
-      // trackOpened is fine for the POC — we can split later if needed.
-      trackOpened();
-    }, config.autoOpenDelay * 1000);
+    // ---- Trigger 1: time ----
+    let timer = null;
+    const enableTime = mode === 'time' || mode === 'time_or_scroll';
+    if (enableTime && config.autoOpenDelay > 0) {
+      timer = setTimeout(() => {
+        setExpanded(true);
+        trackOpened();
+      }, config.autoOpenDelay * 1000);
+    }
 
-    return () => clearTimeout(timer);
-  }, [status, config.autoOpenDelay, config._hotelId, config._preview, expanded]);
+    // ---- Trigger 2: scroll threshold ----
+    const enableScroll = mode === 'scroll' || mode === 'time_or_scroll';
+    const threshold = config.autoOpenScrollPercent || 0;
+    let onScroll = null;
+
+    if (enableScroll && threshold > 0) {
+      let ticking = false;
+      onScroll = () => {
+        if (ticking) return;
+        ticking = true;
+        requestAnimationFrame(() => {
+          ticking = false;
+          const scrollable = document.documentElement.scrollHeight - window.innerHeight;
+          if (scrollable <= 0) return;  // page doesn't scroll
+          const percent = (window.scrollY / scrollable) * 100;
+          if (percent >= threshold) {
+            setExpanded(true);
+            trackOpened();
+            window.removeEventListener('scroll', onScroll);
+            if (timer) clearTimeout(timer);
+          }
+        });
+      };
+      window.addEventListener('scroll', onScroll, { passive: true });
+    }
+
+    // ---- Cleanup: cancel both triggers on unmount / re-run ----
+    return () => {
+      if (timer) clearTimeout(timer);
+      if (onScroll) window.removeEventListener('scroll', onScroll);
+    };
+  }, [
+    status,
+    config.autoOpenMode,
+    config.autoOpenDelay,
+    config.autoOpenScrollPercent,
+    config._hotelId,
+    config._preview,
+    expanded,
+  ]);
 
   const positionClass = `hpw-pos-${config.position || 'bottom-right'}`;
 

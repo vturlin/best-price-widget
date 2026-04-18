@@ -97,6 +97,8 @@ function normalizeConfig(raw) {
       eventPrefix: (raw.analytics && raw.analytics.eventPrefix) || 'hotel_widget_',
     },
     autoOpenDelay: Number.isFinite(raw.autoOpenDelay) ? raw.autoOpenDelay : 0,
+    autoOpenMode: raw.autoOpenMode || 'disabled',
+    autoOpenScrollPercent: Number.isFinite(raw.autoOpenScrollPercent) ? raw.autoOpenScrollPercent : 0,
     _hotelId: raw._hotelId || null,
     _preview: raw._preview === true,
   };
