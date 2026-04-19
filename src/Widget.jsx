@@ -383,36 +383,36 @@ export default function Widget({ config }) {
       )}
 
       {/* ============ EXPANDED PANEL ============ */}
+      {/* ============ EXPANDED PANEL ============ */}
       {expanded && (
-        <div className="hpw-panel" role="dialog" aria-label="Price comparison">
-          {/* Header — logo only if configured; otherwise just the close button */}
-          <header className="hpw-header">
+        <>
+          {/* Close button lives OUTSIDE the panel so it can float above the
+              top-right corner without being clipped by the panel's overflow. */}
+          <button
+            type="button"
+            className="hpw-close"
+            onClick={() => {
+              setExpanded(false);
+              setCalendarOpen(false);
+              if (!config._preview) {
+                markDismissedThisSession(config._hotelId);
+              }
+            }}
+            aria-label="Close"
+          >
+            ×
+          </button>
+          <div className="hpw-panel" role="dialog" aria-label="Price comparison">
+            {/* Header — shown only when a logo is configured */}
             {config.logoUrl && (
-              <img
-                src={config.logoUrl}
-                alt={config.hotelName || ''}
-                className="hpw-logo"
-              />
+              <header className="hpw-header">
+                <img
+                  src={config.logoUrl}
+                  alt={config.hotelName || ''}
+                  className="hpw-logo"
+                />
+              </header>
             )}
-            <button
-              type="button"
-              ref={dateBtnRef}
-              className="hpw-close"
-              onClick={() => {
-                setExpanded(false);
-                setCalendarOpen(false);
-                // Persist dismissal so auto-open doesn't fire again in
-                // this session. Skip in preview mode — the admin always
-                // wants to see the open state.
-                if (!config._preview) {
-                  markDismissedThisSession(config._hotelId);
-                }
-              }}
-              aria-label="Close"
-            >
-              ×
-            </button>
-          </header>
 
           {/* Controls */}
           <div className="hpw-controls">
@@ -621,6 +621,7 @@ export default function Widget({ config }) {
             <span>{t('prices_refreshed')}</span>
           </footer>
         </div>
+        </>
       )}
     </div>
   );

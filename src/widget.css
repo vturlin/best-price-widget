@@ -245,25 +245,31 @@
    }
    
    .hpw-close {
-     width: 16px;
-     height: 16px;
-     border: none;
-     background: transparent;
+     position: absolute;
+     top: -10px;
+     right: -10px;
+     width: 22px;
+     height: 22px;
+     border: 1px solid var(--hpw-rule);
+     background: var(--hpw-ivory);
      border-radius: 50%;
-     font-size: 13px;
+     font-size: 14px;
      line-height: 1;
      color: var(--hpw-ink-soft);
      cursor: pointer;
      font-family: inherit;
-     transition: background 120ms, color 120ms;
+     transition: background 140ms, color 140ms, transform 140ms;
      display: grid;
      place-items: center;
      padding: 0;
+     box-shadow: 0 2px 6px rgba(26, 26, 26, 0.12);
+     z-index: 2;
    }
    
    .hpw-close:hover {
-     background: var(--hpw-ivory-deep);
-     color: var(--hpw-ink);
+     background: var(--hpw-ink);
+     color: var(--hpw-ivory);
+     transform: scale(1.08);
    }
    
    /* ----- Controls (date + room) ---------------------------------------- */
@@ -769,9 +775,9 @@
      padding: 6px 6px 6px 18px;
    }
    
-   [dir="rtl"] .hpw-fab-badge {
+   [dir="rtl"] .hpw-close {
      right: auto;
-     left: 4px;
+     left: -10px;
    }
    
    /* =========================================================================
@@ -831,7 +837,17 @@
      /* Mobile type scale-up for touch comfort */
      .hpw-mobile .hpw-brand-name        { font-size: 16px; }
      .hpw-mobile .hpw-eyebrow           { font-size: 9px; }
-     .hpw-mobile .hpw-close             { width: 28px; height: 28px; font-size: 20px; }
+     .hpw-mobile .hpw-close {
+       top: 12px;
+       right: 12px;
+       width: 32px;
+       height: 32px;
+       font-size: 20px;
+     }
+     [dir="rtl"] .hpw-mobile .hpw-close {
+       right: auto;
+       left: 12px;
+     }
      .hpw-mobile .hpw-headline-price    { font-size: 32px; }
      .hpw-mobile .hpw-headline-eyebrow  { font-size: 9px; }
      .hpw-mobile .hpw-headline-sub      { font-size: 11px; }
