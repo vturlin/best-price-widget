@@ -19,8 +19,8 @@
   "reserveUrl": "https://book.hotel-client.com/?arrive={checkIn}&depart={checkOut}&room={roomId}",
   "currency": "EUR",
   "locale": "",
-  "brandColor": "#2fc64d",
-  "backgroundColor": "#dbc51a",
+  "brandColor": "#8c7e69",
+  "backgroundColor": "#f5f1ea",
   "logoUrl": "",
   "hotelName": "Hôtel Demo",
   "enabledLocales": [
