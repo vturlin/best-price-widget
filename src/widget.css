@@ -278,9 +278,10 @@
      display: flex;
      flex-direction: column;
      gap: 4px;
-     padding: 0 11px 8px;
+     padding: 8px 11px 8px;
    }
    
+  
    .hpw-date-btn {
      display: grid;
      grid-template-columns: 1fr auto;
