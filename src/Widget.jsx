@@ -326,6 +326,7 @@ export default function Widget({ config }) {
       className={[
         'hpw-container',
         positionClass,
+        `hpw-size-${config.size || 'small'}`,
         expanded && 'hpw-expanded',
         isMobile && 'hpw-mobile',
         isMobile && scrolledDown && !expanded && 'hpw-scrolled-away',
@@ -384,16 +385,15 @@ export default function Widget({ config }) {
       {/* ============ EXPANDED PANEL ============ */}
       {expanded && (
         <div className="hpw-panel" role="dialog" aria-label="Price comparison">
-          {/* Header */}
+          {/* Header — logo only if configured; otherwise just the close button */}
           <header className="hpw-header">
-            <div className="hpw-brand">
-              {config.logoUrl ? (
-                <img src={config.logoUrl} alt={config.hotelName} className="hpw-logo" />
-              ) : (
-                <span className="hpw-brand-name">{config.hotelName}</span>
-              )}
-              <span className="hpw-eyebrow">{t('book_direct_best_rate')}</span>
-            </div>
+            {config.logoUrl && (
+              <img
+                src={config.logoUrl}
+                alt={config.hotelName || ''}
+                className="hpw-logo"
+              />
+            )}
             <button
               type="button"
               ref={dateBtnRef}
