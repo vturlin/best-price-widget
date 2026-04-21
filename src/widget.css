@@ -628,35 +628,106 @@
      font-style: italic;
    }
    
-   /* ----- "Show all / fewer channels" toggle -------------------------------- */
-   
-   .hpw-show-more {
-     display: flex;
-     align-items: center;
-     justify-content: center;
-     gap: 4px;
-     width: calc(100% - 22px);
-     margin: 0 11px 6px;
-     padding: 4px 0;
-     background: transparent;
-     border: none;
-     border-top: 1px dotted var(--hpw-rule);
-     font-family: inherit;
-     font-size: 8px;
-     letter-spacing: 0.12em;
-     text-transform: uppercase;
-     color: var(--hpw-ink-soft);
-     cursor: pointer;
-     font-weight: 500;
-     transition: color 120ms;
-   }
-   
-   .hpw-show-more:hover { color: var(--hpw-ink); }
-   
-   .hpw-show-more-chev {
-     font-size: 8px;
-     transition: transform 160ms;
-   }
+   /* ========== Widget v2 — Toggle button (closed state) ======== */
+
+.hpw-toggle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 120px;
+  padding: 14px 20px;
+  border: 0;
+  border-radius: 16px;
+  background:
+    linear-gradient(
+      135deg,
+      var(--hpw-brand) 0%,
+      color-mix(in srgb, var(--hpw-brand) 75%, black) 100%
+    );
+  color: white;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  cursor: pointer;
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.18),
+    0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: box-shadow 180ms, transform 180ms, filter 140ms;
+}
+
+/* Fallback for old browsers without color-mix */
+@supports not (background: color-mix(in srgb, white, black)) {
+  .hpw-toggle {
+    background: var(--hpw-brand);
+  }
+}
+
+.hpw-toggle:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 10px 28px rgba(0, 0, 0, 0.22),
+    0 2px 5px rgba(0, 0, 0, 0.1);
+  filter: brightness(1.05);
+}
+
+.hpw-toggle:active {
+  transform: translateY(0);
+}
+
+/* Label — small uppercase text on top */
+.hpw-toggle-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+  opacity: 0.8;
+}
+
+/* Price — the big eye-catching number */
+.hpw-toggle-price {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  margin-top: 2px;
+}
+
+/* Savings badge under the price */
+.hpw-toggle-savings {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+}
+
+/* Fallback text when no rates available yet */
+.hpw-toggle-sub {
+  font-size: 11px;
+  font-weight: 500;
+  opacity: 0.9;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* Size variants */
+.hpw-size-small .hpw-toggle {
+  min-width: 110px;
+  padding: 12px 18px;
+}
+.hpw-size-small .hpw-toggle-price { font-size: 20px; }
+
+.hpw-size-medium .hpw-toggle-price { font-size: 24px; }
+
+.hpw-size-large .hpw-toggle {
+  min-width: 150px;
+  padding: 16px 24px;
+}
+.hpw-size-large .hpw-toggle-price { font-size: 28px; }
    
    /* ----- CTA ----------------------------------------------------------- */
    
