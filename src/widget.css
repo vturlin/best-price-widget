@@ -1400,11 +1400,11 @@
   margin: 0 16px 12px;
   padding: 13px 20px;
   background: var(--hpw-brand);
-  color: white;
+  color: black
   border: 0;
   border-radius: 8px;
   font-size: 13px;
-  font-weight: 700;
+  font-weight: 500;
   font-family: inherit;
   letter-spacing: 0.06em;
   text-transform: uppercase;     /* ← CAPS in every language */
