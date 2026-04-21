@@ -49,28 +49,6 @@ function extractIdFromScript() {
   }
 }
 
-/**
- * Decode a base64 preview param (urlsafe, no padding) into a config object.
- * Returns null if not present or invalid.
- */
-function extractPreviewConfig() {
-  try {
-    const params = new URLSearchParams(window.location.search);
-    const encoded = params.get('preview');
-    if (!encoded) return null;
-    const padded = encoded + '='.repeat((4 - encoded.length % 4) % 4);
-    const b64 = padded.replace(/-/g, '+').replace(/_/g, '/');
-    // UTF-8-safe decode: atob returns a byte string, reinterpret as UTF-8
-    const binary = atob(b64);
-    const bytes = new Uint8Array(binary.length);
-    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-    const json = new TextDecoder().decode(bytes);
-    return JSON.parse(json);
-  } catch (err) {
-    console.warn('[hotel-price-widget] Invalid preview param:', err);
-    return null;
-  }
-}
 
 /**
  * Normalize the raw config from GitHub into the shape the widget expects.
