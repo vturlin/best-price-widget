@@ -392,12 +392,12 @@ export default function Widget({ config }) {
 
       {expanded && (
         <div className="hpw-panel">
-          <button
+          {/* <button
             type="button"
             className="hpw-close"
             onClick={handleClose}
             aria-label={t('close')}
-          >×</button>
+          >×</button> */}
             {/* Stay block — compact view + expanded editing */}
             <div className="hpw-stay">
             {!datesExpanded ? (
