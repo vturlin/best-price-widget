@@ -1108,9 +1108,14 @@
 
 .hpw-stay-summary {
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr auto;     /* label + value OU nights, plus flex */
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "label nights"
+    "value nights";
+  row-gap: 2px;
+  column-gap: 10px;
   align-items: center;
-  gap: 10px;
   width: 100%;
   padding: 10px 14px;
   background: rgba(255, 255, 255, 0.55);
@@ -1122,6 +1127,33 @@
   cursor: pointer;
   transition: background 140ms, border-color 140ms;
   box-sizing: border-box;
+  text-align: left;
+}
+
+.hpw-stay-label {
+  grid-area: label;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.55);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hpw-stay-value {
+  grid-area: value;
+}
+
+.hpw-stay-nights {
+  grid-area: nights;
+  padding: 3px 10px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.65);
+  white-space: nowrap;
+  font-weight: 500;
+  align-self: center;
 }
 
 .hpw-stay-summary:hover {
@@ -1153,13 +1185,10 @@
 .hpw-stay-value {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 6px;
+  gap: 8px;
   font-weight: 600;
-  font-size: 13px;
+  font-size: 14px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
   min-width: 0;
 }
 
@@ -1514,12 +1543,12 @@
   right: 0;
   z-index: 10;
   background: white;
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 12px;
   box-shadow:
-    0 12px 32px rgba(0, 0, 0, 0.18),
-    0 2px 6px rgba(0, 0, 0, 0.06);
-  padding: 8px;
+    0 12px 32px rgba(0, 0, 0, 0.12),
+    0 2px 6px rgba(0, 0, 0, 0.04);
+  padding: 14px 10px 10px;
   animation: hpw-popover-in 150ms ease-out;
 }
 
@@ -1529,64 +1558,66 @@
 }
 
 .hpw-dark .hpw-datepicker-popover {
-  background: rgba(30, 30, 30, 1);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(28, 28, 28, 1);
+  border-color: rgba(255, 255, 255, 0.08);
 }
 
-/* The .hpw-stay wrapper needs position:relative for the popover to anchor */
 .hpw-stay {
   position: relative;
 }
 
-/* Override react-day-picker CSS variables to match widget brand */
+/* Reset rdp styles and apply our own */
 .hpw-datepicker-popover .rdp-root {
   --rdp-accent-color: var(--hpw-brand);
-  --rdp-accent-background-color: color-mix(in srgb, var(--hpw-brand) 15%, transparent);
-  --rdp-day_button-border-radius: 8px;
-  --rdp-selected-border: 2px solid var(--hpw-brand);
-  --rdp-day-height: 36px;
-  --rdp-day-width: 36px;
-  --rdp-month_caption-font: 14px;
+  --rdp-accent-background-color: transparent;
+  --rdp-day-height: 34px;
+  --rdp-day-width: 34px;
+  --rdp-weekday-padding: 4px 0;
+  --rdp-weekday-text-transform: none;
+  --rdp-nav_button-height: 28px;
+  --rdp-nav_button-width: 28px;
   font-family: inherit;
   font-size: 13px;
 }
 
-/* Fallback for browsers without color-mix */
-@supports not (background: color-mix(in srgb, white, black)) {
-  .hpw-datepicker-popover .rdp-root {
-    --rdp-accent-background-color: rgba(139, 90, 60, 0.15);
-  }
-}
-
-/* Range highlight between from and to */
-.hpw-datepicker-popover .rdp-range_middle > .rdp-day_button {
-  background: var(--rdp-accent-background-color);
-  border-radius: 0;
+/* Month caption — centered title with arrows at extremes */
+.hpw-datepicker-popover .rdp-month_caption {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
   color: rgba(0, 0, 0, 0.85);
 }
 
-.hpw-datepicker-popover .rdp-range_start > .rdp-day_button,
-.hpw-datepicker-popover .rdp-range_end > .rdp-day_button {
-  background: var(--hpw-brand);
-  color: white;
-  font-weight: 700;
+.hpw-dark .hpw-datepicker-popover .rdp-month_caption {
+  color: rgba(255, 255, 255, 0.9);
 }
 
-/* Today */
-.hpw-datepicker-popover .rdp-today:not(.rdp-selected) > .rdp-day_button {
-  font-weight: 700;
-  border: 1px solid var(--hpw-brand);
+/* Navigation — small arrows at the edges of the caption row */
+.hpw-datepicker-popover .rdp-nav {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  top: 14px;
+  left: 10px;
+  right: 10px;
+  pointer-events: none;
 }
 
-/* Disabled */
-.hpw-datepicker-popover .rdp-disabled {
-  opacity: 0.25;
-}
-
-/* Navigation arrows */
 .hpw-datepicker-popover .rdp-button_previous,
 .hpw-datepicker-popover .rdp-button_next {
-  color: rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: rgba(0, 0, 0, 0.65);
+  cursor: pointer;
+  transition: background 140ms;
 }
 
 .hpw-datepicker-popover .rdp-button_previous:hover,
@@ -1594,14 +1625,157 @@
   background: rgba(0, 0, 0, 0.05);
 }
 
+.hpw-datepicker-popover .rdp-button_previous:disabled,
+.hpw-datepicker-popover .rdp-button_next:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
 .hpw-dark .hpw-datepicker-popover .rdp-button_previous,
 .hpw-dark .hpw-datepicker-popover .rdp-button_next {
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.65);
 }
 
 .hpw-dark .hpw-datepicker-popover .rdp-button_previous:hover,
 .hpw-dark .hpw-datepicker-popover .rdp-button_next:hover {
   background: rgba(255, 255, 255, 0.08);
+}
+
+/* Chevron icons inside the nav buttons */
+.hpw-datepicker-popover .rdp-chevron {
+  fill: currentColor;
+  width: 14px;
+  height: 14px;
+}
+
+/* Weekdays row (Mo Tu We ...) */
+.hpw-datepicker-popover .rdp-weekday {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 0;
+}
+
+.hpw-dark .hpw-datepicker-popover .rdp-weekday {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Day buttons — clean minimalist */
+.hpw-datepicker-popover .rdp-day {
+  padding: 2px;
+}
+
+.hpw-datepicker-popover .rdp-day_button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.82);
+  cursor: pointer;
+  transition: background 140ms, color 140ms;
+  font-family: inherit;
+}
+
+.hpw-datepicker-popover .rdp-day_button:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+
+.hpw-dark .hpw-datepicker-popover .rdp-day_button {
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.hpw-dark .hpw-datepicker-popover .rdp-day_button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Outside days — gris clair */
+.hpw-datepicker-popover .rdp-outside .rdp-day_button {
+  color: rgba(0, 0, 0, 0.25);
+  font-weight: 400;
+}
+
+.hpw-dark .hpw-datepicker-popover .rdp-outside .rdp-day_button {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Today — soft circle background */
+.hpw-datepicker-popover .rdp-today .rdp-day_button {
+  background: color-mix(in srgb, var(--hpw-bg) 60%, rgba(0, 0, 0, 0.08));
+  font-weight: 700;
+}
+
+@supports not (background: color-mix(in srgb, white, black)) {
+  .hpw-datepicker-popover .rdp-today .rdp-day_button {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Range middle — subtle band */
+.hpw-datepicker-popover .rdp-range_middle .rdp-day_button {
+  background: color-mix(in srgb, var(--hpw-brand) 12%, transparent);
+  border-radius: 0;
+  color: rgba(0, 0, 0, 0.82);
+  font-weight: 500;
+}
+
+@supports not (background: color-mix(in srgb, white, black)) {
+  .hpw-datepicker-popover .rdp-range_middle .rdp-day_button {
+    background: rgba(139, 90, 60, 0.1);
+  }
+}
+
+/* Range start / end — solid brand with dark background effect */
+.hpw-datepicker-popover .rdp-range_start .rdp-day_button,
+.hpw-datepicker-popover .rdp-range_end .rdp-day_button,
+.hpw-datepicker-popover .rdp-selected:not(.rdp-range_middle) .rdp-day_button {
+  background: #1a1a1a;
+  color: white;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+/* Connect the range ends to the middle band */
+.hpw-datepicker-popover .rdp-range_start .rdp-day_button {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+.hpw-datepicker-popover .rdp-range_end .rdp-day_button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+
+/* When start == end (single day, first click before second) */
+.hpw-datepicker-popover .rdp-range_start.rdp-range_end .rdp-day_button {
+  border-radius: 8px;
+}
+
+/* Disabled dates */
+.hpw-datepicker-popover .rdp-disabled {
+  opacity: 0.25;
+}
+
+.hpw-datepicker-popover .rdp-disabled .rdp-day_button {
+  cursor: not-allowed;
+}
+
+.hpw-datepicker-popover .rdp-disabled .rdp-day_button:hover {
+  background: transparent !important;
+}
+
+/* Month grid spacing */
+.hpw-datepicker-popover .rdp-month {
+  padding: 0;
+}
+
+.hpw-datepicker-popover .rdp-weekdays {
+  margin-bottom: 2px;
 }
 
 /* Size variants */

@@ -94,6 +94,8 @@ function formatCurrency(amount, currency, locale) {
 
 function formatDate(isoStr, locale) {
   try {
+    // Ordre "day month" (16 Apr) préservé par l'Intl selon la locale,
+    // mais on s'assure de la concision avec month: 'short'.
     return new Intl.DateTimeFormat(locale, {
       day: 'numeric',
       month: 'short',
