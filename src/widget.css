@@ -943,23 +943,79 @@
        transition: none !important;
      }
    }
-   /* ========== Widget v2 — API mode classes ==================== */
+   /* ========== Widget v2 — API mode ============================ */
 
+/* The panel itself: controlled width, no weird overflow */
+.hpw-panel {
+  position: relative;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  background: var(--hpw-bg);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+.hpw-dark .hpw-panel {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Close button — floating top-right, no header */
+.hpw-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  background: transparent;
+  color: rgba(0, 0, 0, 0.4);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+  border-radius: 50%;
+  transition: background 140ms, color 140ms;
+  z-index: 2;
+  padding: 0;
+}
+
+.hpw-close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.hpw-dark .hpw-close {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.hpw-dark .hpw-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Dates row */
 .hpw-dates {
   display: flex;
   gap: 8px;
-  padding: 12px 16px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 32px 16px 12px;   /* top padding leaves room for the floating close */
 }
 
 .hpw-date-field {
   flex: 1;
+  min-width: 0;               /* prevents flex overflow with long date values */
   display: flex;
   flex-direction: column;
   gap: 4px;
 }
 
-.hpw-date-field span {
+.hpw-date-field > span {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -967,31 +1023,37 @@
   font-weight: 600;
 }
 
+.hpw-dark .hpw-date-field > span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
 .hpw-date-field input {
-  padding: 6px 8px;
+  width: 100%;
+  padding: 8px 10px;
   border: 1px solid rgba(0, 0, 0, 0.12);
   border-radius: 6px;
   font-size: 13px;
   font-family: inherit;
-  background: white;
+  background: rgba(255, 255, 255, 0.85);
   color: inherit;
   cursor: pointer;
+  box-sizing: border-box;
 }
 
 .hpw-dark .hpw-date-field input {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
-  color: inherit;
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
-.hpw-dark .hpw-date-field span {
-  color: rgba(255, 255, 255, 0.6);
-}
-
-/* Our price */
+/* Our price — big clean readable, NO brand color on the price itself */
 .hpw-our-price {
   padding: 20px 16px 16px;
   text-align: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.hpw-dark .hpw-our-price {
+  border-top-color: rgba(255, 255, 255, 0.08);
 }
 
 .hpw-our-price-label {
@@ -1001,17 +1063,23 @@
   letter-spacing: 0.1em;
   color: rgba(0, 0, 0, 0.5);
   font-weight: 600;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
 }
 
-.hpw-dark .hpw-our-price-label { color: rgba(255, 255, 255, 0.6); }
+.hpw-dark .hpw-our-price-label {
+  color: rgba(255, 255, 255, 0.6);
+}
 
 .hpw-our-price-amount {
   font-size: 32px;
   font-weight: 700;
   letter-spacing: -0.02em;
-  color: var(--hpw-brand);
+  color: rgba(0, 0, 0, 0.9);
   line-height: 1.1;
+}
+
+.hpw-dark .hpw-our-price-amount {
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .hpw-our-price-sub {
@@ -1021,7 +1089,9 @@
   margin-top: 4px;
 }
 
-.hpw-dark .hpw-our-price-sub { color: rgba(255, 255, 255, 0.65); }
+.hpw-dark .hpw-our-price-sub {
+  color: rgba(255, 255, 255, 0.65);
+}
 
 .hpw-savings-badge {
   display: inline-block;
@@ -1043,11 +1113,13 @@
 
 /* OTAs list */
 .hpw-otas {
-  padding: 4px 16px 12px;
+  padding: 4px 16px 16px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.hpw-dark .hpw-otas { border-top-color: rgba(255, 255, 255, 0.08); }
+.hpw-dark .hpw-otas {
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
 
 .hpw-otas-label {
   font-size: 10px;
@@ -1055,10 +1127,12 @@
   letter-spacing: 0.08em;
   color: rgba(0, 0, 0, 0.5);
   font-weight: 600;
-  margin: 10px 0 6px;
+  margin: 12px 0 8px;
 }
 
-.hpw-dark .hpw-otas-label { color: rgba(255, 255, 255, 0.6); }
+.hpw-dark .hpw-otas-label {
+  color: rgba(255, 255, 255, 0.6);
+}
 
 .hpw-otas-list {
   list-style: none;
@@ -1078,41 +1152,46 @@
   color: rgba(0, 0, 0, 0.75);
 }
 
-.hpw-dark .hpw-ota-name { color: rgba(255, 255, 255, 0.8); }
+.hpw-dark .hpw-ota-name {
+  color: rgba(255, 255, 255, 0.8);
+}
 
 .hpw-ota-price {
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.6);
+  color: rgba(0, 0, 0, 0.5);
   text-decoration: line-through;
-  text-decoration-color: rgba(0, 0, 0, 0.3);
+  text-decoration-color: rgba(0, 0, 0, 0.25);
 }
 
 .hpw-dark .hpw-ota-price {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.55);
   text-decoration-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Loading state */
+/* Loading / fallback */
 .hpw-loading {
-  padding: 40px 16px;
+  padding: 30px 16px;
   text-align: center;
   font-size: 13px;
   color: rgba(0, 0, 0, 0.5);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
-.hpw-dark .hpw-loading { color: rgba(255, 255, 255, 0.5); }
-
-/* Fallback state */
 .hpw-fallback {
   padding: 30px 16px;
   text-align: center;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .hpw-fallback-title {
   font-size: 17px;
-  font-weight: 600;
-  color: var(--hpw-brand);
+  font-weight: 700;
+  color: rgba(0, 0, 0, 0.9);
   margin: 0 0 6px;
+}
+
+.hpw-dark .hpw-fallback-title {
+  color: rgba(255, 255, 255, 0.95);
 }
 
 .hpw-fallback-sub {
@@ -1121,4 +1200,54 @@
   margin: 0;
 }
 
-.hpw-dark .hpw-fallback-sub { color: rgba(255, 255, 255, 0.6); }
+.hpw-dark .hpw-fallback-sub {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Book button — THIS is where brand color belongs */
+.hpw-book-btn {
+  display: block;
+  width: calc(100% - 32px);
+  margin: 0 16px 12px;
+  padding: 12px 20px;
+  background: var(--hpw-brand);
+  color: white;
+  border: 0;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+  transition: filter 140ms, transform 120ms;
+  box-sizing: border-box;
+}
+
+.hpw-book-btn:hover {
+  filter: brightness(1.08);
+}
+
+.hpw-book-btn:active {
+  transform: translateY(1px);
+}
+
+/* Footer */
+.hpw-footer {
+  padding: 8px 16px 12px;
+  text-align: center;
+  font-size: 10px;
+  color: rgba(0, 0, 0, 0.35);
+  letter-spacing: 0.04em;
+}
+
+.hpw-dark .hpw-footer {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+/* Size variants — scale the whole widget */
+.hpw-size-small .hpw-panel  { width: 300px; }
+.hpw-size-medium .hpw-panel { width: 340px; }
+.hpw-size-large .hpw-panel  { width: 400px; }
+
+.hpw-size-medium .hpw-our-price-amount { font-size: 36px; }
+.hpw-size-large .hpw-our-price-amount  { font-size: 42px; }

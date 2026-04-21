@@ -27,5 +27,19 @@
   "previous_month": "Previous month",
   "next_month": "Next month",
   "bestPriceGuaranteed": "Best price guaranteed",
-  "bookDirectForBestRate": "Book direct on our website for the best available rate and exclusive benefits."
+  "bookDirectForBestRate": "Book direct on our website for the best available rate and exclusive benefits.",
+  "checkIn": "Check-in",
+  "checkOut": "Check-out",
+  "ourPrice": "Our price",
+  "night": "night",
+  "nights": "nights",
+  "youSave": "You save",
+  "compareWith": "Compare with",
+  "bookNow": "Book now",
+  "fallbackText": "Book direct for the best available rate.",
+  "loading": "Loading rates…",
+  "openWidget": "Open price comparison",
+  "bestPrice": "Best price",
+  "poweredBy": "Powered by D-EDGE"
+  
 }

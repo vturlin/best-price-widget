@@ -27,5 +27,18 @@
   "previous_month": "Mois précédent",
   "next_month": "Mois suivant",
   "bestPriceGuaranteed": "Meilleur prix garanti",
-  "bookDirectForBestRate": "Réservez en direct sur notre site pour bénéficier du meilleur tarif et d'avantages exclusifs."
+  "bookDirectForBestRate": "Réservez en direct sur notre site pour bénéficier du meilleur tarif et d'avantages exclusifs.",
+  "checkIn": "Arrivée",
+  "checkOut": "Départ",
+  "ourPrice": "Notre prix",
+  "night": "nuit",
+  "nights": "nuits",
+  "youSave": "Vous économisez",
+  "compareWith": "Comparer avec",
+  "bookNow": "Réserver",
+  "fallbackText": "Réservez en direct pour bénéficier du meilleur tarif.",
+  "loading": "Chargement des tarifs…",
+  "openWidget": "Ouvrir le comparateur",
+  "bestPrice": "Meilleur prix",
+  "poweredBy": "Propulsé par D-EDGE"
 }

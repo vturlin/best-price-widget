@@ -382,25 +382,12 @@ export default function Widget({ config }) {
       {expanded && (
         <div className="hpw-panel">
           {/* Header */}
-          <header className="hpw-header">
-            <div className="hpw-header-brand">
-              {config.logoUrl && (
-                <img src={config.logoUrl} alt="" className="hpw-header-logo" />
-              )}
-              <div>
-                <h3 className="hpw-header-title">{config.hotelName}</h3>
-                <p className="hpw-header-subtitle">
-                  {t('bestRateGuaranteed')}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              className="hpw-close"
-              onClick={handleClose}
-              aria-label={t('close')}
-            >×</button>
-          </header>
+          <button
+            type="button"
+            className="hpw-close"
+            onClick={handleClose}
+            aria-label={t('close')}
+          >×</button>
 
           {/* Dates */}
           <div className="hpw-dates">
