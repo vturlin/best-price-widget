@@ -391,7 +391,7 @@ export default function Widget({ config }) {
       )}
 
       {expanded && (
-        <div className="hpw-panel-wrap">
+        <div className="hpw-panel">
           <button
             type="button"
             className="hpw-close"

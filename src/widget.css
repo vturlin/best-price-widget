@@ -1018,11 +1018,8 @@
 
 /* Wrapper that hosts the floating close button outside the panel.
    The panel itself can keep overflow:hidden for clean gradient edges. */
-.hpw-panel-wrap {
-  position: relative;
-}
-
 .hpw-panel {
+  position: relative;            /* anchor for absolute-positioned close btn */
   width: 320px;
   max-width: calc(100vw - 24px);
   background:
@@ -1035,7 +1032,8 @@
   box-shadow:
     0 12px 40px rgba(0, 0, 0, 0.18),
     0 2px 6px rgba(0, 0, 0, 0.06);
-  overflow: hidden;
+  /* overflow: visible so the close button can slightly poke out */
+  overflow: visible;
   display: flex;
   flex-direction: column;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
