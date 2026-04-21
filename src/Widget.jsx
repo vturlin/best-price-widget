@@ -1,323 +1,337 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import MiniCalendar from './MiniCalendar.jsx';
-import { resolveLocale, loadLocale, makeT, isRtl } from './i18n.js';
-import {
-  loadPriceData,
-  aggregateStay,
-  addDays,
-  formatISO,
-  differenceInNights,
-} from './data.js';
-import { derivePalette, isDarkTheme } from './colors.js';
+/**
+ * The main widget component. Renders the floating button + expandable panel.
+ *
+ * Flow:
+ *   1. Mount: read config (from remote JSON or preview URL param)
+ *   2. Initialize stay (today → tomorrow, 1 night)
+ *   3. Fetch rates from the API proxy whenever dates or config change
+ *   4. Render direct price prominently + OTAs comparison + Book button
+ *
+ * Preview mode: when config._preview is true, skip the real API call and
+ * use buildPreviewData to show deterministic demo prices. The admin's
+ * iframe uses this to offer real-time WYSIWYG editing.
+ *
+ * Fallback: if the API fails or no complete pricing is available, we show
+ * "Best rate guaranteed" with the Book button. Better than showing stale
+ * or partial data.
+ */
+
+import { useState, useEffect, useMemo, useRef } from 'react';
+import { loadRatesFromApi, buildPreviewData } from './data.js';
+import { getTranslations } from './i18n.js';
 import {
   initAnalytics,
-  trackOpened,
-  trackRoomChanged,
-  trackDatesChanged,
-  trackSavingsShown,
-  trackReserveClicked,
+  pushEvent,
+  isDismissedThisSession,
+  markDismissedThisSession,
 } from './analytics.js';
 
-/**
- * Main widget component.
- *
- * State machine:
- *   loading  -> CSV in flight
- *   error    -> fetch or parse failed (shown inline, non-intrusive)
- *   ready    -> data loaded, UI interactive
- *
- * The widget is two visual states: COLLAPSED (a compact pill showing the
- * direct price and savings) and EXPANDED (full comparison panel). This is
- * intentional — a sticky floating element that always shows a full comparison
- * would feel heavy on a marketing page. The pill invites interaction.
- */
-export default function Widget({ config }) {
-  const [data, setData] = useState(null);
-  const [status, setStatus] = useState('loading');
-  const [error, setError] = useState(null);
+// ─── API channel metadata ───────────────────────────────────────────
+// Mirrors the admin's constants.js. Hardcoded here because the widget
+// bundle is static and channel IDs from AvailPro never change.
+const CHANNEL_META = {
+  17: { name: 'Direct', isDirect: true },
+  10: { name: 'Booking.com', isDirect: false },
+  9:  { name: 'Expedia', isDirect: false },
+};
 
-  // UI state
-  const today = useMemo(() => startOfDay(new Date()), []);
-  const [checkIn, setCheckIn] = useState(today);
-  const [checkOut, setCheckOut] = useState(addDays(today, 1));
-  const [roomId, setRoomId] = useState(config.default_room_id);
+const DIRECT_CHANNEL_ID = 17;
+
+// ─── Date helpers ───────────────────────────────────────────────────
+
+function todayISO() {
+  const d = new Date();
+  return toISODate(d);
+}
+
+function tomorrowISO() {
+  const d = new Date();
+  d.setDate(d.getDate() + 1);
+  return toISODate(d);
+}
+
+function toISODate(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function parseISODate(s) {
+  // Treat YYYY-MM-DD as UTC midnight to avoid timezone drift
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(Date.UTC(y, m - 1, d));
+}
+
+function addDays(isoStr, n) {
+  const d = parseISODate(isoStr);
+  d.setUTCDate(d.getUTCDate() + n);
+  return toISODate(d);
+}
+
+function daysBetween(fromIso, toIso) {
+  const from = parseISODate(fromIso);
+  const to = parseISODate(toIso);
+  return Math.round((to - from) / (1000 * 60 * 60 * 24));
+}
+
+function formatCurrency(amount, currency, locale) {
+  try {
+    return new Intl.NumberFormat(locale, {
+      style: 'currency',
+      currency,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  } catch {
+    return `${currency} ${Math.round(amount)}`;
+  }
+}
+
+function formatDate(isoStr, locale) {
+  try {
+    return new Intl.DateTimeFormat(locale, {
+      day: 'numeric',
+      month: 'short',
+    }).format(parseISODate(isoStr));
+  } catch {
+    return isoStr;
+  }
+}
+
+// ─── Main component ─────────────────────────────────────────────────
+
+export default function Widget({ config }) {
   const [expanded, setExpanded] = useState(false);
-  const [calendarOpen, setCalendarOpen] = useState(false);
-  const [showAllOtas, setShowAllOtas] = useState(false);
-  // Mobile-specific UI state
+  const [checkIn, setCheckIn] = useState(todayISO());
+  const [checkOut, setCheckOut] = useState(tomorrowISO());
+  const [rates, setRates] = useState(null);       // loaded rates summary
+  const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [scrolledDown, setScrolledDown] = useState(false);
-  const { full: localeFull, primary: localePrimary } = useMemo(
-    () => resolveLocale(config),
-    [config.locale, config.enabledLocales, config.defaultLocale]
-  );
-  const [dict, setDict] = useState(null);
-  const [rtl, setRtl] = useState(false);
 
-  /* ----- Price aggregation (recomputes when inputs change) ------------- */
-  const stay = useMemo(() => {
-    if (!data) return null;
-    return aggregateStay(data, roomId, checkIn, checkOut);
-  }, [data, roomId, checkIn, checkOut]);
-
-  const nights = differenceInNights(checkIn, checkOut);
-
-  /* ----- Build the reserve URL ---------------------------------------- */
-  const reserveHref = useMemo(() => {
-    return config.reserveUrl
-      .replace('{checkIn}', formatISO(checkIn))
-      .replace('{checkOut}', formatISO(checkOut))
-      .replace('{roomId}', encodeURIComponent(roomId));
-  }, [config.reserveUrl, checkIn, checkOut, roomId]);
-
-  /* ----- Formatters --------------------------------------------------- */
-  const currencyFmt = useMemo(
-    () =>
-      new Intl.NumberFormat(localeFull, {
-        style: 'currency',
-        currency: config.currency,
-        maximumFractionDigits: 2,
-      }),
-    [localeFull, config.currency]
-  );
-
-  const dateShortFmt = useMemo(
-    () =>
-      new Intl.DateTimeFormat(localeFull, {
-        day: 'numeric',
-        month: 'short',
-      }),
-    [localeFull]
-  );
-
-  /* ----- Ordered OTA list (cheapest → most expensive) ------------------ */
-  const otaRows = useMemo(() => {
-    if (!data || !stay) return [];
-    return data.channels
-      .map((ch) => ({
-        key: ch,
-        label: config.channelLabels?.[ch] || prettyChannelName(ch),
-        total: stay.totals[ch],
-      }))
-      .sort((a, b) => {
-        if (a.total === null) return 1;
-        if (b.total === null) return -1;
-        return a.total - b.total;
-      });
-  }, [data, stay, config.channelLabels]);
-
-  /* ----- Top savings line (vs. cheapest OTA that has data) ------------- */
-  const topComparison = useMemo(() => {
-    if (!stay || !stay.hasDirect) return null;
-    const cheapestOta = otaRows.find((r) => r.total !== null);
-    if (!cheapestOta) return null;
-    const savings = cheapestOta.total - stay.totals.direct;
-    return { channel: cheapestOta.label, savings };
-  }, [stay, otaRows]);
-
-  /* ----- CSS custom properties for branding ---------------------------- */
-  const brandStyle = useMemo(() => {
-    return derivePalette({
-      brandColor: config.brandColor,
-      backgroundColor: config.backgroundColor,
-    });
-  }, [config.brandColor, config.backgroundColor]);
-
-  const darkTheme = useMemo(
-    () => isDarkTheme(config.backgroundColor),
-    [config.backgroundColor]
-  );
-
-  /* --------------------------------------------------------------------- */
-  /* Render                                                                */
-  /* --------------------------------------------------------------------- */
-
-/* ----- Fetch CSV once on mount --------------------------------------- */
-  useEffect(() => {
-    let cancelled = false;
-
-    // Preview mode — explicit flag in the config. Used by the admin to
-    // render a live preview with hardcoded demo prices, never hits the
-    // network. This flag is NEVER set in a real hotel's production config,
-    // so there's no risk of a real hotel accidentally showing fake prices.
-    if (config._preview === true) {
-      setData(buildPreviewData(config));
-      setStatus('ready');
-      return;
-    }
-
-    // Real production: fetch the CSV. On failure, show the "Best price
-    // guaranteed" fallback (no fake prices).
-    loadPriceData(config.csvUrl)
-      .then((d) => {
-        if (cancelled) return;
-        setData(d);
-        setStatus('ready');
-      })
-      .catch((err) => {
-        if (cancelled) return;
-        console.warn('[hotel-price-widget] CSV fetch failed, showing fallback:', err);
-        setStatus('fallback');
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [config.csvUrl, config._preview]);
-
-  const t = useMemo(() => makeT(dict), [dict]);
-  const calendarRef = useRef(null);
-  const dateBtnRef = useRef(null);
   const rootRef = useRef(null);
 
-  /* ----- Init analytics once ------------------------------------------- */
-  useEffect(() => {
-    initAnalytics(config);
-  }, [config]);
+  // ─── Derived values ────────────────────────────────────────────────
+  const locale = config.defaultLocale || 'en';
+  const t = useMemo(() => getTranslations(locale), [locale]);
+  const nights = useMemo(
+    () => Math.max(1, daysBetween(checkIn, checkOut)),
+    [checkIn, checkOut]
+  );
+  const rtl = ['ar', 'he'].includes(locale);
+  const darkTheme = isColorDark(config.backgroundColor);
+  const positionClass = `hpw-pos-${config.position || 'bottom-right'}`;
 
-  /* ----- Fire savings_shown when panel displays non-zero savings ------- */
-  useEffect(() => {
-    if (!expanded || !stay?.hasDirect || !topComparison || topComparison.savings <= 0) return;
-    trackSavingsShown({
-      roomId,
-      nights,
-      directPrice: stay.totals.direct,
-      savings: topComparison.savings,
-      vsChannel: topComparison.channel,
-    });
-  }, [expanded, roomId, nights, stay, topComparison]);
+  const brandStyle = useMemo(
+    () => ({
+      '--hpw-brand': config.brandColor || '#1a1a1a',
+      '--hpw-bg': config.backgroundColor || '#faf7f2',
+    }),
+    [config.brandColor, config.backgroundColor]
+  );
 
-  
-  /* ----- Close calendar on outside click ------------------------------- */
+  // Figure out which channels to display, and which rows in the OTAs list
+  const directChannel = rates?.channels?.[DIRECT_CHANNEL_ID] || null;
+  const otaChannels = useMemo(() => {
+    if (!rates?.channels) return [];
+    return Object.values(rates.channels)
+      .filter((c) => c.id !== DIRECT_CHANNEL_ID)
+      .sort((a, b) => a.total - b.total);
+  }, [rates]);
+
+  // ─── Effects ───────────────────────────────────────────────────────
+
+  // Init analytics once
   useEffect(() => {
-    if (!calendarOpen) return;
-    function handleClick(e) {
-      // CRITICAL: we live inside a Shadow DOM. When an event bubbles out of
-      // the shadow into the host document, `e.target` is re-targeted to the
-      // shadow host — NOT the actual clicked element. So `contains(e.target)`
-      // always returns false for clicks inside the calendar, which would
-      // close the calendar on every click INCLUDING clicks on dates.
-      //
-      // composedPath() gives us the real event path through the shadow
-      // boundary. If the calendar element appears anywhere in that path,
-      // the click was inside the calendar → keep it open.
-      const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
-      if (calendarRef.current && path.includes(calendarRef.current)) return;
-      // Also ignore clicks on the date button itself (it toggles the calendar)
-      if (dateBtnRef.current && path.includes(dateBtnRef.current)) return;
-      setCalendarOpen(false);
+    if (config.analytics?.enabled) {
+      initAnalytics(config.analytics.dataLayerName);
     }
-    document.addEventListener('mousedown', handleClick, true);
-    return () => document.removeEventListener('mousedown', handleClick, true);
-  }, [calendarOpen]);
+  }, [config.analytics?.enabled, config.analytics?.dataLayerName]);
 
-  /* ----- Responsive detection ------------------------------------------ */
+  // Load rates whenever dates or core config changes
   useEffect(() => {
-    // We don't rely on CSS alone because some layout decisions (like whether
-    // to show the round icon or the full pill) are easier expressed in JS
-    // than with 20 @media rules. Matches Tailwind's `sm` breakpoint.
-    const mq = window.matchMedia('(max-width: 640px)');
-    const update = () => setIsMobile(mq.matches);
-    update();
-    mq.addEventListener('change', update);
-    return () => mq.removeEventListener('change', update);
-  }, []);
+    let cancelled = false;
+    setLoading(true);
 
-  /* ----- Hide pill on scroll-down (mobile only) ----------------------- */
+    const stay = {
+      checkIn: parseISODate(checkIn),
+      checkOut: parseISODate(checkOut),
+    };
+
+    const loader = config._preview
+      ? Promise.resolve(buildPreviewData(config))
+      : loadRatesFromApi(config, stay);
+
+    loader.then((result) => {
+      if (!cancelled) {
+        setRates(result);
+        setLoading(false);
+      }
+    }).catch((err) => {
+      if (!cancelled) {
+        console.warn('[hpw] rates load failed', err);
+        setRates({ status: 'fallback', channels: {} });
+        setLoading(false);
+      }
+    });
+
+    return () => { cancelled = true; };
+  }, [checkIn, checkOut, config.apiHotelId, config.apiCompetitorId,
+      config._preview, config.channelsEnabled?.join(',')]);
+
+  // Savings shown event (once per open+load combo)
   useEffect(() => {
-    if (!isMobile) return;
-    // Don't hide when the panel is open — the pill is hidden anyway
-    let lastY = window.scrollY;
-    let ticking = false;
-    function onScroll() {
-      if (ticking) return;
-      ticking = true;
-      requestAnimationFrame(() => {
-        const y = window.scrollY;
-        const delta = y - lastY;
-        // Threshold prevents jittery flip-flopping on micro-scrolls
-        if (Math.abs(delta) > 6) {
-          setScrolledDown(delta > 0 && y > 80);
-          lastY = y;
-        }
-        ticking = false;
+    if (expanded && rates?.status === 'ok' && rates.savingsAmount != null) {
+      pushEvent('savings_shown', {
+        hotel_id: config.hotelName,
+        savings_amount: rates.savingsAmount,
+        savings_percent: rates.savingsPercent,
+        nights: rates.nights,
       });
     }
+  }, [expanded, rates?.savingsAmount]);
+
+  // Close on outside click (desktop)
+  useEffect(() => {
+    if (!expanded || isMobile) return;
+    const onClick = (e) => {
+      if (rootRef.current && !rootRef.current.contains(e.target)) {
+        handleClose();
+      }
+    };
+    document.addEventListener('mousedown', onClick);
+    return () => document.removeEventListener('mousedown', onClick);
+  }, [expanded, isMobile]);
+
+  // Mobile detection
+  useEffect(() => {
+    const update = () => setIsMobile(window.innerWidth < 640);
+    update();
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
+
+  // Scroll-hide on mobile
+  useEffect(() => {
+    if (!isMobile) return;
+    let lastY = window.scrollY;
+    const onScroll = () => {
+      const y = window.scrollY;
+      setScrolledDown(y > lastY && y > 100);
+      lastY = y;
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, [isMobile]);
 
-  /* ----- Auto-open triggers (time, scroll, or both) -------------------- */
+  // Auto-open triggers
   useEffect(() => {
-    // Preview mode: auto-open immediately, no session persistence.
-    if (config._preview === true) {
+    const mode = config.autoOpenMode;
+    if (!mode || mode === 'disabled') return;
+    if (expanded) return;
+    if (!config._preview && isDismissedThisSession(config.hotelName)) return;
+
+    // In preview: open immediately (instant feedback in admin)
+    if (config._preview) {
       setExpanded(true);
       return;
     }
 
-    const mode = config.autoOpenMode || 'disabled';
-    if (mode === 'disabled') return;
-
-    // Wait until data is ready (no point opening an empty panel).
-    if (status !== 'ready' && status !== 'fallback') return;
-
-    // Respect previous dismissal for both triggers.
-    if (isDismissedThisSession(config._hotelId)) return;
-
-    // If user already opened manually, don't auto-open.
-    if (expanded) return;
-
-    // ---- Trigger 1: time ----
     let timer = null;
-    const enableTime = mode === 'time' || mode === 'time_or_scroll';
-    if (enableTime && config.autoOpenDelay > 0) {
-      timer = setTimeout(() => {
+    let scrollHandler = null;
+    const trigger = () => {
+      if (!expanded) {
         setExpanded(true);
-        trackOpened();
-      }, config.autoOpenDelay * 1000);
+        pushEvent('auto_opened', { hotel_id: config.hotelName, trigger: mode });
+      }
+    };
+
+    if (mode === 'time' || mode === 'time_or_scroll') {
+      timer = setTimeout(trigger, (config.autoOpenDelay || 8) * 1000);
     }
-
-    // ---- Trigger 2: scroll threshold ----
-    const enableScroll = mode === 'scroll' || mode === 'time_or_scroll';
-    const threshold = config.autoOpenScrollPercent || 0;
-    let onScroll = null;
-
-    if (enableScroll && threshold > 0) {
-      let ticking = false;
-      onScroll = () => {
-        if (ticking) return;
-        ticking = true;
+    if (mode === 'scroll' || mode === 'time_or_scroll') {
+      const threshold = (config.autoOpenScrollPercent || 50) / 100;
+      let rafPending = false;
+      scrollHandler = () => {
+        if (rafPending) return;
+        rafPending = true;
         requestAnimationFrame(() => {
-          ticking = false;
+          rafPending = false;
           const scrollable = document.documentElement.scrollHeight - window.innerHeight;
-          if (scrollable <= 0) return;  // page doesn't scroll
-          const percent = (window.scrollY / scrollable) * 100;
-          if (percent >= threshold) {
-            setExpanded(true);
-            trackOpened();
-            window.removeEventListener('scroll', onScroll);
-            if (timer) clearTimeout(timer);
+          if (scrollable <= 0) return;
+          const ratio = window.scrollY / scrollable;
+          if (ratio >= threshold) {
+            trigger();
+            if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
           }
         });
       };
-      window.addEventListener('scroll', onScroll, { passive: true });
+      window.addEventListener('scroll', scrollHandler, { passive: true });
     }
 
-    // ---- Cleanup: cancel both triggers on unmount / re-run ----
     return () => {
       if (timer) clearTimeout(timer);
-      if (onScroll) window.removeEventListener('scroll', onScroll);
+      if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
     };
-  }, [
-    status,
-    config.autoOpenMode,
-    config.autoOpenDelay,
-    config.autoOpenScrollPercent,
-    config._hotelId,
-    config._preview,
-    expanded,
-  ]);
+  }, [config.autoOpenMode, config.autoOpenDelay, config.autoOpenScrollPercent,
+      config._preview, config.hotelName, expanded]);
 
-  const positionClass = `hpw-pos-${config.position || 'bottom-right'}`;
+  // ─── Handlers ─────────────────────────────────────────────────────
+
+  function handleOpen() {
+    if (expanded) return;
+    setExpanded(true);
+    pushEvent('widget_opened', { hotel_id: config.hotelName });
+  }
+
+  function handleClose() {
+    setExpanded(false);
+    if (!config._preview) {
+      markDismissedThisSession(config.hotelName);
+    }
+  }
+
+  function handleCheckInChange(e) {
+    const newCheckIn = e.target.value;
+    setCheckIn(newCheckIn);
+    // If check-out is now ≤ check-in, bump it
+    if (daysBetween(newCheckIn, checkOut) < 1) {
+      setCheckOut(addDays(newCheckIn, 1));
+    }
+    // Cap at 30 nights max
+    if (daysBetween(newCheckIn, checkOut) > 30) {
+      setCheckOut(addDays(newCheckIn, 30));
+    }
+  }
+
+  function handleCheckOutChange(e) {
+    const newCheckOut = e.target.value;
+    if (daysBetween(checkIn, newCheckOut) < 1) return;
+    if (daysBetween(checkIn, newCheckOut) > 30) return;
+    setCheckOut(newCheckOut);
+  }
+
+  function handleBook() {
+    pushEvent('book_clicked', {
+      hotel_id: config.hotelName,
+      check_in: checkIn,
+      check_out: checkOut,
+      nights,
+      direct_price: directChannel?.total || null,
+      currency: rates?.currency || config.currency,
+    });
+
+    // Build URL from reserveUrl template
+    const url = (config.reserveUrl || '')
+      .replace('{checkIn}', checkIn)
+      .replace('{checkOut}', checkOut);
+    if (url) window.open(url, '_blank', 'noopener');
+  }
+
+  // ─── Rendering helpers ────────────────────────────────────────────
+  const currency = rates?.currency || config.currency || 'EUR';
+  const status = rates?.status || 'loading';
+  const showFallback = status === 'fallback' || !directChannel;
 
   return (
     <div
@@ -334,395 +348,170 @@ export default function Widget({ config }) {
       ].filter(Boolean).join(' ')}
       style={brandStyle}
     >
-      {/* ============ COLLAPSED PILL / MOBILE ICON ============ */}
       {!expanded && (
-        isMobile ? (
-          <button
-            type="button"
-            className="hpw-fab"
-            onClick={() => { setExpanded(true); trackOpened(); }}
-            aria-label={t('compare_prices_aria')}
-          >
-            <span className="hpw-fab-icon" aria-hidden>€</span>
-            {status === 'ready' && topComparison && topComparison.savings > 0 && (
-              <span className="hpw-fab-badge" aria-hidden>↓</span>
-            )}
-          </button>
-        ) : (
-          <button
-            type="button"
-            className="hpw-pill"
-            onClick={() => { setExpanded(true); trackOpened(); }}
-            aria-label={t('open_price_comparison')}
-          >
-            <span className="hpw-pill-badge">
-              <span className="hpw-dot" />
-              <span>{t('best_price_guaranteed')}</span>
+        <button
+          type="button"
+          className="hpw-toggle"
+          onClick={handleOpen}
+          aria-label={t.openWidget || 'Open price comparison'}
+        >
+          {config.logoUrl ? (
+            <img src={config.logoUrl} alt={config.hotelName} className="hpw-toggle-logo" />
+          ) : (
+            <span className="hpw-toggle-text">
+              {t.bestPrice || 'Best price'}
             </span>
-            <span className="hpw-pill-body">
-              {status === 'ready' && stay?.hasDirect ? (
-                <>
-                  <span className="hpw-pill-price">
-                    {currencyFmt.format(stay.totals.direct)}
-                  </span>
-                  <span className="hpw-pill-sub">
-                  {nights} {t('night_' + (nights === 1 ? 'one' : 'other'))} · {t('direct')}
-                  </span>
-                </>
-              ) : status === 'loading' ? (
-                <span className="hpw-pill-sub">{t('loading_rates')}</span>
-              ) : status === 'error' ? (
-                <span className="hpw-pill-sub">{t('compare_direct_prices')}</span>
-              ) : (
-                <span className="hpw-pill-sub">{t('select_dates')}</span>
-              )}
-            </span>
-            <span className="hpw-pill-chev" aria-hidden>↗</span>
-          </button>
-        )
+          )}
+        </button>
       )}
 
-      {/* ============ EXPANDED PANEL ============ */}
-      {/* ============ EXPANDED PANEL ============ */}
       {expanded && (
-        <>
-          {/* Close button lives OUTSIDE the panel so it can float above the
-              top-right corner without being clipped by the panel's overflow. */}
-          <button
-            type="button"
-            className="hpw-close"
-            onClick={() => {
-              setExpanded(false);
-              setCalendarOpen(false);
-              if (!config._preview) {
-                markDismissedThisSession(config._hotelId);
-              }
-            }}
-            aria-label="Close"
-          >
-            ×
-          </button>
-          <div className="hpw-panel" role="dialog" aria-label="Price comparison">
-            {/* Header — shown only when a logo is configured */}
-            {config.logoUrl && (
-              <header className="hpw-header">
-                <img
-                  src={config.logoUrl}
-                  alt={config.hotelName || ''}
-                  className="hpw-logo"
-                />
-              </header>
-            )}
-
-          {/* Controls */}
-          <div className="hpw-controls">
+        <div className="hpw-panel">
+          {/* Header */}
+          <header className="hpw-header">
+            <div className="hpw-header-brand">
+              {config.logoUrl && (
+                <img src={config.logoUrl} alt="" className="hpw-header-logo" />
+              )}
+              <div>
+                <h3 className="hpw-header-title">{config.hotelName}</h3>
+                <p className="hpw-header-subtitle">
+                  {t.bestRateGuaranteed || 'Best rate guaranteed'}
+                </p>
+              </div>
+            </div>
             <button
               type="button"
-              className="hpw-date-btn"
-              onClick={() => setCalendarOpen((v) => !v)}
-              aria-expanded={calendarOpen}
-            >
-              <span className="hpw-date-label">{t('your_stay')}</span>
-              <span className="hpw-date-value">
-                {dateShortFmt.format(checkIn)}
-                <span className="hpw-date-arrow">→</span>
-                {dateShortFmt.format(checkOut)}
-              </span>
-              <span className="hpw-date-nights">
-              {t('night_' + (nights === 1 ? 'one' : 'other'))}
-              </span>
-            </button>
+              className="hpw-close"
+              onClick={handleClose}
+              aria-label={t.close || 'Close'}
+            >×</button>
+          </header>
 
-            <div className="hpw-room-wrap">
-              <label className="hpw-room-label" htmlFor="hpw-room-select">
-              {t('room')}
-              </label>
-              <select
-                id="hpw-room-select"
-                className="hpw-room-select"
-                value={roomId}
-                onChange={(e) => {
-                  const newRoomId = e.target.value;
-                  const newRoom = config.roomOptions.find(r => r.id === newRoomId);
-                  setRoomId(newRoomId);
-                  trackRoomChanged(newRoomId, newRoom?.name || '');
-                }}
-              >
-                {config.roomOptions.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    {r.name}
-                  </option>
-                ))}
-              </select>
-              <span className="hpw-room-chev" aria-hidden>▾</span>
-            </div>
-          </div>
-
-          {/* Calendar popover */}
-          {calendarOpen && (
-            <div ref={calendarRef} className="hpw-calendar-pop">
-              <MiniCalendar
-                selected={{ from: checkIn, to: checkOut }}
-                minDate={today}
-                locale={localeFull}
-                onSelect={(range) => {
-                  if (!range) return;
-                  const { from, to } = range;
-                  if (from && to && from.getTime() !== to.getTime()) {
-                    setCheckIn(from);
-                    setCheckOut(to);
-                    setCalendarOpen(false);
-                    trackDatesChanged(formatISO(from), formatISO(to), differenceInNights(from, to));
-                  } else if (from) {
-                    setCheckIn(from);
-                    setCheckOut(addDays(from, 1));
-                    trackDatesChanged(formatISO(from), formatISO(addDays(from, 1)), 1);
-                  }
-                }}
+          {/* Dates */}
+          <div className="hpw-dates">
+            <label className="hpw-date-field">
+              <span>{t.checkIn || 'Check-in'}</span>
+              <input
+                type="date"
+                value={checkIn}
+                min={todayISO()}
+                onChange={handleCheckInChange}
               />
-            </div>
-          )}
-
-          {/* Headline price */}
-          <div className="hpw-headline">
-            {status === 'loading' && (
-              <div className="hpw-skeleton hpw-skeleton-price" />
-            )}
-            {status === 'fallback' && (
-              <div className="hpw-panel hpw-panel-fallback">
-                <div className="hpw-headline">
-                  <div className="hpw-badge-guarantee">
-                    ✓ {t('bestPriceGuaranteed') || 'Best price guaranteed'}
-                  </div>
-                  <p className="hpw-fallback-message">
-                    {t('bookDirectForBestRate') || 'Book direct on our website for the best available rate and exclusive benefits.'}
-                  </p>
-                </div>
-                <a
-                  href={config.reserveUrl}
-                  className="hpw-reserve-btn"
-                  style={{ background: config.brandColor }}
-                  onClick={() => analytics.reserveClicked(config._hotelId)}
-                >
-                  {t('reserveNow') || 'Reserve now'} →
-                </a>
-              </div>
-            )}
-            {status === 'ready' && !stay?.hasDirect && (
-              <div className="hpw-unavailable">
-                {t('room_unavailable')}
-              </div>
-            )}
-            {status === 'ready' && stay?.hasDirect && (
-              <>
-                <div className="hpw-headline-eyebrow">{t('direct_on_our_site')}</div>
-                <div className="hpw-headline-price">
-                  {currencyFmt.format(stay.totals.direct)}
-                </div>
-                <div className="hpw-headline-sub">
-                  {t('total_for_nights_' + (nights === 1 ? 'one' : 'other'), { n: nights })}
-                </div>
-                {topComparison && topComparison.savings > 0 && (
-                  <div className="hpw-savings">{(() => {
-                    const parts = t('you_save_vs', {
-                      amount: '__AMOUNT__',
-                      channel: topComparison.channel,
-                    }).split('__AMOUNT__');
-                    return (
-                      <>
-                        {parts[0]}
-                        <strong>{currencyFmt.format(topComparison.savings)}</strong>
-                        {parts[1]}
-                      </>
-                    );
-                  })()}
-                  </div>
-                )}
-                {topComparison && topComparison.savings <= 0 && (
-                  <div className="hpw-savings hpw-savings-match">
-                    {t('matching_ota')}
-                  </div>
-                )}
-              </>
-            )}
+            </label>
+            <label className="hpw-date-field">
+              <span>{t.checkOut || 'Check-out'}</span>
+              <input
+                type="date"
+                value={checkOut}
+                min={addDays(checkIn, 1)}
+                max={addDays(checkIn, 30)}
+                onChange={handleCheckOutChange}
+              />
+            </label>
           </div>
 
-          {/* OTA comparison list — hidden while the calendar is open to keep
-              the panel compact. Shows top 3 by default; user can expand. */}
-          {status === 'ready' && stay?.hasDirect && !calendarOpen && (
+          {/* Body */}
+          {loading ? (
+            <div className="hpw-loading">
+              {t.loading || 'Loading rates…'}
+            </div>
+          ) : showFallback ? (
+            <div className="hpw-fallback">
+              <p className="hpw-fallback-title">
+                {t.bestPriceGuaranteed || 'Best price guaranteed'}
+              </p>
+              <p className="hpw-fallback-sub">
+                {t.fallbackText || 'Book direct for the best available rate.'}
+              </p>
+            </div>
+          ) : (
             <>
-              <ul className="hpw-ota-list">
-                {(showAllOtas ? otaRows : otaRows.slice(0, 3)).map((row) => {
-                  const unavailable = row.total === null;
-                  const diff = unavailable ? null : row.total - stay.totals.direct;
-                  return (
-                    <li key={row.key} className="hpw-ota-row">
-                      <span className="hpw-ota-name">{row.label}</span>
-                      <span className="hpw-ota-price">
-                        {unavailable ? (
-                          <span className="hpw-ota-na">{t('not_available')}</span>
-                        ) : (
-                          <>
-                            <span className="hpw-ota-amount">
-                              {currencyFmt.format(row.total)}
-                            </span>
-                            {diff > 0 && (
-                              <span className="hpw-ota-delta">
-                                +{currencyFmt.format(diff)}
-                              </span>
-                            )}
-                            {diff === 0 && (
-                              <span className="hpw-ota-delta hpw-ota-delta-flat">=</span>
-                            )}
-                          </>
-                        )}
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-              {otaRows.length > 3 && (
-                <button
-                  type="button"
-                  className="hpw-show-more"
-                  onClick={() => setShowAllOtas((v) => !v)}
-                >
-                  {showAllOtas
-                      ? t('show_fewer_channels')
-                      : t('show_all_channels', { n: otaRows.length })}
-                  <span className="hpw-show-more-chev" aria-hidden>
-                    {showAllOtas ? '↑' : '↓'}
-                  </span>
-                </button>
+              {/* Our direct price */}
+              <div className="hpw-our-price">
+                <span className="hpw-our-price-label">
+                  {t.ourPrice || 'Our price'}
+                </span>
+                <div className="hpw-our-price-amount">
+                  {formatCurrency(directChannel.total, currency, locale)}
+                </div>
+                <span className="hpw-our-price-sub">
+                  {nights} {nights > 1 ? (t.nights || 'nights') : (t.night || 'night')}
+                  {' · '}
+                  {formatCurrency(directChannel.avgPerNight, currency, locale)} / {t.night || 'night'}
+                </span>
+
+                {rates.savingsAmount != null && rates.savingsAmount > 0 && (
+                  <div className="hpw-savings-badge">
+                    {t.youSave || 'You save'}{' '}
+                    <strong>{formatCurrency(rates.savingsAmount, currency, locale)}</strong>
+                    {' '}({rates.savingsPercent}%)
+                  </div>
+                )}
+              </div>
+
+              {/* OTAs comparison */}
+              {otaChannels.length > 0 && (
+                <div className="hpw-otas">
+                  <div className="hpw-otas-label">
+                    {t.compareWith || 'Compare with'}
+                  </div>
+                  <ul className="hpw-otas-list">
+                    {otaChannels.map((ch) => (
+                      <li key={ch.id} className="hpw-ota-row">
+                        <span className="hpw-ota-name">
+                          {CHANNEL_META[ch.id]?.name || `Channel ${ch.id}`}
+                        </span>
+                        <span className="hpw-ota-price">
+                          {formatCurrency(ch.total, currency, locale)}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
               )}
             </>
           )}
 
-          {/* CTA */}
-          <a
-            className="hpw-cta"
-            href={reserveHref}
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-disabled={!stay?.hasDirect}
-            onClick={() => trackReserveClicked({
-              roomId,
-              nights,
-              directPrice: stay?.totals.direct || null,
-              checkIn: formatISO(checkIn),
-              checkOut: formatISO(checkOut),
-            })}
+          {/* Book button */}
+          <button
+            type="button"
+            className="hpw-book-btn"
+            onClick={handleBook}
           >
-            <span>{t('reserve_direct')}</span>
-            <span className="hpw-cta-arrow" aria-hidden>→</span>
-          </a>
+            {t.bookNow || 'Book now'} →
+          </button>
 
+          {/* Footer */}
           <footer className="hpw-footer">
-            <span>{t('prices_refreshed')}</span>
+            {t.poweredBy || 'Powered by D-EDGE'}
           </footer>
         </div>
-        </>
       )}
     </div>
   );
 }
 
-/* ----- helpers --------------------------------------------------------- */
-
-function startOfDay(d) {
-  const x = new Date(d);
-  x.setHours(0, 0, 0, 0);
-  return x;
-}
-
-function prettyChannelName(raw) {
-  return raw
-    .split(/[_\s]+/)
-    .map((p) => p.charAt(0).toUpperCase() + p.slice(1))
-    .join('.');
-}
-
-// Pick black or white for the text that sits on the brand color.
-// Uses WCAG relative luminance.
-function readableInk(hex) {
-  const clean = hex.replace('#', '');
-  const full = clean.length === 3 ? clean.split('').map((c) => c + c).join('') : clean;
-  const r = parseInt(full.slice(0, 2), 16) / 255;
-  const g = parseInt(full.slice(2, 4), 16) / 255;
-  const b = parseInt(full.slice(4, 6), 16) / 255;
-  const lum = [r, g, b].map((c) => (c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4)));
-  const L = 0.2126 * lum[0] + 0.7152 * lum[1] + 0.0722 * lum[2];
-  return L > 0.5 ? '#111111' : '#ffffff';
-}
-
-function getDismissedKey(hotelId) {
-  return `hpw_dismissed_${hotelId || 'default'}`;
-}
-
-function isDismissedThisSession(hotelId) {
-  try {
-    return sessionStorage.getItem(getDismissedKey(hotelId)) === '1';
-  } catch {
+/**
+ * Returns true if a CSS color string is "dark" (for contrast decisions).
+ * Simple luminance check: handles hex (#rrggbb or #rgb). Other formats
+ * fall through as "light".
+ */
+function isColorDark(cssColor) {
+  if (!cssColor || typeof cssColor !== 'string') return false;
+  const hex = cssColor.trim().replace('#', '');
+  let r, g, b;
+  if (hex.length === 3) {
+    r = parseInt(hex[0] + hex[0], 16);
+    g = parseInt(hex[1] + hex[1], 16);
+    b = parseInt(hex[2] + hex[2], 16);
+  } else if (hex.length === 6) {
+    r = parseInt(hex.slice(0, 2), 16);
+    g = parseInt(hex.slice(2, 4), 16);
+    b = parseInt(hex.slice(4, 6), 16);
+  } else {
     return false;
   }
-}
-
-function markDismissedThisSession(hotelId) {
-  try {
-    sessionStorage.setItem(getDismissedKey(hotelId), '1');
-  } catch {
-    // Silently ignore — private browsing or sandboxed context
-  }
-}
-
-function buildPreviewData(config) {
-  const DEMO_PRICES = {
-    direct:     372,
-    trivago:    434,
-    agoda:      440,
-    booking:    445,
-    expedia:    452,
-    hotels_com: 460,
-  };
-
-  // Channel list comes from the config so the preview matches what the
-  // admin set up in the "Analytics" tab. Fallback to a reasonable default.
-  const channels = Object.keys(config.channelLabels || {}).length
-    ? Object.keys(config.channelLabels)
-    : ['booking', 'expedia', 'trivago'];
-
-  const roomOptions = config.roomOptions?.length
-    ? config.roomOptions
-    : [{ id: 'deluxe-king', name: 'Deluxe King Room' }];
-
-  const rooms = new Map();
-  const prices = new Map();
-
-  // Generate 365 days of identical prices, for each room × each channel.
-  // Using the same prices every day means no flicker on date changes.
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-
-  for (const room of roomOptions) {
-    rooms.set(room.id, room.name);
-
-    for (let i = 0; i < 365; i++) {
-      const d = new Date(today);
-      d.setDate(d.getDate() + i);
-      const y = d.getFullYear();
-      const m = String(d.getMonth() + 1).padStart(2, '0');
-      const day = String(d.getDate()).padStart(2, '0');
-      const iso = `${y}-${m}-${day}`;
-
-      const entry = { direct: DEMO_PRICES.direct };
-      for (const ch of channels) {
-        // If the channel isn't in DEMO_PRICES, generate a plausible surcharge
-        entry[ch] = DEMO_PRICES[ch] ?? DEMO_PRICES.direct + 70;
-      }
-
-      prices.set(`${iso}|${room.id}`, entry);
-    }
-  }
-
-  return { channels, rooms, prices };
+  const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  return luminance < 0.5;
 }

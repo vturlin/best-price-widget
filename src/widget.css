@@ -943,3 +943,182 @@
        transition: none !important;
      }
    }
+   /* ========== Widget v2 — API mode classes ==================== */
+
+.hpw-dates {
+  display: flex;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.hpw-date-field {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.hpw-date-field span {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+}
+
+.hpw-date-field input {
+  padding: 6px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  background: white;
+  color: inherit;
+  cursor: pointer;
+}
+
+.hpw-dark .hpw-date-field input {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: inherit;
+}
+
+.hpw-dark .hpw-date-field span {
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Our price */
+.hpw-our-price {
+  padding: 20px 16px 16px;
+  text-align: center;
+}
+
+.hpw-our-price-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.hpw-dark .hpw-our-price-label { color: rgba(255, 255, 255, 0.6); }
+
+.hpw-our-price-amount {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--hpw-brand);
+  line-height: 1.1;
+}
+
+.hpw-our-price-sub {
+  display: block;
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.55);
+  margin-top: 4px;
+}
+
+.hpw-dark .hpw-our-price-sub { color: rgba(255, 255, 255, 0.65); }
+
+.hpw-savings-badge {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 6px 14px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #065f46;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.hpw-savings-badge strong { font-weight: 700; }
+
+.hpw-dark .hpw-savings-badge {
+  background: rgba(16, 185, 129, 0.2);
+  color: #86efac;
+}
+
+/* OTAs list */
+.hpw-otas {
+  padding: 4px 16px 12px;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.hpw-dark .hpw-otas { border-top-color: rgba(255, 255, 255, 0.08); }
+
+.hpw-otas-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+  margin: 10px 0 6px;
+}
+
+.hpw-dark .hpw-otas-label { color: rgba(255, 255, 255, 0.6); }
+
+.hpw-otas-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.hpw-ota-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 0;
+  font-size: 13px;
+}
+
+.hpw-ota-name {
+  color: rgba(0, 0, 0, 0.75);
+}
+
+.hpw-dark .hpw-ota-name { color: rgba(255, 255, 255, 0.8); }
+
+.hpw-ota-price {
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.6);
+  text-decoration: line-through;
+  text-decoration-color: rgba(0, 0, 0, 0.3);
+}
+
+.hpw-dark .hpw-ota-price {
+  color: rgba(255, 255, 255, 0.6);
+  text-decoration-color: rgba(255, 255, 255, 0.3);
+}
+
+/* Loading state */
+.hpw-loading {
+  padding: 40px 16px;
+  text-align: center;
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.5);
+}
+
+.hpw-dark .hpw-loading { color: rgba(255, 255, 255, 0.5); }
+
+/* Fallback state */
+.hpw-fallback {
+  padding: 30px 16px;
+  text-align: center;
+}
+
+.hpw-fallback-title {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--hpw-brand);
+  margin: 0 0 6px;
+}
+
+.hpw-fallback-sub {
+  font-size: 13px;
+  color: rgba(0, 0, 0, 0.55);
+  margin: 0;
+}
+
+.hpw-dark .hpw-fallback-sub { color: rgba(255, 255, 255, 0.6); }
