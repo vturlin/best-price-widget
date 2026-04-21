@@ -398,8 +398,6 @@ export default function Widget({ config }) {
             onClick={handleClose}
             aria-label={t('close')}
           >×</button>
-
-          <div className="hpw-panel">
             {/* Stay block — compact view + expanded editing */}
             <div className="hpw-stay">
             {!datesExpanded ? (
@@ -541,7 +539,6 @@ export default function Widget({ config }) {
           <footer className="hpw-footer">
               {t('poweredBy')}
             </footer>
-          </div>
         </div>
       )}
     </div>
