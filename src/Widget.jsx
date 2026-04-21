@@ -648,9 +648,6 @@ function StayPicker({ checkIn, checkOut, nights, locale, onChange, t }) {
 
       {open && (
         <div className="hpw-datepicker-popover">
-          <div className="hpw-datepicker-hint">
-            {step === 'checkin' ? t('selectCheckIn') : t('selectCheckOut')}
-          </div>
           <DayPicker
             mode="single"
             selected={selected}

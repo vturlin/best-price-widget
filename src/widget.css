@@ -1571,22 +1571,7 @@
   font-family: inherit;
   font-size: 13px;
 }
-/* Hint message at the top of the picker */
-.hpw-datepicker-hint {
-  text-align: center;
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  font-weight: 600;
-  color: var(--hpw-brand);
-  padding: 4px 0 10px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
-  margin-bottom: 8px;
-}
 
-.hpw-dark .hpw-datepicker-hint {
-  border-bottom-color: rgba(255, 255, 255, 0.06);
-}
 
 /* Highlighted check-in while waiting for check-out click */
 .hpw-datepicker-popover .rdp-checkin-selected .rdp-day_button {
