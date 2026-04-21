@@ -112,7 +112,8 @@ export default function Widget({ config }) {
   const [isMobile, setIsMobile] = useState(false);
   const [scrolledDown, setScrolledDown] = useState(false);
   const [i18n, setI18n] = useState({ t: (k) => k, primary: 'en' });
-
+  const [datesExpanded, setDatesExpanded] = useState(false);
+  const [otasExpanded, setOtasExpanded] = useState(false);
   const rootRef = useRef(null);
 
   // ─── Derived values ────────────────────────────────────────────────
@@ -389,57 +390,75 @@ export default function Widget({ config }) {
             aria-label={t('close')}
           >×</button>
 
-          {/* Dates */}
-          <div className="hpw-dates">
-            <label className="hpw-date-field">
-              <span>{t('checkIn')}</span>
-              <input
-                type="date"
-                value={checkIn}
-                min={todayISO()}
-                onChange={handleCheckInChange}
-              />
-            </label>
-            <label className="hpw-date-field">
-              <span>{t('checkOut')}</span>
-              <input
-                type="date"
-                value={checkOut}
-                min={addDays(checkIn, 1)}
-                max={addDays(checkIn, 30)}
-                onChange={handleCheckOutChange}
-              />
-            </label>
+          {/* Stay block — compact view + expanded editing */}
+          <div className="hpw-stay">
+            {!datesExpanded ? (
+              <button
+                type="button"
+                className="hpw-stay-summary"
+                onClick={() => setDatesExpanded(true)}
+              >
+                <span className="hpw-stay-label">{t('yourStay')}</span>
+                <span className="hpw-stay-value">
+                  {formatDate(checkIn, locale)}
+                  <span className="hpw-stay-arrow">→</span>
+                  {formatDate(checkOut, locale)}
+                </span>
+                <span className="hpw-stay-nights">
+                  {nights} {nights > 1 ? t('nights') : t('night')}
+                </span>
+              </button>
+            ) : (
+              <div className="hpw-dates-editor">
+                <label className="hpw-date-field">
+                  <span>{t('checkIn')}</span>
+                  <input
+                    type="date"
+                    value={checkIn}
+                    min={todayISO()}
+                    onChange={handleCheckInChange}
+                  />
+                </label>
+                <label className="hpw-date-field">
+                  <span>{t('checkOut')}</span>
+                  <input
+                    type="date"
+                    value={checkOut}
+                    min={addDays(checkIn, 1)}
+                    max={addDays(checkIn, 30)}
+                    onChange={handleCheckOutChange}
+                  />
+                </label>
+                <button
+                  type="button"
+                  className="hpw-dates-done"
+                  onClick={() => setDatesExpanded(false)}
+                  aria-label="Done"
+                >✓</button>
+              </div>
+            )}
           </div>
 
           {/* Body */}
           {loading ? (
-            <div className="hpw-loading">
-              {t('loading')}
-            </div>
+            <div className="hpw-loading">{t('loading')}</div>
           ) : showFallback ? (
             <div className="hpw-fallback">
-              <p className="hpw-fallback-title">
-                {t('bestPriceGuaranteed')}
-              </p>
-              <p className="hpw-fallback-sub">
-                {t('fallbackText')}
-              </p>
+              <p className="hpw-fallback-title">{t('bestPriceGuaranteed')}</p>
+              <p className="hpw-fallback-sub">{t('fallbackText')}</p>
             </div>
           ) : (
             <>
               {/* Our direct price */}
               <div className="hpw-our-price">
                 <span className="hpw-our-price-label">
-                  {t('ourPrice')}
+                  {t('priceOnOfficialWebsite')}
                 </span>
                 <div className="hpw-our-price-amount">
                   {formatCurrency(directChannel.total, currency, locale)}
                 </div>
                 <span className="hpw-our-price-sub">
-                  {nights} {nights > 1 ? (t('nights')) : (t('night'))}
-                  {' · '}
-                  {formatCurrency(directChannel.avgPerNight, currency, locale)} / {t('night')}
+                  {t('totalFor')} {nights} {nights > 1 ? t('nights') : t('night')}
                 </span>
 
                 {rates.savingsAmount != null && rates.savingsAmount > 0 && (
@@ -447,6 +466,12 @@ export default function Widget({ config }) {
                     {t('youSave')}{' '}
                     <strong>{formatCurrency(rates.savingsAmount, currency, locale)}</strong>
                     {' '}({rates.savingsPercent}%)
+                    {rates.bestOtaChannelId && (
+                      <>
+                        {' '}{t('vs')}{' '}
+                        {CHANNEL_META[rates.bestOtaChannelId]?.name || ''}
+                      </>
+                    )}
                   </div>
                 )}
               </div>
@@ -454,21 +479,40 @@ export default function Widget({ config }) {
               {/* OTAs comparison */}
               {otaChannels.length > 0 && (
                 <div className="hpw-otas">
-                  <div className="hpw-otas-label">
-                    {t('compareWith')}
-                  </div>
                   <ul className="hpw-otas-list">
-                    {otaChannels.map((ch) => (
-                      <li key={ch.id} className="hpw-ota-row">
-                        <span className="hpw-ota-name">
-                          {CHANNEL_META[ch.id]?.name || `Channel ${ch.id}`}
-                        </span>
-                        <span className="hpw-ota-price">
-                          {formatCurrency(ch.total, currency, locale)}
-                        </span>
-                      </li>
-                    ))}
+                    {(otasExpanded ? otaChannels : otaChannels.slice(0, 2)).map((ch) => {
+                      const delta = ch.total - directChannel.total;
+                      return (
+                        <li key={ch.id} className="hpw-ota-row">
+                          <span className="hpw-ota-name">
+                            {CHANNEL_META[ch.id]?.name || `Channel ${ch.id}`}
+                          </span>
+                          <span className="hpw-ota-right">
+                            <span className="hpw-ota-price">
+                              {formatCurrency(ch.total, currency, locale)}
+                            </span>
+                            {delta > 0 && (
+                              <span className="hpw-ota-delta">
+                                -{formatCurrency(delta, currency, locale)}
+                              </span>
+                            )}
+                          </span>
+                        </li>
+                      );
+                    })}
                   </ul>
+                  {otaChannels.length > 2 && (
+                    <button
+                      type="button"
+                      className="hpw-otas-toggle"
+                      onClick={() => setOtasExpanded((v) => !v)}
+                    >
+                      {otasExpanded
+                        ? t('hideChannels')
+                        : t('showAllChannels', { count: otaChannels.length })}
+                      <span className={`hpw-otas-arrow ${otasExpanded ? 'up' : ''}`}>▼</span>
+                    </button>
+                  )}
                 </div>
               )}
             </>

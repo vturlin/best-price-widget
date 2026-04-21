@@ -40,6 +40,12 @@
   "loading": "Loading rates…",
   "openWidget": "Open price comparison",
   "bestPrice": "Best price",
-  "poweredBy": "Powered by D-EDGE"
+  "poweredBy": "Powered by D-EDGE",
+  "yourStay": "Your stay",
+  "priceOnOfficialWebsite": "Price on official website",
+  "totalFor": "Total for",
+  "vs": "vs",
+  "showAllChannels": "Show all {count} channels",
+  "hideChannels": "Hide"
   
 }

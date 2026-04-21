@@ -943,9 +943,8 @@
        transition: none !important;
      }
    }
-   /* ========== Widget v2 — API mode ============================ */
+/* ========== Widget v2 — API mode ============================ */
 
-/* The panel itself: controlled width, no weird overflow */
 .hpw-panel {
   position: relative;
   width: 320px;
@@ -964,7 +963,7 @@
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* Close button — floating top-right, no header */
+/* Close button — floating */
 .hpw-close {
   position: absolute;
   top: 8px;
@@ -991,28 +990,104 @@
   color: rgba(0, 0, 0, 0.8);
 }
 
-.hpw-dark .hpw-close {
-  color: rgba(255, 255, 255, 0.5);
-}
-
+.hpw-dark .hpw-close { color: rgba(255, 255, 255, 0.5); }
 .hpw-dark .hpw-close:hover {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* Dates row */
-.hpw-dates {
+/* Stay block — compact summary OR expanded editor */
+.hpw-stay {
+  padding: 32px 16px 12px;   /* top leaves room for the close button */
+}
+
+.hpw-stay-summary {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.5);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: inherit;
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+}
+
+.hpw-stay-summary:hover {
+  background: rgba(255, 255, 255, 0.75);
+  border-color: rgba(0, 0, 0, 0.16);
+}
+
+.hpw-dark .hpw-stay-summary {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+.hpw-dark .hpw-stay-summary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.hpw-stay-label {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.55);
+  font-weight: 600;
+}
+
+.hpw-dark .hpw-stay-label { color: rgba(255, 255, 255, 0.6); }
+
+.hpw-stay-value {
   display: flex;
+  align-items: center;
   gap: 8px;
-  padding: 32px 16px 12px;   /* top padding leaves room for the floating close */
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.hpw-stay-arrow {
+  color: rgba(0, 0, 0, 0.35);
+  font-weight: normal;
+}
+
+.hpw-dark .hpw-stay-arrow { color: rgba(255, 255, 255, 0.4); }
+
+.hpw-stay-nights {
+  padding: 2px 10px;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+}
+
+.hpw-dark .hpw-stay-nights {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Expanded date editor */
+.hpw-dates-editor {
+  display: grid;
+  grid-template-columns: 1fr 1fr auto;
+  gap: 8px;
+  align-items: end;
 }
 
 .hpw-date-field {
-  flex: 1;
-  min-width: 0;               /* prevents flex overflow with long date values */
   display: flex;
   flex-direction: column;
   gap: 4px;
+  min-width: 0;
 }
 
 .hpw-date-field > span {
@@ -1045,7 +1120,21 @@
   border-color: rgba(255, 255, 255, 0.15);
 }
 
-/* Our price — big clean readable, NO brand color on the price itself */
+.hpw-dates-done {
+  width: 36px;
+  height: 34px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--hpw-brand);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: filter 140ms;
+}
+
+.hpw-dates-done:hover { filter: brightness(1.1); }
+
+/* Our price */
 .hpw-our-price {
   padding: 20px 16px 16px;
   text-align: center;
@@ -1111,7 +1200,7 @@
   color: #86efac;
 }
 
-/* OTAs list */
+/* OTAs list with deltas */
 .hpw-otas {
   padding: 4px 16px 16px;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
@@ -1121,19 +1210,6 @@
   border-top-color: rgba(255, 255, 255, 0.08);
 }
 
-.hpw-otas-label {
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(0, 0, 0, 0.5);
-  font-weight: 600;
-  margin: 12px 0 8px;
-}
-
-.hpw-dark .hpw-otas-label {
-  color: rgba(255, 255, 255, 0.6);
-}
-
 .hpw-otas-list {
   list-style: none;
   margin: 0;
@@ -1141,24 +1217,38 @@
 }
 
 .hpw-ota-row {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: center;
-  padding: 6px 0;
+  gap: 12px;
+  padding: 8px 0;
   font-size: 13px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.hpw-ota-row:last-child { border-bottom: 0; }
+
+.hpw-dark .hpw-ota-row {
+  border-bottom-color: rgba(255, 255, 255, 0.06);
 }
 
 .hpw-ota-name {
-  color: rgba(0, 0, 0, 0.75);
+  color: rgba(0, 0, 0, 0.78);
 }
 
 .hpw-dark .hpw-ota-name {
   color: rgba(255, 255, 255, 0.8);
 }
 
+.hpw-ota-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .hpw-ota-price {
   font-weight: 600;
-  color: rgba(0, 0, 0, 0.5);
+  color: rgba(0, 0, 0, 0.45);
   text-decoration: line-through;
   text-decoration-color: rgba(0, 0, 0, 0.25);
 }
@@ -1166,6 +1256,64 @@
 .hpw-dark .hpw-ota-price {
   color: rgba(255, 255, 255, 0.55);
   text-decoration-color: rgba(255, 255, 255, 0.3);
+}
+
+.hpw-ota-delta {
+  padding: 2px 8px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #b91c1c;
+  border-radius: 10px;
+  font-size: 11px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.hpw-dark .hpw-ota-delta {
+  background: rgba(239, 68, 68, 0.15);
+  color: #fca5a5;
+}
+
+/* Show more channels toggle */
+.hpw-otas-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 8px;
+  padding: 6px;
+  background: transparent;
+  border: 0;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 140ms;
+}
+
+.hpw-otas-toggle:hover {
+  color: rgba(0, 0, 0, 0.8);
+}
+
+.hpw-dark .hpw-otas-toggle {
+  color: rgba(255, 255, 255, 0.55);
+}
+
+.hpw-dark .hpw-otas-toggle:hover {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.hpw-otas-arrow {
+  display: inline-block;
+  font-size: 8px;
+  transition: transform 180ms;
+}
+
+.hpw-otas-arrow.up {
+  transform: rotate(180deg);
 }
 
 /* Loading / fallback */
@@ -1204,7 +1352,7 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Book button — THIS is where brand color belongs */
+/* Book button */
 .hpw-book-btn {
   display: block;
   width: calc(100% - 32px);
@@ -1244,7 +1392,7 @@
   color: rgba(255, 255, 255, 0.35);
 }
 
-/* Size variants — scale the whole widget */
+/* Size variants */
 .hpw-size-small .hpw-panel  { width: 300px; }
 .hpw-size-medium .hpw-panel { width: 340px; }
 .hpw-size-large .hpw-panel  { width: 400px; }

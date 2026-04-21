@@ -40,5 +40,10 @@
   "loading": "Chargement des tarifs…",
   "openWidget": "Ouvrir le comparateur",
   "bestPrice": "Meilleur prix",
-  "poweredBy": "Propulsé par D-EDGE"
+  "yourStay": "Votre séjour",
+  "priceOnOfficialWebsite": "Prix sur le site officiel",
+  "totalFor": "Total pour",
+  "vs": "vs",
+  "showAllChannels": "Afficher les {count} canaux",
+  "hideChannels": "Masquer"
 }
