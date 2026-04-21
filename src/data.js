@@ -262,12 +262,18 @@ export async function loadRatesFromApi(config, stay) {
     }
 
     const { bestOtaChannelId, savingsAmount, savingsPercent } = computeSavings(channels);
-
+    const channelNames = {};
+    if (firstBucket?.channels) {
+      for (const [id, meta] of Object.entries(firstBucket.channels)) {
+        channelNames[parseInt(id, 10)] = meta.channelName || `Channel ${id}`;
+      }
+    }
     return {
       status: 'ok',
       currency: apiCurrency,
       nights,
       channels,
+      channelNames, 
       bestOtaChannelId,
       savingsAmount,
       savingsPercent,
@@ -331,6 +337,11 @@ export function buildPreviewData(config) {
     currency: config.currency || 'EUR',
     nights,
     channels,
+    channelNames: {
+      17: 'Direct',
+      10: 'Booking.com',
+      9: 'Expedia',
+    },
     bestOtaChannelId: bestOtaId,
     savingsAmount,
     savingsPercent,

@@ -34,13 +34,22 @@ import 'react-day-picker/dist/style.css';
 // ─── API channel metadata ───────────────────────────────────────────
 // Mirrors the admin's constants.js. Hardcoded here because the widget
 // bundle is static and channel IDs from AvailPro never change.
-const CHANNEL_META = {
-  17: { name: 'Direct', isDirect: true },
-  10: { name: 'Booking.com', isDirect: false },
-  9:  { name: 'Expedia', isDirect: false },
+const CHANNEL_NAME_OVERRIDES = {
+  17: 'Direct',
+  10: 'Booking.com',
+  9: 'Expedia',
+  27:'Agoda'
 };
 
 const DIRECT_CHANNEL_ID = 17;
+
+function getChannelName(channelId, rates) {
+  return (
+    CHANNEL_NAME_OVERRIDES[channelId] ||
+    rates?.channelNames?.[channelId] ||
+    `Channel ${channelId}`
+  );
+}
 
 // ─── Date helpers ───────────────────────────────────────────────────
 
@@ -199,13 +208,14 @@ export default function Widget({ config }) {
   useEffect(() => {
     if (expanded && rates?.status === 'ok' && rates.savingsAmount != null) {
       const directChannel = rates.channels?.[DIRECT_CHANNEL_ID];
-      const bestOtaMeta = CHANNEL_META[rates.bestOtaChannelId];
       trackSavingsShown({
-        roomId: null,                          // no room selector anymore
+        roomId: null,
         nights: rates.nights,
         directPrice: directChannel?.total || null,
         savings: rates.savingsAmount,
-        vsChannel: bestOtaMeta?.name || `channel_${rates.bestOtaChannelId}`,
+        vsChannel: rates.bestOtaChannelId
+          ? getChannelName(rates.bestOtaChannelId, rates)
+          : null,
       });
     }
   }, [expanded, rates?.savingsAmount]);
@@ -457,7 +467,7 @@ export default function Widget({ config }) {
                     {rates.bestOtaChannelId && (
                       <>
                         {' '}{t('vs')}{' '}
-                        {CHANNEL_META[rates.bestOtaChannelId]?.name || ''}
+                        {getChannelName(rates.bestOtaChannelId, rates)}
                       </>
                     )}
                   </div>
@@ -473,7 +483,7 @@ export default function Widget({ config }) {
                       return (
                         <li key={ch.id} className="hpw-ota-row">
                           <span className="hpw-ota-name">
-                            {CHANNEL_META[ch.id]?.name || `Channel ${ch.id}`}
+                            {getChannelName(ch.id, rates)}
                           </span>
                           <span className="hpw-ota-right">
                             <span className="hpw-ota-price">
