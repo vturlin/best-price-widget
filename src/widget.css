@@ -945,13 +945,25 @@
    }
 /* ========== Widget v2 — API mode ============================ */
 
-.hpw-panel {
+/* Wrapper that hosts the floating close button outside the panel.
+   The panel itself can keep overflow:hidden for clean gradient edges. */
+.hpw-panel-wrap {
   position: relative;
+}
+
+.hpw-panel {
   width: 320px;
   max-width: calc(100vw - 24px);
-  background: var(--hpw-bg);
-  border-radius: 12px;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+  background:
+    linear-gradient(
+      180deg,
+      var(--hpw-bg) 0%,
+      color-mix(in srgb, var(--hpw-bg) 70%, white) 100%
+    );
+  border-radius: 14px;
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.18),
+    0 2px 6px rgba(0, 0, 0, 0.06);
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -960,55 +972,79 @@
 }
 
 .hpw-dark .hpw-panel {
+  background:
+    linear-gradient(
+      180deg,
+      var(--hpw-bg) 0%,
+      color-mix(in srgb, var(--hpw-bg) 75%, black) 100%
+    );
   color: rgba(255, 255, 255, 0.9);
 }
 
-/* Close button — floating */
+/* Fallback for browsers without color-mix (older Safari etc.) */
+@supports not (background: color-mix(in srgb, white, black)) {
+  .hpw-panel {
+    background: var(--hpw-bg);
+  }
+}
+
+/* Close button — floating OUTSIDE the panel corner */
 .hpw-close {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: -10px;
+  right: -10px;
   width: 28px;
   height: 28px;
   display: flex;
   align-items: center;
   justify-content: center;
   border: 0;
-  background: transparent;
-  color: rgba(0, 0, 0, 0.4);
-  font-size: 20px;
+  background: white;
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 16px;
   line-height: 1;
   cursor: pointer;
   border-radius: 50%;
-  transition: background 140ms, color 140ms;
-  z-index: 2;
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.15),
+    0 0 0 1px rgba(0, 0, 0, 0.05);
+  transition: background 140ms, color 140ms, transform 140ms;
+  z-index: 3;
   padding: 0;
 }
 
 .hpw-close:hover {
-  background: rgba(0, 0, 0, 0.06);
-  color: rgba(0, 0, 0, 0.8);
+  background: #f5f5f5;
+  color: rgba(0, 0, 0, 0.85);
+  transform: scale(1.08);
 }
 
-.hpw-dark .hpw-close { color: rgba(255, 255, 255, 0.5); }
+.hpw-dark .hpw-close {
+  background: rgba(40, 40, 40, 1);
+  color: rgba(255, 255, 255, 0.7);
+  box-shadow:
+    0 2px 8px rgba(0, 0, 0, 0.4),
+    0 0 0 1px rgba(255, 255, 255, 0.1);
+}
+
 .hpw-dark .hpw-close:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: rgba(255, 255, 255, 0.9);
+  background: rgba(60, 60, 60, 1);
+  color: white;
 }
 
 /* Stay block — compact summary OR expanded editor */
 .hpw-stay {
-  padding: 32px 16px 12px;   /* top leaves room for the close button */
+  padding: 20px 16px 12px;
 }
 
 .hpw-stay-summary {
   display: grid;
   grid-template-columns: auto 1fr auto;
   align-items: center;
-  gap: 12px;
+  gap: 10px;
   width: 100%;
   padding: 10px 14px;
-  background: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.55);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 10px;
   font-family: inherit;
@@ -1016,10 +1052,11 @@
   color: inherit;
   cursor: pointer;
   transition: background 140ms, border-color 140ms;
+  box-sizing: border-box;
 }
 
 .hpw-stay-summary:hover {
-  background: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.8);
   border-color: rgba(0, 0, 0, 0.16);
 }
 
@@ -1039,6 +1076,7 @@
   letter-spacing: 0.08em;
   color: rgba(0, 0, 0, 0.55);
   font-weight: 600;
+  white-space: nowrap;
 }
 
 .hpw-dark .hpw-stay-label { color: rgba(255, 255, 255, 0.6); }
@@ -1046,12 +1084,14 @@
 .hpw-stay-value {
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 6px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 13px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  min-width: 0;
 }
 
 .hpw-stay-arrow {
@@ -1062,12 +1102,13 @@
 .hpw-dark .hpw-stay-arrow { color: rgba(255, 255, 255, 0.4); }
 
 .hpw-stay-nights {
-  padding: 2px 10px;
-  background: rgba(0, 0, 0, 0.05);
+  padding: 2px 8px;
+  background: rgba(0, 0, 0, 0.06);
   border-radius: 20px;
   font-size: 11px;
   color: rgba(0, 0, 0, 0.6);
   white-space: nowrap;
+  font-weight: 500;
 }
 
 .hpw-dark .hpw-stay-nights {
@@ -1136,7 +1177,7 @@
 
 /* Our price */
 .hpw-our-price {
-  padding: 20px 16px 16px;
+  padding: 18px 16px 16px;
   text-align: center;
   border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
@@ -1352,19 +1393,21 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Book button */
+/* Book button — uppercase in all languages */
 .hpw-book-btn {
   display: block;
   width: calc(100% - 32px);
   margin: 0 16px 12px;
-  padding: 12px 20px;
+  padding: 13px 20px;
   background: var(--hpw-brand);
   color: white;
   border: 0;
   border-radius: 8px;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   font-family: inherit;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;     /* ← CAPS in every language */
   cursor: pointer;
   text-align: center;
   transition: filter 140ms, transform 120ms;
@@ -1381,11 +1424,13 @@
 
 /* Footer */
 .hpw-footer {
-  padding: 8px 16px 12px;
+  padding: 10px 16px 14px;
   text-align: center;
-  font-size: 10px;
-  color: rgba(0, 0, 0, 0.35);
-  letter-spacing: 0.04em;
+  font-size: 9px;
+  color: rgba(0, 0, 0, 0.4);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-weight: 500;
 }
 
 .hpw-dark .hpw-footer {
@@ -1393,9 +1438,9 @@
 }
 
 /* Size variants */
-.hpw-size-small .hpw-panel  { width: 300px; }
+.hpw-size-small  .hpw-panel { width: 300px; }
 .hpw-size-medium .hpw-panel { width: 340px; }
-.hpw-size-large .hpw-panel  { width: 400px; }
+.hpw-size-large  .hpw-panel { width: 400px; }
 
 .hpw-size-medium .hpw-our-price-amount { font-size: 36px; }
-.hpw-size-large .hpw-our-price-amount  { font-size: 42px; }
+.hpw-size-large  .hpw-our-price-amount { font-size: 42px; }

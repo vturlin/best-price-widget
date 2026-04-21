@@ -381,8 +381,7 @@ export default function Widget({ config }) {
       )}
 
       {expanded && (
-        <div className="hpw-panel">
-          {/* Header */}
+        <div className="hpw-panel-wrap">
           <button
             type="button"
             className="hpw-close"
@@ -390,8 +389,9 @@ export default function Widget({ config }) {
             aria-label={t('close')}
           >×</button>
 
-          {/* Stay block — compact view + expanded editing */}
-          <div className="hpw-stay">
+          <div className="hpw-panel">
+            {/* Stay block — compact view + expanded editing */}
+            <div className="hpw-stay">
             {!datesExpanded ? (
               <button
                 type="button"
@@ -529,8 +529,9 @@ export default function Widget({ config }) {
 
           {/* Footer */}
           <footer className="hpw-footer">
-            {t('poweredBy')}
-          </footer>
+              {t('poweredBy')}
+            </footer>
+          </div>
         </div>
       )}
     </div>
