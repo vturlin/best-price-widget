@@ -28,6 +28,8 @@ import {
   isDismissedThisSession,
   markDismissedThisSession,
 } from './analytics.js';
+import { DayPicker } from 'react-day-picker';
+import 'react-day-picker/dist/style.css';
 
 // ─── API channel metadata ───────────────────────────────────────────
 // Mirrors the admin's constants.js. Hardcoded here because the widget
@@ -112,7 +114,6 @@ export default function Widget({ config }) {
   const [isMobile, setIsMobile] = useState(false);
   const [scrolledDown, setScrolledDown] = useState(false);
   const [i18n, setI18n] = useState({ t: (k) => k, primary: 'en' });
-  const [datesExpanded, setDatesExpanded] = useState(false);
   const [otasExpanded, setOtasExpanded] = useState(false);
   const rootRef = useRef(null);
 
@@ -407,55 +408,23 @@ export default function Widget({ config }) {
             onClick={handleClose}
             aria-label={t('close')}
           >×</button>
-            {/* Stay block — compact view + expanded editing */}
-            <div className="hpw-stay">
-            {!datesExpanded ? (
-              <button
-                type="button"
-                className="hpw-stay-summary"
-                onClick={() => setDatesExpanded(true)}
-              >
-                <span className="hpw-stay-label">{t('yourStay')}</span>
-                <span className="hpw-stay-value">
-                  {formatDate(checkIn, locale)}
-                  <span className="hpw-stay-arrow">→</span>
-                  {formatDate(checkOut, locale)}
-                </span>
-                <span className="hpw-stay-nights">
-                  {nights} {nights > 1 ? t('nights') : t('night')}
-                </span>
-              </button>
-            ) : (
-              <div className="hpw-dates-editor">
-                <label className="hpw-date-field">
-                  <span>{t('checkIn')}</span>
-                  <input
-                    type="date"
-                    value={checkIn}
-                    min={todayISO()}
-                    onChange={handleCheckInChange}
-                  />
-                </label>
-                <label className="hpw-date-field">
-                  <span>{t('checkOut')}</span>
-                  <input
-                    type="date"
-                    value={checkOut}
-                    min={addDays(checkIn, 1)}
-                    max={addDays(checkIn, 30)}
-                    onChange={handleCheckOutChange}
-                  />
-                </label>
-                <button
-                  type="button"
-                  className="hpw-dates-done"
-                  onClick={() => setDatesExpanded(false)}
-                  aria-label="Done"
-                >✓</button>
-              </div>
-            )}
-          </div>
-
+          {/* Stay block — summary button + popover calendar */}
+          <StayPicker
+            checkIn={checkIn}
+            checkOut={checkOut}
+            nights={nights}
+            locale={locale}
+            onChange={(newCheckIn, newCheckOut) => {
+              setCheckIn(newCheckIn);
+              setCheckOut(newCheckOut);
+              trackDatesChanged(
+                newCheckIn,
+                newCheckOut,
+                daysBetween(newCheckIn, newCheckOut)
+              );
+            }}
+            t={t}
+          />
           {/* Body */}
           {loading ? (
             <div className="hpw-loading">{t('loading')}</div>
@@ -548,6 +517,96 @@ export default function Widget({ config }) {
           <footer className="hpw-footer">
               {t('poweredBy')}
             </footer>
+        </div>
+      )}
+    </div>
+  );
+}
+/**
+ * Stay picker: a compact summary button that opens a range DayPicker
+ * popover below it. Closes automatically when a full range is selected.
+ */
+function StayPicker({ checkIn, checkOut, nights, locale, onChange, t }) {
+  const [open, setOpen] = useState(false);
+  const wrapRef = useRef(null);
+
+  // Close popover on outside click (within the widget's shadow DOM)
+  useEffect(() => {
+    if (!open) return;
+    const onClick = (e) => {
+      const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+      if (!path.some((el) => el === wrapRef.current)) setOpen(false);
+    };
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', onClick);
+    }, 0);
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', onClick);
+    };
+  }, [open]);
+
+  const selected = {
+    from: parseISODate(checkIn),
+    to: parseISODate(checkOut),
+  };
+
+  // DayPicker range selection handler. The library returns:
+  //   - { from, to } after a complete selection
+  //   - { from } when only one date is picked (waiting for second)
+  //   - undefined when the user clicks inside the range (deselect)
+  //
+  // We want: clicking an earlier date becomes the new from, clicking later
+  // becomes the to. react-day-picker's default "range" mode does this
+  // automatically since v9.
+  function handleSelect(range) {
+    if (!range) {
+      // User reset the range — keep current state, ignore
+      return;
+    }
+    const from = range.from ? toISODate(range.from) : null;
+    const to = range.to ? toISODate(range.to) : null;
+
+    if (from && to && from !== to) {
+      // Full range selected: commit and close
+      onChange(from, to);
+      setOpen(false);
+    } else if (from && !to) {
+      // First click: set check-in, auto-set check-out to next day as placeholder.
+      // The user will click again to set the real check-out.
+      // We don't call onChange yet — we wait for the second click.
+    }
+  }
+
+  return (
+    <div className="hpw-stay" ref={wrapRef}>
+      <button
+        type="button"
+        className="hpw-stay-summary"
+        onClick={() => setOpen((v) => !v)}
+      >
+        <span className="hpw-stay-label">{t('yourStay')}</span>
+        <span className="hpw-stay-value">
+          {formatDate(checkIn, locale)}
+          <span className="hpw-stay-arrow">→</span>
+          {formatDate(checkOut, locale)}
+        </span>
+        <span className="hpw-stay-nights">
+          {nights} {nights > 1 ? t('nights') : t('night')}
+        </span>
+      </button>
+
+      {open && (
+        <div className="hpw-datepicker-popover">
+          <DayPicker
+            mode="range"
+            selected={selected}
+            onSelect={handleSelect}
+            disabled={{ before: new Date() }}
+            numberOfMonths={1}
+            showOutsideDays
+            weekStartsOn={1}
+          />
         </div>
       )}
     </div>

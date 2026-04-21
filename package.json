@@ -4,14 +4,16 @@
   "description": "Embeddable price-comparison widget for hotel direct-booking sites",
   "private": true,
   "type": "module",
-  "scripts": {
+    "scripts": {
     "dev": "vite",
     "build": "vite build && node scripts/postbuild.js",
     "preview": "vite preview"
   },
   "dependencies": {
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "react-day-picker": "^9.0.0",
+    "date-fns": "^3.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.1",
