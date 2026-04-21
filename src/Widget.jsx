@@ -18,7 +18,7 @@
 
 import { useState, useEffect, useMemo, useRef } from 'react';
 import { loadRatesFromApi, buildPreviewData } from './data.js';
-import { getTranslations } from './i18n.js';
+import { resolveLocale, loadLocale, makeT, isRtl } from './i18n.js';
 import {
   initAnalytics,
   pushEvent,
@@ -108,17 +108,18 @@ export default function Widget({ config }) {
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
   const [scrolledDown, setScrolledDown] = useState(false);
+  const [i18n, setI18n] = useState({ t: (k) => k, primary: 'en' });
 
   const rootRef = useRef(null);
 
   // ─── Derived values ────────────────────────────────────────────────
-  const locale = config.defaultLocale || 'en';
-  const t = useMemo(() => getTranslations(locale), [locale]);
+  const t = i18n.t;
+  const locale = i18n.primary;
   const nights = useMemo(
     () => Math.max(1, daysBetween(checkIn, checkOut)),
     [checkIn, checkOut]
   );
-  const rtl = ['ar', 'he'].includes(locale);
+  const rtl = isRtl(locale);
   const darkTheme = isColorDark(config.backgroundColor);
   const positionClass = `hpw-pos-${config.position || 'bottom-right'}`;
 
@@ -141,6 +142,16 @@ export default function Widget({ config }) {
 
   // ─── Effects ───────────────────────────────────────────────────────
 
+  useEffect(() => {
+    let cancelled = false;
+    const { primary } = resolveLocale(config);
+    loadLocale(primary).then((dict) => {
+      if (!cancelled) {
+        setI18n({ t: makeT(dict), primary });
+      }
+    });
+    return () => { cancelled = true; };
+  }, [config.locale, config.defaultLocale, config.enabledLocales?.join(',')]);
   // Init analytics once
   useEffect(() => {
     if (config.analytics?.enabled) {
@@ -353,13 +364,13 @@ export default function Widget({ config }) {
           type="button"
           className="hpw-toggle"
           onClick={handleOpen}
-          aria-label={t.openWidget || 'Open price comparison'}
+          aria-label={t('openWidget')}
         >
           {config.logoUrl ? (
             <img src={config.logoUrl} alt={config.hotelName} className="hpw-toggle-logo" />
           ) : (
             <span className="hpw-toggle-text">
-              {t.bestPrice || 'Best price'}
+              {t('bestPrice')}
             </span>
           )}
         </button>
@@ -376,7 +387,7 @@ export default function Widget({ config }) {
               <div>
                 <h3 className="hpw-header-title">{config.hotelName}</h3>
                 <p className="hpw-header-subtitle">
-                  {t.bestRateGuaranteed || 'Best rate guaranteed'}
+                  {t('bestRateGuaranteed')}
                 </p>
               </div>
             </div>
@@ -384,14 +395,14 @@ export default function Widget({ config }) {
               type="button"
               className="hpw-close"
               onClick={handleClose}
-              aria-label={t.close || 'Close'}
+              aria-label={t('close')}
             >×</button>
           </header>
 
           {/* Dates */}
           <div className="hpw-dates">
             <label className="hpw-date-field">
-              <span>{t.checkIn || 'Check-in'}</span>
+              <span>{t('checkIn')}</span>
               <input
                 type="date"
                 value={checkIn}
@@ -400,7 +411,7 @@ export default function Widget({ config }) {
               />
             </label>
             <label className="hpw-date-field">
-              <span>{t.checkOut || 'Check-out'}</span>
+              <span>{t('checkOut')}</span>
               <input
                 type="date"
                 value={checkOut}
@@ -414,15 +425,15 @@ export default function Widget({ config }) {
           {/* Body */}
           {loading ? (
             <div className="hpw-loading">
-              {t.loading || 'Loading rates…'}
+              {t('loading')}
             </div>
           ) : showFallback ? (
             <div className="hpw-fallback">
               <p className="hpw-fallback-title">
-                {t.bestPriceGuaranteed || 'Best price guaranteed'}
+                {t('bestPriceGuaranteed')}
               </p>
               <p className="hpw-fallback-sub">
-                {t.fallbackText || 'Book direct for the best available rate.'}
+                {t('fallbackText')}
               </p>
             </div>
           ) : (
@@ -430,20 +441,20 @@ export default function Widget({ config }) {
               {/* Our direct price */}
               <div className="hpw-our-price">
                 <span className="hpw-our-price-label">
-                  {t.ourPrice || 'Our price'}
+                  {t('ourPrice')}
                 </span>
                 <div className="hpw-our-price-amount">
                   {formatCurrency(directChannel.total, currency, locale)}
                 </div>
                 <span className="hpw-our-price-sub">
-                  {nights} {nights > 1 ? (t.nights || 'nights') : (t.night || 'night')}
+                  {nights} {nights > 1 ? (t('nights')) : (t('night'))}
                   {' · '}
-                  {formatCurrency(directChannel.avgPerNight, currency, locale)} / {t.night || 'night'}
+                  {formatCurrency(directChannel.avgPerNight, currency, locale)} / {t('night')}
                 </span>
 
                 {rates.savingsAmount != null && rates.savingsAmount > 0 && (
                   <div className="hpw-savings-badge">
-                    {t.youSave || 'You save'}{' '}
+                    {t('youSave')}{' '}
                     <strong>{formatCurrency(rates.savingsAmount, currency, locale)}</strong>
                     {' '}({rates.savingsPercent}%)
                   </div>
@@ -454,7 +465,7 @@ export default function Widget({ config }) {
               {otaChannels.length > 0 && (
                 <div className="hpw-otas">
                   <div className="hpw-otas-label">
-                    {t.compareWith || 'Compare with'}
+                    {t('compareWith')}
                   </div>
                   <ul className="hpw-otas-list">
                     {otaChannels.map((ch) => (
@@ -479,12 +490,12 @@ export default function Widget({ config }) {
             className="hpw-book-btn"
             onClick={handleBook}
           >
-            {t.bookNow || 'Book now'} →
+            {t('bookNow')} →
           </button>
 
           {/* Footer */}
           <footer className="hpw-footer">
-            {t.poweredBy || 'Powered by D-EDGE'}
+            {t('poweredBy')}
           </footer>
         </div>
       )}
