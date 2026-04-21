@@ -86,3 +86,26 @@ export function trackReserveClicked({ roomId, nights, directPrice, checkIn, chec
     currency: configRef.currency,
   });
 }
+
+// ─── Session-level dismissal ────────────────────────────────────────
+// Remembers that the user closed the widget in this session. Used by
+// the auto-open logic to respect the user's intent and not reopen
+// repeatedly. Cleared when the tab is closed (sessionStorage).
+
+const DISMISSED_KEY_PREFIX = 'hpw_dismissed_';
+
+export function isDismissedThisSession(hotelId) {
+  try {
+    return !!sessionStorage.getItem(DISMISSED_KEY_PREFIX + hotelId);
+  } catch {
+    return false;
+  }
+}
+
+export function markDismissedThisSession(hotelId) {
+  try {
+    sessionStorage.setItem(DISMISSED_KEY_PREFIX + hotelId, '1');
+  } catch {
+    // sessionStorage might be unavailable (private mode, SSR); silently ignore
+  }
+}

@@ -21,7 +21,10 @@ import { loadRatesFromApi, buildPreviewData } from './data.js';
 import { resolveLocale, loadLocale, makeT, isRtl } from './i18n.js';
 import {
   initAnalytics,
-  pushEvent,
+  trackOpened,
+  trackDatesChanged,
+  trackSavingsShown,
+  trackReserveClicked,
   isDismissedThisSession,
   markDismissedThisSession,
 } from './analytics.js';
@@ -154,10 +157,8 @@ export default function Widget({ config }) {
   }, [config.locale, config.defaultLocale, config.enabledLocales?.join(',')]);
   // Init analytics once
   useEffect(() => {
-    if (config.analytics?.enabled) {
-      initAnalytics(config.analytics.dataLayerName);
-    }
-  }, [config.analytics?.enabled, config.analytics?.dataLayerName]);
+    initAnalytics({config, _hotelId: config._hotelId || config.hotelName });
+  }, [config]);
 
   // Load rates whenever dates or core config changes
   useEffect(() => {
@@ -193,11 +194,14 @@ export default function Widget({ config }) {
   // Savings shown event (once per open+load combo)
   useEffect(() => {
     if (expanded && rates?.status === 'ok' && rates.savingsAmount != null) {
-      pushEvent('savings_shown', {
-        hotel_id: config.hotelName,
-        savings_amount: rates.savingsAmount,
-        savings_percent: rates.savingsPercent,
+      const directChannel = rates.channels?.[DIRECT_CHANNEL_ID];
+      const bestOtaMeta = CHANNEL_META[rates.bestOtaChannelId];
+      trackSavingsShown({
+        roomId: null,                          // no room selector anymore
         nights: rates.nights,
+        directPrice: directChannel?.total || null,
+        savings: rates.savingsAmount,
+        vsChannel: bestOtaMeta?.name || `channel_${rates.bestOtaChannelId}`,
       });
     }
   }, [expanded, rates?.savingsAmount]);
@@ -253,7 +257,7 @@ export default function Widget({ config }) {
     const trigger = () => {
       if (!expanded) {
         setExpanded(true);
-        pushEvent('auto_opened', { hotel_id: config.hotelName, trigger: mode });
+        trackOpened();  // Same event as manual open; mode implicit from context
       }
     };
 
@@ -292,7 +296,7 @@ export default function Widget({ config }) {
   function handleOpen() {
     if (expanded) return;
     setExpanded(true);
-    pushEvent('widget_opened', { hotel_id: config.hotelName });
+    trackOpened();
   }
 
   function handleClose() {
@@ -304,15 +308,15 @@ export default function Widget({ config }) {
 
   function handleCheckInChange(e) {
     const newCheckIn = e.target.value;
-    setCheckIn(newCheckIn);
-    // If check-out is now ≤ check-in, bump it
+    let newCheckOut = checkOut;
     if (daysBetween(newCheckIn, checkOut) < 1) {
-      setCheckOut(addDays(newCheckIn, 1));
+      newCheckOut = addDays(newCheckIn, 1);
+    } else if (daysBetween(newCheckIn, checkOut) > 30) {
+      newCheckOut = addDays(newCheckIn, 30);
     }
-    // Cap at 30 nights max
-    if (daysBetween(newCheckIn, checkOut) > 30) {
-      setCheckOut(addDays(newCheckIn, 30));
-    }
+    setCheckIn(newCheckIn);
+    setCheckOut(newCheckOut);
+    trackDatesChanged(newCheckIn, newCheckOut, daysBetween(newCheckIn, newCheckOut));
   }
 
   function handleCheckOutChange(e) {
@@ -320,19 +324,18 @@ export default function Widget({ config }) {
     if (daysBetween(checkIn, newCheckOut) < 1) return;
     if (daysBetween(checkIn, newCheckOut) > 30) return;
     setCheckOut(newCheckOut);
+    trackDatesChanged(checkIn, newCheckOut, daysBetween(checkIn, newCheckOut));
   }
 
   function handleBook() {
-    pushEvent('book_clicked', {
-      hotel_id: config.hotelName,
-      check_in: checkIn,
-      check_out: checkOut,
+    trackReserveClicked({
+      roomId: null,
       nights,
-      direct_price: directChannel?.total || null,
-      currency: rates?.currency || config.currency,
+      directPrice: directChannel?.total || null,
+      checkIn,
+      checkOut,
     });
 
-    // Build URL from reserveUrl template
     const url = (config.reserveUrl || '')
       .replace('{checkIn}', checkIn)
       .replace('{checkOut}', checkOut);
