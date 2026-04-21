@@ -660,40 +660,6 @@ function StayPicker({ checkIn, checkOut, nights, locale, onChange, t }) {
   );
 }
 
-  return (
-    <div className="hpw-stay" ref={wrapRef}>
-      <button
-        type="button"
-        className="hpw-stay-summary"
-        onClick={() => setOpen((v) => !v)}
-      >
-        <span className="hpw-stay-label">{t('yourStay')}</span>
-        <span className="hpw-stay-value">
-          {formatDate(checkIn, locale)}
-          <span className="hpw-stay-arrow">→</span>
-          {formatDate(checkOut, locale)}
-        </span>
-        <span className="hpw-stay-nights">
-          {nights} {nights > 1 ? t('nights') : t('night')}
-        </span>
-      </button>
-
-      {open && (
-        <div className="hpw-datepicker-popover">
-          <DayPicker
-            mode="range"
-            selected={selected}
-            onSelect={handleSelect}
-            disabled={{ before: new Date() }}
-            numberOfMonths={1}
-            showOutsideDays
-            weekStartsOn={1}
-          />
-        </div>
-      )}
-    </div>
-  );
-
 
 /**
  * Returns true if a CSS color string is "dark" (for contrast decisions).
