@@ -210,13 +210,22 @@ export default function Widget({ config }) {
   // Close on outside click (desktop)
   useEffect(() => {
     if (!expanded || isMobile) return;
+
     const onClick = (e) => {
-      if (rootRef.current && !rootRef.current.contains(e.target)) {
-        handleClose();
-      }
+      const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
+      // Walk the full event path and check if any ancestor is our root
+      const clickedInside = path.some((el) => el === rootRef.current);
+      if (!clickedInside) handleClose();
     };
-    document.addEventListener('mousedown', onClick);
-    return () => document.removeEventListener('mousedown', onClick);
+
+    const timer = setTimeout(() => {
+      document.addEventListener('mousedown', onClick);
+    }, 0);
+
+    return () => {
+      clearTimeout(timer);
+      document.removeEventListener('mousedown', onClick);
+    };
   }, [expanded, isMobile]);
 
   // Mobile detection
@@ -392,12 +401,12 @@ export default function Widget({ config }) {
 
       {expanded && (
         <div className="hpw-panel">
-          {/* <button
+          <button
             type="button"
             className="hpw-close"
             onClick={handleClose}
             aria-label={t('close')}
-          >×</button> */}
+          >×</button>
             {/* Stay block — compact view + expanded editing */}
             <div className="hpw-stay">
             {!datesExpanded ? (
