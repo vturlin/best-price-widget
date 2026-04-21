@@ -72,36 +72,97 @@ function extractPreviewConfig() {
   }
 }
 
-function normalizeConfig(raw) {
-  if (!raw || typeof raw !== 'object') {
-    throw new Error('Config is not an object');
-  }
+/**
+ * Normalize the raw config from GitHub into the shape the widget expects.
+ * API-only since the CSV migration — if a config has legacy fields like
+ * csvUrl/roomOptions, we ignore them silently.
+ *
+ * Critical fields for the widget to work:
+ *   - apiHotelId       — the AvailPro hotel ID (used to call /api/rates)
+ *   - apiCompetitorId  — the competitor ID within the screening response
+ *   - channelsEnabled  — array of channel IDs to display (17=direct, 10=booking, 9=expedia)
+ *   - reserveUrl       — template for the Book button
+ *
+ * If apiHotelId is missing, we still render the widget but in "fallback"
+ * mode (just a "Best price guaranteed" message + Book button).
+ */
+export function normalizeConfig(raw) {
+  if (!raw || typeof raw !== 'object') return null;
+
   return {
-    position: raw.position || 'bottom-right',
-    csvUrl: raw.csvUrl || '',
-    roomOptions: Array.isArray(raw.roomOptions) ? raw.roomOptions : [],
-    default_room_id: raw.default_room_id || (raw.roomOptions?.[0]?.id || ''),
-    reserveUrl: raw.reserveUrl || '#',
-    currency: raw.currency || 'EUR',
-    locale: raw.locale || '',
-    brandColor: raw.brandColor || '#1a1a1a',
-    backgroundColor: raw.backgroundColor || '#faf7f2',
-    logoUrl: raw.logoUrl || '',
-    hotelName: raw.hotelName || '',
-    enabledLocales: Array.isArray(raw.enabledLocales) ? raw.enabledLocales : [],
-    defaultLocale: raw.defaultLocale || 'en',
-    channelLabels: raw.channelLabels || {},
+    // Identity
+    hotelName: String(raw.hotelName || ''),
+    hotelDomain: String(raw.hotelDomain || ''),
+    logoUrl: String(raw.logoUrl || ''),
+
+    // Data source (API-only)
+    apiHotelId: Number.isInteger(raw.apiHotelId) ? raw.apiHotelId : null,
+    apiCompetitorId: Number.isInteger(raw.apiCompetitorId) ? raw.apiCompetitorId : null,
+    channelsEnabled: Array.isArray(raw.channelsEnabled) && raw.channelsEnabled.length > 0
+      ? raw.channelsEnabled.map(Number).filter((n) => Number.isInteger(n))
+      : [17, 10, 9],
+
+    // Booking
+    reserveUrl: String(raw.reserveUrl || ''),
+    currency: String(raw.currency || 'EUR'),
+
+    // Appearance
+    position: ['bottom-right', 'bottom-left', 'top-right', 'top-left'].includes(raw.position)
+      ? raw.position
+      : 'bottom-right',
+    size: ['small', 'medium', 'large'].includes(raw.size) ? raw.size : 'small',
+    brandColor: String(raw.brandColor || '#1a1a1a'),
+    backgroundColor: String(raw.backgroundColor || '#faf7f2'),
+
+    // Languages
+    enabledLocales: Array.isArray(raw.enabledLocales) && raw.enabledLocales.length > 0
+      ? raw.enabledLocales
+      : ['en'],
+    defaultLocale: String(raw.defaultLocale || 'en'),
+
+    // Auto-open
+    autoOpenMode: ['disabled', 'time', 'scroll', 'time_or_scroll'].includes(raw.autoOpenMode)
+      ? raw.autoOpenMode
+      : 'disabled',
+    autoOpenDelay: Number.isInteger(raw.autoOpenDelay) ? raw.autoOpenDelay : 8,
+    autoOpenScrollPercent: [25, 50].includes(raw.autoOpenScrollPercent)
+      ? raw.autoOpenScrollPercent
+      : 50,
+
+    // Analytics
     analytics: {
-      enabled: !!(raw.analytics && raw.analytics.enabled),
-      dataLayerName: (raw.analytics && raw.analytics.dataLayerName) || 'dataLayer',
-      eventPrefix: (raw.analytics && raw.analytics.eventPrefix) || 'hotel_widget_',
+      enabled: !!(raw.analytics?.enabled),
+      dataLayerName: String(raw.analytics?.dataLayerName || 'dataLayer'),
     },
-    autoOpenDelay: Number.isFinite(raw.autoOpenDelay) ? raw.autoOpenDelay : 0,
-    autoOpenMode: raw.autoOpenMode || 'disabled',
-    autoOpenScrollPercent: Number.isFinite(raw.autoOpenScrollPercent) ? raw.autoOpenScrollPercent : 0,
-    _hotelId: raw._hotelId || null,
+
+    // Preview mode (admin-only, never in published configs)
     _preview: raw._preview === true,
   };
+}
+
+/**
+ * Extract the preview config from a URL parameter. Used by the admin
+ * iframe to pass a live form state to the widget for WYSIWYG editing.
+ * Returns null if no preview param or if decoding fails.
+ */
+export function extractPreviewConfig() {
+  try {
+    const params = new URLSearchParams(window.location.search);
+    const b64 = params.get('preview');
+    if (!b64) return null;
+
+    // URL-safe base64 to standard base64
+    const std = b64.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = std.length % 4 === 0 ? '' : '='.repeat(4 - (std.length % 4));
+    const binary = atob(std + pad);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+    const json = new TextDecoder().decode(bytes);
+    return JSON.parse(json);
+  } catch (err) {
+    console.warn('[hpw] extractPreviewConfig failed', err);
+    return null;
+  }
 }
 
 export async function loadConfig() {
