@@ -1,48 +1,37 @@
 {
-  "position": "bottom-right",
-  "csvUrl": "https://docs.google.com/spreadsheets/d/e/2PACX-1vRckcXCc9drXANLvWi95QqIcOQlzvj9hMibxM1bLa6zCO-BF5bbcY-LuKTYiMoPWaWWsn9I7iiBr143/pub?output=csv",
-  "roomOptions": [
-    {
-      "id": "deluxe-king",
-      "name": "Deluxe King Room"
-    },
-    {
-      "id": "superior-twin",
-      "name": "Superior Twin Room"
-    },
-    {
-      "id": "junior-suite",
-      "name": "Junior Suite"
-    }
+  "hotelName": "Hôtel Demo",
+  "hotelDomain": "https://vturlin.github.io/best-price-widget/demo.html",
+  "logoUrl": "",
+  "apiHotelId": null,
+  "apiCompetitorId": null,
+  "channelsEnabled": [
+    17,
+    10,
+    9
   ],
-  "default_room_id": "deluxe-king",
   "reserveUrl": "https://www-secure-hotel-booking.staging.d-edge.app/d-edge/hotel-le-charles-quint-/247C/fr-FR/RoomSelection?arrivalDate={checkIn}&departureDate={checkOut}&room={roomId}",
   "currency": "EUR",
-  "locale": "",
-  "brandColor": "#f9e85b",
-  "backgroundColor": "#ece5da",
-  "logoUrl": "",
-  "hotelName": "Hôtel Demo",
+  "position": "bottom-right",
+  "size": "small",
+  "brandColor": "#92836e",
+  "backgroundColor": "#e6ded1",
   "enabledLocales": [
     "en",
     "fr",
     "es",
     "de",
-    "it"
+    "it",
+    "pt",
+    "nl",
+    "ja",
+    "ko"
   ],
   "defaultLocale": "en",
-  "channelLabels": {
-    "booking": "Booking.com",
-    "expedia": "Expedia",
-    "trivago": "Trivago",
-    "hotels_com": "Hotels.com",
-    "agoda": "Agoda"
-  },
+  "autoOpenMode": "time_or_scroll",
+  "autoOpenDelay": 8,
+  "autoOpenScrollPercent": 50,
   "analytics": {
     "enabled": true,
     "dataLayerName": "dataLayer"
-  },
-  "autoOpenMode": "time_or_scroll",
-  "autoOpenDelay": 8,
-  "autoOpenScrollPercent": 50
+  }
 }
