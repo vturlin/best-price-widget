@@ -693,7 +693,7 @@ function StayPicker({ checkIn, checkOut, nights, locale, onChange, t }) {
       )}
     </div>
   );
-}
+
 
 /**
  * Returns true if a CSS color string is "dark" (for contrast decisions).
