@@ -525,19 +525,33 @@ export default function Widget({ config }) {
   );
 }
 /**
- * Stay picker: a compact summary button that opens a range DayPicker
- * popover below it. Closes automatically when a full range is selected.
+ * Stay picker: compact summary + inline calendar that always requires
+ * exactly two clicks to complete a selection.
+ *
+ * State machine:
+ *   - 'idle'      : calendar closed, current stay shown in summary
+ *   - 'checkin'   : user opened the picker, waiting for check-in click
+ *   - 'checkout'  : check-in just clicked, waiting for check-out click
+ *
+ * Clicking the summary button starts a new cycle in 'checkin' step.
+ * Click before check-in is silently ignored in 'checkout' step.
  */
 function StayPicker({ checkIn, checkOut, nights, locale, onChange, t }) {
   const [open, setOpen] = useState(false);
+  const [step, setStep] = useState('checkin');
+  const [pendingCheckIn, setPendingCheckIn] = useState(null);
   const wrapRef = useRef(null);
 
-  // Close popover on outside click (within the widget's shadow DOM)
+  // Close popover on outside click
   useEffect(() => {
     if (!open) return;
     const onClick = (e) => {
       const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
-      if (!path.some((el) => el === wrapRef.current)) setOpen(false);
+      if (!path.some((el) => el === wrapRef.current)) {
+        setOpen(false);
+        setStep('checkin');
+        setPendingCheckIn(null);
+      }
     };
     const timer = setTimeout(() => {
       document.addEventListener('mousedown', onClick);
@@ -548,37 +562,103 @@ function StayPicker({ checkIn, checkOut, nights, locale, onChange, t }) {
     };
   }, [open]);
 
-  const selected = {
-    from: parseISODate(checkIn),
-    to: parseISODate(checkOut),
-  };
+  function handleToggle() {
+    if (!open) {
+      // Opening fresh — reset to checkin step
+      setStep('checkin');
+      setPendingCheckIn(null);
+    }
+    setOpen((v) => !v);
+  }
 
-  // DayPicker range selection handler. The library returns:
-  //   - { from, to } after a complete selection
-  //   - { from } when only one date is picked (waiting for second)
-  //   - undefined when the user clicks inside the range (deselect)
-  //
-  // We want: clicking an earlier date becomes the new from, clicking later
-  // becomes the to. react-day-picker's default "range" mode does this
-  // automatically since v9.
-  function handleSelect(range) {
-    if (!range) {
-      // User reset the range — keep current state, ignore
+  // react-day-picker 'single' mode emits one Date. We interpret it ourselves.
+  function handleDayClick(day) {
+    if (!day) return;
+    const iso = toISODate(day);
+
+    if (step === 'checkin') {
+      // First click: store the check-in, move to checkout step
+      setPendingCheckIn(iso);
+      setStep('checkout');
       return;
     }
-    const from = range.from ? toISODate(range.from) : null;
-    const to = range.to ? toISODate(range.to) : null;
 
-    if (from && to && from !== to) {
-      // Full range selected: commit and close
-      onChange(from, to);
-      setOpen(false);
-    } else if (from && !to) {
-      // First click: set check-in, auto-set check-out to next day as placeholder.
-      // The user will click again to set the real check-out.
-      // We don't call onChange yet — we wait for the second click.
+    // step === 'checkout'
+    if (!pendingCheckIn) return; // defensive
+
+    // Ignore clicks on/before the check-in
+    if (iso <= pendingCheckIn) {
+      // Option: shake or toast. For now silently ignore.
+      return;
     }
+
+    // Commit the range
+    onChange(pendingCheckIn, iso);
+    setStep('checkin');
+    setPendingCheckIn(null);
+    setOpen(false);
   }
+
+  // What to show as selected in the calendar depends on the step.
+  // In 'checkin' mode we show nothing selected (waiting for new input).
+  // In 'checkout' mode we show just the pending check-in.
+  let selected = undefined;
+  let modifiers = {};
+
+  if (step === 'checkout' && pendingCheckIn) {
+    selected = parseISODate(pendingCheckIn);
+    // Mark everything after check-in as eligible (for visual hint)
+    modifiers = {
+      checkinSelected: parseISODate(pendingCheckIn),
+    };
+  }
+
+  // Disabled dates: past, AND in checkout step, dates <= pendingCheckIn
+  const disabled = step === 'checkout' && pendingCheckIn
+    ? [{ before: new Date() }, { before: parseISODate(pendingCheckIn) }, parseISODate(pendingCheckIn)]
+    : { before: new Date() };
+
+  return (
+    <div className="hpw-stay" ref={wrapRef}>
+      <button
+        type="button"
+        className="hpw-stay-summary"
+        onClick={handleToggle}
+      >
+        <span className="hpw-stay-label">{t('yourStay')}</span>
+        <span className="hpw-stay-value">
+          {formatDate(checkIn, locale)}
+          <span className="hpw-stay-arrow">→</span>
+          {formatDate(checkOut, locale)}
+        </span>
+        <span className="hpw-stay-nights">
+          {nights} {nights > 1 ? t('nights') : t('night')}
+        </span>
+      </button>
+
+      {open && (
+        <div className="hpw-datepicker-popover">
+          <div className="hpw-datepicker-hint">
+            {step === 'checkin' ? t('selectCheckIn') : t('selectCheckOut')}
+          </div>
+          <DayPicker
+            mode="single"
+            selected={selected}
+            onDayClick={handleDayClick}
+            disabled={disabled}
+            modifiers={modifiers}
+            modifiersClassNames={{
+              checkinSelected: 'rdp-checkin-selected',
+            }}
+            numberOfMonths={1}
+            showOutsideDays
+            weekStartsOn={1}
+          />
+        </div>
+      )}
+    </div>
+  );
+}
 
   return (
     <div className="hpw-stay" ref={wrapRef}>

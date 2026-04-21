@@ -45,5 +45,7 @@
   "totalFor": "Total pour",
   "vs": "vs",
   "showAllChannels": "Afficher les {count} canaux",
-  "hideChannels": "Masquer"
+  "hideChannels": "Masquer",
+  "selectCheckIn": "Sélectionnez la date d'arrivée",
+  "selectCheckOut": "Maintenant la date de départ"
 }

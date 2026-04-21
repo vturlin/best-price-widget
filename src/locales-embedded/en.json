@@ -46,6 +46,8 @@
   "totalFor": "Total for",
   "vs": "vs",
   "showAllChannels": "Show all {count} channels",
-  "hideChannels": "Hide"
+  "hideChannels": "Hide",
+  "selectCheckIn": "Select check-in date",
+  "selectCheckOut": "Now select check-out date"
   
 }
