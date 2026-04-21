@@ -2,8 +2,8 @@
   "hotelName": "Hôtel Demo",
   "hotelDomain": "https://vturlin.github.io/best-price-widget/demo.html",
   "logoUrl": "",
-  "apiHotelId": null,
-  "apiCompetitorId": null,
+  "apiHotelId": 20917,
+  "apiCompetitorId": 1286,
   "channelsEnabled": [
     17,
     10,
