@@ -2,7 +2,7 @@
   "hotelName": "Hôtel Demo",
   "hotelDomain": "https://vturlin.github.io/best-price-widget/demo.html",
   "logoUrl": "",
-  "apiHotelId": 20917,
+  "apiHotelId": 5640,
   "apiCompetitorId": 1286,
   "channelsEnabled": [
     17,
@@ -13,7 +13,7 @@
   "currency": "EUR",
   "position": "bottom-right",
   "size": "small",
-  "brandColor": "#92836e",
+  "brandColor": "#b6a690",
   "backgroundColor": "#e6ded1",
   "enabledLocales": [
     "en",
