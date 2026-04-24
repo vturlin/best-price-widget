@@ -16,9 +16,6 @@ function copy(from, to) {
 
 console.log('\n📦 Post-build:');
 
-// Copy config.js so the hotelier has a template alongside the bundle
-copy(path.join(root, 'public/config.js'), path.join(dist, 'config.js'));
-
 // Copy demo.html (with a fix: point scripts at ./ relative paths)
 const demoSrc = fs.readFileSync(path.join(root, 'public/demo.html'), 'utf8');
 fs.writeFileSync(path.join(dist, 'demo.html'), demoSrc);
