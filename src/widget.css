@@ -192,7 +192,6 @@
      background: var(--hpw-ivory);
      border-radius: 3px;
      box-shadow: var(--hpw-shadow);
-     animation: hpw-rise 320ms cubic-bezier(.2,.8,.2,1) both;
      position: relative;
      scrollbar-width: thin;
      scrollbar-color: var(--hpw-rule) transparent;
@@ -861,7 +860,6 @@
        max-width: 100%;
        max-height: 85vh;
        border-radius: 14px 14px 0 0;
-       animation: hpw-sheet-up 320ms cubic-bezier(.2,.8,.2,1) both;
        padding-bottom: env(safe-area-inset-bottom, 0);
      }
    
@@ -950,11 +948,6 @@
       ANIMATIONS
       ========================================================================= */
    
-   @keyframes hpw-rise {
-     from { opacity: 0; transform: translateY(5px) scale(0.98); }
-     to   { opacity: 1; transform: translateY(0) scale(1); }
-   }
-   
    .hpw-pos-center-right.hpw-container .hpw-pill,
    .hpw-pos-center-left.hpw-container .hpw-pill,
    .hpw-pos-center-right.hpw-container .hpw-panel,
@@ -975,11 +968,6 @@
    @keyframes hpw-shimmer {
      0%   { background-position: 200% 0; }
      100% { background-position: -200% 0; }
-   }
-   
-   @keyframes hpw-sheet-up {
-     from { opacity: 0; transform: translateY(100%); }
-     to   { opacity: 1; transform: translateY(0); }
    }
    
    @media (prefers-reduced-motion: reduce) {
