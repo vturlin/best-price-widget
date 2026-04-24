@@ -630,104 +630,78 @@
    
    /* ========== Widget v2 — Toggle button (closed state) ======== */
 
+/* Pill-shaped button, horizontal, inspired by Stripe/Linear CTAs.
+   Shape: rounded-full, compact padding, clean shadow. */
 .hpw-toggle {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 2px;
-  min-width: 120px;
-  padding: 14px 20px;
+  gap: 10px;
+  padding: 10px 18px;
   border: 0;
-  border-radius: 16px;
-  background:
-    linear-gradient(
-      135deg,
-      var(--hpw-brand) 0%,
-      color-mix(in srgb, var(--hpw-brand) 75%, black) 100%
-    );
+  border-radius: 999px;              /* fully rounded pill */
+  background: var(--hpw-brand);
   color: white;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   cursor: pointer;
   box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.18),
-    0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: box-shadow 180ms, transform 180ms, filter 140ms;
-}
-
-/* Fallback for old browsers without color-mix */
-@supports not (background: color-mix(in srgb, white, black)) {
-  .hpw-toggle {
-    background: var(--hpw-brand);
-  }
+    0 4px 14px rgba(0, 0, 0, 0.14),
+    0 1px 2px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 200ms, transform 200ms, filter 160ms;
+  white-space: nowrap;
+  line-height: 1.2;
 }
 
 .hpw-toggle:hover {
-  transform: translateY(-2px);
+  transform: translateY(-1px);
   box-shadow:
-    0 10px 28px rgba(0, 0, 0, 0.22),
-    0 2px 5px rgba(0, 0, 0, 0.1);
-  filter: brightness(1.05);
+    0 8px 22px rgba(0, 0, 0, 0.18),
+    0 2px 4px rgba(0, 0, 0, 0.08);
+  filter: brightness(1.06);
 }
 
 .hpw-toggle:active {
   transform: translateY(0);
+  filter: brightness(0.96);
 }
 
-/* Label — small uppercase text on top */
+/* Label — main text, clean weight */
 .hpw-toggle-label {
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
+  font-size: 13px;
   font-weight: 600;
-  opacity: 0.8;
+  letter-spacing: 0.005em;
 }
 
-/* Price — the big eye-catching number */
+/* Separator dot between label and price */
+.hpw-toggle-separator {
+  opacity: 0.45;
+  font-weight: 400;
+}
+
+/* Price — slightly bigger, tight spacing */
 .hpw-toggle-price {
-  font-size: 22px;
+  font-size: 14px;
   font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  margin-top: 2px;
-}
-
-/* Savings badge under the price */
-.hpw-toggle-savings {
-  display: inline-block;
-  margin-top: 4px;
-  padding: 2px 8px;
-  background: rgba(255, 255, 255, 0.18);
-  border-radius: 10px;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  white-space: nowrap;
-}
-
-/* Fallback text when no rates available yet */
-.hpw-toggle-sub {
-  font-size: 11px;
-  font-weight: 500;
-  opacity: 0.9;
-  margin-top: 2px;
-  white-space: nowrap;
+  letter-spacing: -0.01em;
 }
 
 /* Size variants */
 .hpw-size-small .hpw-toggle {
-  min-width: 110px;
-  padding: 12px 18px;
+  padding: 8px 14px;
+  gap: 8px;
 }
-.hpw-size-small .hpw-toggle-price { font-size: 20px; }
+.hpw-size-small .hpw-toggle-label { font-size: 12px; }
+.hpw-size-small .hpw-toggle-price { font-size: 13px; }
 
-.hpw-size-medium .hpw-toggle-price { font-size: 24px; }
+.hpw-size-medium .hpw-toggle {
+  padding: 10px 18px;
+}
 
 .hpw-size-large .hpw-toggle {
-  min-width: 150px;
-  padding: 16px 24px;
+  padding: 12px 22px;
+  gap: 12px;
 }
-.hpw-size-large .hpw-toggle-price { font-size: 28px; }
+.hpw-size-large .hpw-toggle-label { font-size: 14px; }
+.hpw-size-large .hpw-toggle-price { font-size: 16px; }
    
    /* ----- CTA ----------------------------------------------------------- */
    
