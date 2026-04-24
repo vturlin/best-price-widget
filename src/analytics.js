@@ -13,14 +13,9 @@ export function initAnalytics(config) {
   configRef = config;
   lastSavingsKey = null;
 
-
   if (enabled()) {
     const dlName = config.analytics.dataLayerName || 'dataLayer';
-    console.log('[HPW DEBUG]   creating window[' + dlName + ']');
     window[dlName] = window[dlName] || [];
-    console.log('[HPW DEBUG]   window[' + dlName + '] is now:', window[dlName]);
-  } else {
-    console.log('[HPW DEBUG]   NOT creating dataLayer because enabled() is falsy');
   }
 }
 
@@ -43,17 +38,6 @@ function push(eventName, payload = {}) {
 
 export function trackOpened() {
   push('opened');
-}
-
-export function autoOpened(hotelId, delaySeconds) {
-    pushEvent('auto_opened', {
-      hotel_id: hotelId,
-      delay_seconds: delaySeconds,
-    });
-  }
-
-export function trackRoomChanged(roomId, roomName) {
-  push('room_changed', { room_id: roomId, room_name: roomName });
 }
 
 export function trackDatesChanged(checkIn, checkOut, nights) {
