@@ -362,7 +362,17 @@ export default function Widget({ config }) {
     const url = (config.reserveUrl || '')
       .replace('{checkIn}', checkIn)
       .replace('{checkOut}', checkOut);
-    if (url) window.open(url, '_blank', 'noopener');
+    if (!url) return;
+
+    // Click originates in light DOM so GTM's cross-domain linker can
+    // retarget the event to a real anchor and append _gl=... to the href.
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
   }
 
   // ─── Rendering helpers ────────────────────────────────────────────
