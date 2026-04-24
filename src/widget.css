@@ -881,15 +881,15 @@
      .hpw-mobile .hpw-brand-name        { font-size: 16px; }
      .hpw-mobile .hpw-eyebrow           { font-size: 9px; }
      .hpw-mobile .hpw-close {
-       top: 12px;
-       right: 12px;
+       top: -12px;
+       right: -12px;
        width: 32px;
        height: 32px;
        font-size: 20px;
      }
      [dir="rtl"] .hpw-mobile .hpw-close {
        right: auto;
-       left: 12px;
+       left: -12px;
      }
      .hpw-mobile .hpw-headline-price    { font-size: 32px; }
      .hpw-mobile .hpw-headline-eyebrow  { font-size: 9px; }
