@@ -72,6 +72,19 @@
       font-weight: 300;
     }
     .hero-text p { max-width: 440px; color: #4a443a; margin-bottom: 32px; }
+    .booking-cta {
+      display: inline-block;
+      padding: 14px 28px;
+      background: var(--ink);
+      color: var(--paper);
+      text-decoration: none;
+      font-size: 12px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      border: 1px solid var(--ink);
+      transition: background 180ms, color 180ms;
+    }
+    .booking-cta:hover { background: transparent; color: var(--ink); }
     .hero-image {
       aspect-ratio: 3/4;
       background:
@@ -275,6 +288,11 @@
       <div class="eyebrow">Paris · 7ème Arrondissement</div>
       <h1>A quiet <em>address</em>,<br/>opposite the gardens.</h1>
       <p>Thirty-two rooms behind a wrought-iron door, a walled courtyard, a library of first editions. Since 1924.</p>
+      <a
+        id="book-now-cta"
+        class="booking-cta"
+        href="https://www-secure-hotel-booking.staging.d-edge.app/d-edge/hotel-le-charles-quint-/247C/fr-FR/RoomSelection"
+      >Book now</a>
     </div>
     <div class="hero-image" aria-hidden="true"></div>
   </header>
