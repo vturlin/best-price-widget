@@ -337,11 +337,10 @@
   <!-- PRICE COMPARISON WIDGET                                       -->
   <!-- ============================================================ -->
   <!--
-    1. Mount target. Can go anywhere in the body.
-    2. Load config.js first (the one you customise).
-    3. Load widget.js — it auto-mounts into #price-widget and fetches
-       widget.css from the same directory into its Shadow DOM. No <link>
-       tag needed.
+    Load widget.js with ?id=<hotel-id>. The widget fetches its JSON
+    config from configs/<hotel-id>.json (published by the admin app),
+    auto-creates its mount node, and loads widget.css from the same
+    directory into its Shadow DOM. No <link> tag needed.
     -->
     <script async src="./widget.js?id=hm_demo001"></script>
 
