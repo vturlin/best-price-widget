@@ -244,31 +244,24 @@
    
    .hpw-close {
      position: absolute;
-     top: -10px;
-     right: -10px;
-     width: 22px;
-     height: 22px;
-     border: 1px solid var(--hpw-rule);
-     background: var(--hpw-ivory);
-     border-radius: 50%;
-     font-size: 14px;
+     top: -7px;
+     right: -4px;
+     font-size: 18px;
      line-height: 1;
      color: var(--hpw-ink-soft);
      cursor: pointer;
      font-family: inherit;
-     transition: background 140ms, color 140ms, transform 140ms;
      display: grid;
      place-items: center;
      padding: 0;
-     box-shadow: 0 2px 6px rgba(26, 26, 26, 0.12);
      z-index: 2;
    }
    
-   .hpw-close:hover {
+   /* .hpw-close:hover {
      background: var(--hpw-ink);
      color: var(--hpw-ivory);
      transform: scale(1.08);
-   }
+   } */
    
    /* ----- Controls (date + room) ---------------------------------------- */
    
