@@ -302,27 +302,6 @@ export default function Widget({ config }) {
     }
   }, [expanded, rates?.savingsAmount]);
 
-  // Close on outside click (desktop)
-  useEffect(() => {
-    if (!expanded || isMobile) return;
-
-    const onClick = (e) => {
-      const path = typeof e.composedPath === 'function' ? e.composedPath() : [];
-      // Walk the full event path and check if any ancestor is our root
-      const clickedInside = path.some((el) => el === rootRef.current);
-      if (!clickedInside) handleClose();
-    };
-
-    const timer = setTimeout(() => {
-      document.addEventListener('mousedown', onClick);
-    }, 0);
-
-    return () => {
-      clearTimeout(timer);
-      document.removeEventListener('mousedown', onClick);
-    };
-  }, [expanded, isMobile]);
-
   // Mobile detection
   useEffect(() => {
     const update = () => setIsMobile(window.innerWidth < 640);
