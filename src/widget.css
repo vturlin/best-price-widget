@@ -1478,6 +1478,7 @@
   font-family: inherit;
   letter-spacing: 0.06em;
   text-transform: uppercase;     /* ← CAPS in every language */
+  text-decoration: none;
   cursor: pointer;
   text-align: center;
   transition: filter 140ms, transform 120ms;

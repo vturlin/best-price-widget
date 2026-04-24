@@ -358,27 +358,18 @@ export default function Widget({ config }) {
       checkIn,
       checkOut,
     });
-
-    const url = (config.reserveUrl || '')
-      .replace('{checkIn}', checkIn)
-      .replace('{checkOut}', checkOut);
-    if (!url) return;
-
-    // Click originates in light DOM so GTM's cross-domain linker can
-    // retarget the event to a real anchor and append _gl=... to the href.
-    const a = document.createElement('a');
-    a.href = url;
-    a.target = '_blank';
-    a.rel = 'noopener';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
   }
 
   // ─── Rendering helpers ────────────────────────────────────────────
   const currency = rates?.currency || config.currency || 'EUR';
   const status = rates?.status || 'loading';
   const showFallback = status === 'fallback' || !directChannel;
+
+  // Rendered as the Book button's href so the user's trusted click can be
+  // decorated by GTM's cross-domain linker (synthetic clicks are ignored).
+  const reserveHref = (config.reserveUrl || '')
+    .replace('{checkIn}', checkIn)
+    .replace('{checkOut}', checkOut) || undefined;
 
   return (
     <div
@@ -521,13 +512,15 @@ export default function Widget({ config }) {
           )}
 
           {/* Book button */}
-          <button
-            type="button"
+          <a
+            href={reserveHref}
+            target="_blank"
+            rel="noopener"
             className="hpw-book-btn"
             onClick={handleBook}
           >
             {t('bookNow')} →
-          </button>
+          </a>
 
           {/* Footer */}
           <footer className="hpw-footer">
