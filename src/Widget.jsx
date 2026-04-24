@@ -392,22 +392,16 @@ export default function Widget({ config }) {
           onClick={handleOpen}
           aria-label={t('openWidget')}
         >
-          <span className="hpw-toggle-label">{t('bestPrice')}</span>
-          {directChannel && rates?.status === 'ok' ? (
+          <span className="hpw-toggle-label">
+            {t('bestPriceGuaranteed')}
+          </span>
+          {directChannel && rates?.status === 'ok' && (
             <>
+              <span className="hpw-toggle-separator">·</span>
               <span className="hpw-toggle-price">
                 {formatCurrency(directChannel.total, currency, locale)}
               </span>
-              {rates.savingsAmount > 0 && (
-                <span className="hpw-toggle-savings">
-                  {t('youSave')} {formatCurrency(rates.savingsAmount, currency, locale)}
-                </span>
-              )}
             </>
-          ) : (
-            <span className="hpw-toggle-sub">
-              {t('bestPriceGuaranteed')}
-            </span>
           )}
         </button>
       )}
