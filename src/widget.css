@@ -880,17 +880,6 @@
      /* Mobile type scale-up for touch comfort */
      .hpw-mobile .hpw-brand-name        { font-size: 16px; }
      .hpw-mobile .hpw-eyebrow           { font-size: 9px; }
-     .hpw-mobile .hpw-close {
-       top: -10px;
-       right: -10px;
-       width: 28px;
-       height: 28px;
-       font-size: 16px;
-     }
-     [dir="rtl"] .hpw-mobile .hpw-close {
-       right: auto;
-       left: -10px;
-     }
      .hpw-mobile .hpw-headline-price    { font-size: 32px; }
      .hpw-mobile .hpw-headline-eyebrow  { font-size: 9px; }
      .hpw-mobile .hpw-headline-sub      { font-size: 11px; }
@@ -1019,7 +1008,7 @@
   }
 }
 
-/* Close button — floating OUTSIDE the panel corner */
+/* Close button — plain x, no circle, transparent background */
 .hpw-close {
   position: absolute;
   top: -10px;
@@ -1030,36 +1019,28 @@
   align-items: center;
   justify-content: center;
   border: 0;
-  background: white;
-  color: rgba(0, 0, 0, 0.55);
-  font-size: 16px;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  color: rgba(0, 0, 0, 0.85);
+  font-size: 22px;
   line-height: 1;
   cursor: pointer;
-  border-radius: 50%;
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.15),
-    0 0 0 1px rgba(0, 0, 0, 0.05);
-  transition: background 140ms, color 140ms, transform 140ms;
+  transition: color 140ms, transform 140ms;
   z-index: 3;
   padding: 0;
 }
 
 .hpw-close:hover {
-  background: #f5f5f5;
-  color: rgba(0, 0, 0, 0.85);
-  transform: scale(1.08);
+  color: black;
+  transform: scale(1.1);
 }
 
 .hpw-dark .hpw-close {
-  background: rgba(40, 40, 40, 1);
-  color: rgba(255, 255, 255, 0.7);
-  box-shadow:
-    0 2px 8px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .hpw-dark .hpw-close:hover {
-  background: rgba(60, 60, 60, 1);
   color: white;
 }
 
