@@ -12,7 +12,7 @@
   "reserveUrl": "https://www-secure-hotel-booking.staging.d-edge.app/d-edge/hotel-le-charles-quint-/247C/fr-FR/RoomSelection?arrivalDate={checkIn}&departureDate={checkOut}&room={roomId}",
   "currency": "EUR",
   "position": "bottom-right",
-  "size": "small",
+  "size": "large",
   "brandColor": "#b6a690",
   "backgroundColor": "#e6ded1",
   "enabledLocales": [
