@@ -134,25 +134,24 @@ function ensurePortalStyles() {
   document.head.appendChild(style);
 }
 
-function BookButtonPortal({ placeholderRef, href, onClick, label, brandColor }) {
+function BookButtonPortal({ placeholderEl, href, onClick, label, brandColor }) {
   const [rect, setRect] = useState(null);
 
   useLayoutEffect(() => {
-    const el = placeholderRef.current;
-    if (!el) return;
+    if (!placeholderEl) return;
 
-    const update = () => setRect(el.getBoundingClientRect());
+    const update = () => setRect(placeholderEl.getBoundingClientRect());
     update();
 
     const ro = new ResizeObserver(update);
-    ro.observe(el);
+    ro.observe(placeholderEl);
     window.addEventListener('resize', update);
 
     return () => {
       ro.disconnect();
       window.removeEventListener('resize', update);
     };
-  }, [placeholderRef]);
+  }, [placeholderEl]);
 
   useEffect(() => { ensurePortalStyles(); }, []);
 
@@ -209,7 +208,7 @@ export default function Widget({ config }) {
   const [i18n, setI18n] = useState({ t: (k) => k, primary: 'en' });
   const [otasExpanded, setOtasExpanded] = useState(false);
   const rootRef = useRef(null);
-  const bookBtnPlaceholderRef = useRef(null);
+  const [bookBtnPlaceholderEl, setBookBtnPlaceholderEl] = useState(null);
 
   // ─── Derived values ────────────────────────────────────────────────
   const t = i18n.t;
@@ -599,14 +598,14 @@ export default function Widget({ config }) {
               retargets event.target to the host). The placeholder below
               reserves layout space inside the panel. */}
           <div
-            ref={bookBtnPlaceholderRef}
+            ref={setBookBtnPlaceholderEl}
             className="hpw-book-btn-placeholder"
             aria-hidden="true"
           >
             {t('bookNow')} →
           </div>
           <BookButtonPortal
-            placeholderRef={bookBtnPlaceholderRef}
+            placeholderEl={bookBtnPlaceholderEl}
             href={reserveHref}
             onClick={handleBook}
             label={`${t('bookNow')} →`}
