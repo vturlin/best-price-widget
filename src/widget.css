@@ -36,12 +36,12 @@
      --hpw-shadow: 0 14px 28px -12px rgba(26, 26, 26, 0.28),
                    0 5px 10px -5px rgba(26, 26, 26, 0.16),
                    0 0 0 1px rgba(26, 26, 26, 0.04);
+     --hpw-scale: 1;
    }
-   
+
    /* Size variants — driven by config.size (small | medium | large).
       transform-origin is set per position so the widget scales outward
       from its anchor corner, not its visual center. */
-   .hpw-container { --hpw-scale: 1; }
    .hpw-container.hpw-size-medium { --hpw-scale: 1.1; }
    .hpw-container.hpw-size-large  { --hpw-scale: 1.2; }
 
@@ -182,29 +182,8 @@
    }
    
    /* ============ EXPANDED PANEL ============ */
-   
-   .hpw-panel {
-     width: 210px;
-     max-width: calc(100vw - 20px);
-     max-height: calc(100vh - 28px);
-     overflow-y: auto;
-     overscroll-behavior: contain;
-     background: var(--hpw-ivory);
-     border-radius: 3px;
-     box-shadow: var(--hpw-shadow);
-     position: relative;
-     scrollbar-width: thin;
-     scrollbar-color: var(--hpw-rule) transparent;
-   }
-   
-   .hpw-panel::-webkit-scrollbar { width: 4px; }
-   .hpw-panel::-webkit-scrollbar-track { background: transparent; }
-   .hpw-panel::-webkit-scrollbar-thumb {
-     background: var(--hpw-rule);
-     border-radius: 2px;
-   }
-   .hpw-panel::-webkit-scrollbar-thumb:hover { background: var(--hpw-ink-soft); }
-   
+   /* .hpw-panel is declared in the "Widget v2 — API mode" section below. */
+
    /* ----- Header --------------------------------------------------------- */
    
    .hpw-header {
@@ -241,27 +220,6 @@
      color: var(--hpw-ink-soft);
      font-weight: 500;
    }
-   
-   .hpw-close {
-     position: absolute;
-     top: -7px;
-     right: -4px;
-     font-size: 18px;
-     line-height: 1;
-     color: var(--hpw-ink-soft);
-     cursor: pointer;
-     font-family: inherit;
-     display: grid;
-     place-items: center;
-     padding: 0;
-     z-index: 2;
-   }
-   
-   /* .hpw-close:hover {
-     background: var(--hpw-ink);
-     color: var(--hpw-ivory);
-     transform: scale(1.08);
-   } */
    
    /* ----- Controls (date + room) ---------------------------------------- */
    
@@ -565,61 +523,8 @@
    
    .hpw-skeleton-price { height: 24px; width: 80px; }
    
-   /* ----- OTA list ------------------------------------------------------ */
-   
-   .hpw-ota-list {
-     list-style: none;
-     margin: 0;
-     padding: 5px 11px 1px;
-   }
-   
-   .hpw-ota-row {
-     display: flex;
-     align-items: baseline;
-     justify-content: space-between;
-     gap: 6px;
-     padding: 4px 0;
-     border-bottom: 1px dotted var(--hpw-rule);
-     font-size: 10px;
-   }
-   
-   .hpw-ota-row:last-child { border-bottom: none; }
-   
-   .hpw-ota-name {
-     color: var(--hpw-ink);
-     letter-spacing: 0.005em;
-   }
-   
-   .hpw-ota-price {
-     display: inline-flex;
-     align-items: baseline;
-     gap: 5px;
-     font-variant-numeric: tabular-nums;
-   }
-   
-   .hpw-ota-amount { color: var(--hpw-ink); font-weight: 500; }
-   
-   .hpw-ota-delta {
-     font-size: 8px;
-     color: #b54c4c;
-     font-weight: 500;
-     padding: 1px 4px;
-     border-radius: 2px;
-     background: rgba(181, 76, 76, 0.08);
-     letter-spacing: 0.01em;
-   }
-   
-   .hpw-ota-delta-flat {
-     color: var(--hpw-ink-soft);
-     background: var(--hpw-ivory-deep);
-   }
-   
-   .hpw-ota-na {
-     font-size: 8px;
-     color: var(--hpw-ink-soft);
-     font-style: italic;
-   }
-   
+   /* .hpw-ota-* styles live in the "Widget v2 — API mode" section below. */
+
    /* ========== Widget v2 — Toggle button (closed state) ======== */
 
 /* Pill-shaped button, horizontal, inspired by Stripe/Linear CTAs.
@@ -734,17 +639,8 @@
    .hpw-cta:hover .hpw-cta-arrow { transform: translateX(3px); }
    
    /* ----- Footer -------------------------------------------------------- */
-   
-   .hpw-footer {
-     /* padding: 0 11px 8px; */
-     text-align: center;
-     font-size: 7px;
-     letter-spacing: 0.08em;
-     text-transform: uppercase;
-     color: var(--hpw-ink-soft);
-     font-weight: 500;
-   }
-   
+   /* .hpw-footer styles live in the "Widget v2 — API mode" section below. */
+
    /* =========================================================================
       DARK THEME (auto-detected when background is dark)
       ========================================================================= */
@@ -814,7 +710,7 @@
    
    [dir="rtl"] .hpw-close {
      right: auto;
-     left: -10px;
+     left: -4px;
    }
    
    /* =========================================================================
@@ -1004,24 +900,22 @@
 /* Close button — plain x, no circle, transparent background */
 .hpw-close {
   position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 28px;
-  height: 28px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  top: -7px;
+  right: -4px;
+  display: grid;
+  place-items: center;
+  padding: 0;
   border: 0;
   border-radius: 0;
   background: transparent;
   box-shadow: none;
-  color: rgba(0, 0, 0, 0.85);
-  font-size: 22px;
+  color: var(--hpw-ink-soft);
+  font-size: 18px;
+  font-family: inherit;
   line-height: 1;
   cursor: pointer;
   transition: color 140ms, transform 140ms;
   z-index: 3;
-  padding: 0;
 }
 
 .hpw-close:hover {
@@ -1064,32 +958,6 @@
   text-align: left;
 }
 
-.hpw-stay-label {
-  grid-area: label;
-  font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: rgba(0, 0, 0, 0.55);
-  font-weight: 600;
-  white-space: nowrap;
-}
-
-.hpw-stay-value {
-  grid-area: value;
-}
-
-.hpw-stay-nights {
-  grid-area: nights;
-  padding: 3px 10px;
-  background: rgba(0, 0, 0, 0.06);
-  border-radius: 20px;
-  font-size: 11px;
-  color: rgba(0, 0, 0, 0.65);
-  white-space: nowrap;
-  font-weight: 500;
-  align-self: center;
-}
-
 .hpw-stay-summary:hover {
   background: rgba(255, 255, 255, 0.8);
   border-color: rgba(0, 0, 0, 0.16);
@@ -1106,6 +974,7 @@
 }
 
 .hpw-stay-label {
+  grid-area: label;
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 0.08em;
@@ -1117,6 +986,7 @@
 .hpw-dark .hpw-stay-label { color: rgba(255, 255, 255, 0.6); }
 
 .hpw-stay-value {
+  grid-area: value;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1134,6 +1004,7 @@
 .hpw-dark .hpw-stay-arrow { color: rgba(255, 255, 255, 0.4); }
 
 .hpw-stay-nights {
+  grid-area: nights;
   padding: 2px 8px;
   background: rgba(0, 0, 0, 0.06);
   border-radius: 20px;
@@ -1141,6 +1012,7 @@
   color: rgba(0, 0, 0, 0.6);
   white-space: nowrap;
   font-weight: 500;
+  align-self: center;
 }
 
 .hpw-dark .hpw-stay-nights {
