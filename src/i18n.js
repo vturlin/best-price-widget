@@ -35,6 +35,23 @@ const DICTS = {
 const LAST_RESORT_EN = en;
 const RTL_LOCALES = new Set(['ar', 'he', 'fa', 'ur']);
 
+// Legacy snake_case key fallbacks. 18 of 20 locales still use the old
+// key naming (reserve_direct, open_price_comparison, etc.) — this lets
+// us read them without rewriting every JSON. Keys with no entry here
+// and no camelCase translation fall through to English.
+const CAMEL_TO_SNAKE = {
+  openWidget:             'open_price_comparison',
+  bestPriceGuaranteed:    'best_price_guaranteed',
+  loading:                'loading_rates',
+  priceOnOfficialWebsite: 'direct_on_our_site',
+  night:                  'night_one',
+  nights:                 'night_other',
+  hideChannels:           'show_fewer_channels',
+  showAllChannels:        'show_all_channels',
+  bookNow:                'reserve_direct',
+  yourStay:               'your_stay',
+};
+
 export function primaryTag(locale) {
   return (locale || 'en').toLowerCase().split(/[-_]/)[0];
 }
@@ -69,7 +86,13 @@ export async function loadLocale(primary) {
 
 export function makeT(dict) {
   return function t(key, vars) {
-    let str = (dict && dict[key]) || LAST_RESORT_EN[key] || key;
+    const snake = CAMEL_TO_SNAKE[key];
+    let str =
+      (dict && dict[key]) ||
+      (dict && snake && dict[snake]) ||
+      LAST_RESORT_EN[key] ||
+      (snake && LAST_RESORT_EN[snake]) ||
+      key;
     if (vars) {
       for (const k of Object.keys(vars)) {
         str = str.replace(`{${k}}`, vars[k]);

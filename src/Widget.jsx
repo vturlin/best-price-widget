@@ -563,7 +563,7 @@ export default function Widget({ config }) {
                     >
                       {otasExpanded
                         ? t('hideChannels')
-                        : t('showAllChannels', { count: otaChannels.length })}
+                        : t('showAllChannels', { count: otaChannels.length, n: otaChannels.length })}
                       <span className={`hpw-otas-arrow ${otasExpanded ? 'up' : ''}`}>▼</span>
                     </button>
                   )}
