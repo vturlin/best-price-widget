@@ -16,7 +16,8 @@
  * or partial data.
  */
 
-import { useState, useEffect, useMemo, useRef } from 'react';
+import { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { loadRatesFromApi, buildPreviewData } from './data.js';
 import { resolveLocale, loadLocale, makeT, isRtl } from './i18n.js';
 import {
@@ -114,6 +115,87 @@ function formatDate(isoStr, locale) {
   }
 }
 
+// ─── Book button portal ─────────────────────────────────────────────
+// Renders the Book button anchor into document.body (light DOM), pinned
+// over a shadow-DOM placeholder via getBoundingClientRect. Needed so the
+// user's trusted click lands on an anchor that GTM's cross-domain linker
+// can actually see — shadow DOM hides anchors from GTM's target-based
+// lookup, even with composedPath available on the event.
+
+const PORTAL_STYLE_ID = 'hpw-book-btn-portal-styles';
+
+function ensurePortalStyles() {
+  if (document.getElementById(PORTAL_STYLE_ID)) return;
+  const style = document.createElement('style');
+  style.id = PORTAL_STYLE_ID;
+  style.textContent =
+    '.hpw-book-btn-portal:hover{filter:brightness(1.08)}' +
+    '.hpw-book-btn-portal:active{transform:translateY(1px)}';
+  document.head.appendChild(style);
+}
+
+function BookButtonPortal({ placeholderRef, href, onClick, label, brandColor }) {
+  const [rect, setRect] = useState(null);
+
+  useLayoutEffect(() => {
+    const el = placeholderRef.current;
+    if (!el) return;
+
+    const update = () => setRect(el.getBoundingClientRect());
+    update();
+
+    const ro = new ResizeObserver(update);
+    ro.observe(el);
+    window.addEventListener('resize', update);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', update);
+    };
+  }, [placeholderRef]);
+
+  useEffect(() => { ensurePortalStyles(); }, []);
+
+  if (!rect || !href) return null;
+
+  return createPortal(
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener"
+      onClick={onClick}
+      className="hpw-book-btn-portal"
+      style={{
+        position: 'fixed',
+        top: `${rect.top}px`,
+        left: `${rect.left}px`,
+        width: `${rect.width}px`,
+        height: `${rect.height}px`,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: brandColor,
+        color: 'black',
+        border: 0,
+        borderRadius: '8px',
+        fontSize: '13px',
+        fontWeight: 500,
+        fontFamily: 'inherit',
+        letterSpacing: '0.06em',
+        textTransform: 'uppercase',
+        textDecoration: 'none',
+        cursor: 'pointer',
+        boxSizing: 'border-box',
+        transition: 'filter 140ms, transform 120ms',
+        zIndex: 2147483647,
+      }}
+    >
+      {label}
+    </a>,
+    document.body
+  );
+}
+
 // ─── Main component ─────────────────────────────────────────────────
 
 export default function Widget({ config }) {
@@ -127,6 +209,7 @@ export default function Widget({ config }) {
   const [i18n, setI18n] = useState({ t: (k) => k, primary: 'en' });
   const [otasExpanded, setOtasExpanded] = useState(false);
   const rootRef = useRef(null);
+  const bookBtnPlaceholderRef = useRef(null);
 
   // ─── Derived values ────────────────────────────────────────────────
   const t = i18n.t;
@@ -511,16 +594,24 @@ export default function Widget({ config }) {
             </>
           )}
 
-          {/* Book button */}
-          <a
-            href={reserveHref}
-            target="_blank"
-            rel="noopener"
-            className="hpw-book-btn"
-            onClick={handleBook}
+          {/* Book button — rendered via portal into light DOM so GTM's
+              cross-domain linker can see the click target (shadow DOM
+              retargets event.target to the host). The placeholder below
+              reserves layout space inside the panel. */}
+          <div
+            ref={bookBtnPlaceholderRef}
+            className="hpw-book-btn-placeholder"
+            aria-hidden="true"
           >
             {t('bookNow')} →
-          </a>
+          </div>
+          <BookButtonPortal
+            placeholderRef={bookBtnPlaceholderRef}
+            href={reserveHref}
+            onClick={handleBook}
+            label={`${t('bookNow')} →`}
+            brandColor={config.brandColor || '#1a1a1a'}
+          />
 
           {/* Footer */}
           <footer className="hpw-footer">

@@ -1463,34 +1463,23 @@
   color: rgba(255, 255, 255, 0.6);
 }
 
-/* Book button — uppercase in all languages */
-.hpw-book-btn {
+/* Book button — invisible layout placeholder. The real anchor is rendered
+   via React portal into document.body so GTM's cross-domain linker can see
+   it. The placeholder reserves the same box dimensions as the original
+   button so the panel layout is unchanged. */
+.hpw-book-btn-placeholder {
   display: block;
   width: calc(100% - 32px);
   margin: 0 16px 5px;
   padding: 13px 20px;
-  background: var(--hpw-brand);
-  color: black;
-  border: 0;
-  border-radius: 8px;
   font-size: 13px;
   font-weight: 500;
   font-family: inherit;
   letter-spacing: 0.06em;
-  text-transform: uppercase;     /* ← CAPS in every language */
-  text-decoration: none;
-  cursor: pointer;
+  text-transform: uppercase;
   text-align: center;
-  transition: filter 140ms, transform 120ms;
+  visibility: hidden;
   box-sizing: border-box;
-}
-
-.hpw-book-btn:hover {
-  filter: brightness(1.08);
-}
-
-.hpw-book-btn:active {
-  transform: translateY(1px);
 }
 
 /* Footer */
