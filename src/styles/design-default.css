@@ -1,0 +1,378 @@
+/* =========================================================================
+   DEFAULT DESIGN — Wax-seal toggle + V5 Stamp panel
+   -------------------------------------------------------------------------
+   Closed state: a wax-seal medallion pinned to a cream price flag
+   (.hpw-toggle*).
+   Open state: the V5 stamp panel — cream/linen surface with a wax-stamp
+   savings medallion (.hpw-v5*).
+   Selected via config.widgetDesign === 'default' (the implicit default).
+   ========================================================================= */
+
+/* ====================================================================
+   Wax-seal toggle (closed state)
+   ====================================================================
+   No size variants here — the existing --hpw-scale on .hpw-container
+   already scales the whole assembly via transform; pixel values below
+   are the absolute reference at scale 1.0.
+   ==================================================================== */
+
+.hpw-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  line-height: 1;
+  transition: transform 180ms ease;
+  white-space: nowrap;
+}
+
+.hpw-toggle:hover {
+  transform: translateY(-1px);
+}
+.hpw-toggle:hover .hpw-toggle-flag {
+  box-shadow: 0 6px 14px rgba(58, 40, 24, 0.14);
+}
+.hpw-toggle:focus-visible {
+  outline: 2px solid var(--hpw-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Wax seal medallion — sits on top of the flag, overlapping by 16px */
+.hpw-toggle-seal {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  /* drop-shadow follows the SVG circle's actual edge instead of a square */
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.18));
+}
+.hpw-toggle-seal svg { display: block; }
+
+/* Cream price flag — the existing --hpw-bg from the admin's
+   backgroundColor field drives the cream/linen tone. */
+.hpw-toggle-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: -16px;
+  padding: 12px 18px 12px 24px;
+  background: var(--hpw-bg);
+  border: 1px solid #D4C4A8;
+  border-left: 0;
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 4px 10px rgba(58, 40, 24, 0.10);
+  transition: box-shadow 180ms ease;
+}
+
+/* Two-line micro-eyebrow ("BEST PRICE" / "GUARANTEED") */
+.hpw-toggle-eyebrow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  line-height: 1;
+  color: #7A6859;
+  text-transform: uppercase;
+}
+
+.hpw-toggle-divider {
+  width: 1px;
+  height: 22px;
+  background: #D4C4A8;
+}
+
+.hpw-toggle-price-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.hpw-toggle-price {
+  font-family: 'Cormorant Garamond', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #1A1410;
+}
+
+.hpw-toggle-check { flex-shrink: 0; display: block; }
+
+/* ====================================================================
+   V5 Stamp panel (open state)
+   ====================================================================
+   Cream linen panel + wax-stamp savings medallion. Surface colors come
+   from CSS custom properties set inline by V5StampPanel from the config
+   (--v5-surface, --v5-ink, --v5-cta-bg, --v5-cta-ink, --v5-stamp-*) so a
+   hotel's brand drives the look without needing a theme system.
+   ==================================================================== */
+
+.hpw-v5 {
+  position: relative;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  padding: 28px;
+  background: var(--v5-surface);
+  color: var(--v5-ink);
+  border-radius: 4px;
+  box-shadow:
+    0 14px 40px rgba(58, 40, 24, 0.18),
+    0 0 0 1px rgba(58, 40, 24, 0.07);
+  /* No overflow:hidden — the date-picker popover anchors to a child and
+     may extend past the panel edge; the stamp medallion stays within the
+     hero's local box anyway. */
+  font-family: inherit;
+  /* Open reveal — opacity + small slide. Stamp animates separately via
+     its own keyframes with a slight overshoot. */
+  animation: hpw-v5-reveal 320ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes hpw-v5-reveal {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.hpw-v5-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  color: var(--v5-ink);
+  cursor: pointer;
+  border-radius: 2px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.hpw-v5-close:hover { opacity: 0.7; }
+.hpw-v5-close:focus-visible { outline: 2px solid var(--v5-ink); outline-offset: 2px; }
+
+/* Date strip — clickable trigger that opens the date-picker popover */
+.hpw-v5-dates {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 8px;
+  margin: -4px -8px;
+  font-size: 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 2px;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.hpw-v5-dates:hover { background: var(--v5-rule); }
+.hpw-v5-dates.is-open { background: var(--v5-rule); }
+.hpw-v5-dates:focus-visible {
+  outline: 2px solid var(--v5-ink);
+  outline-offset: 1px;
+}
+.hpw-v5-dates svg { color: var(--v5-muted); flex-shrink: 0; }
+.hpw-v5-dates-range { font-weight: 500; color: var(--v5-ink); }
+.hpw-v5-dates-sep { color: var(--v5-faint); }
+.hpw-v5-dates-nights { color: var(--v5-muted); }
+
+/* Hero block — kicker + price + stamp medallion */
+.hpw-v5-hero {
+  position: relative;
+  margin-top: 18px;
+  margin-bottom: 18px;
+}
+.hpw-v5-kicker {
+  font-size: 9px;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--v5-muted);
+}
+.hpw-v5-price {
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-size: 78px;
+  line-height: 0.92;
+  font-weight: 400;
+  letter-spacing: -0.025em;
+  color: var(--v5-ink);
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+/* The stamp medallion */
+.hpw-v5-stamp {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--v5-stamp-face);
+  color: var(--v5-stamp-ink);
+  border: 1.5px solid var(--v5-stamp-edge);
+  box-shadow:
+    0 4px 10px var(--v5-stamp-shadow),
+    inset 0 0 0 3px var(--v5-stamp-ringhi);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  letter-spacing: 0.04em;
+  /* Stamp animates from upright + scaled down + invisible to its rotated
+     rest at -8deg. The cubic-bezier gives a tiny overshoot so it feels
+     "pressed into" the page. */
+  transform: rotate(-8deg);
+  animation: hpw-v5-stamp-press 360ms cubic-bezier(0.34, 1.56, 0.64, 1) 180ms both;
+}
+@keyframes hpw-v5-stamp-press {
+  0%   { opacity: 0; transform: rotate(0deg) scale(0.7); }
+  100% { opacity: 1; transform: rotate(-8deg) scale(1); }
+}
+.hpw-v5-stamp-1 {
+  font-size: 8px;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  opacity: 0.8;
+  text-transform: uppercase;
+}
+.hpw-v5-stamp-2 {
+  font-family: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
+  margin-top: 1px;
+  font-variant-numeric: tabular-nums;
+}
+.hpw-v5-stamp-3 {
+  font-size: 9px;
+  letter-spacing: 0.18em;
+  font-weight: 600;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
+.hpw-v5-sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* OTA comparison block — line-through prices, no winner column */
+.hpw-v5-otas {
+  border-top: 1px solid var(--v5-rule);
+  border-bottom: 1px solid var(--v5-rule);
+  padding: 10px 0;
+  margin-bottom: 14px;
+}
+.hpw-v5-ota-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 4px 0;
+  font-size: 12px;
+  color: var(--v5-ink);
+  /* Each row staggers in subtly. nth-child timing gives the column a
+     feeling of "settling" after the panel + stamp lands. */
+  animation: hpw-v5-row-in 240ms ease-out both;
+  animation-delay: 100ms;
+}
+.hpw-v5-ota-row:nth-child(2) { animation-delay: 140ms; }
+.hpw-v5-ota-row:nth-child(3) { animation-delay: 180ms; }
+.hpw-v5-ota-row:nth-child(4) { animation-delay: 220ms; }
+.hpw-v5-ota-row:nth-child(5) { animation-delay: 260ms; }
+.hpw-v5-ota-row:nth-child(6) { animation-delay: 300ms; }
+@keyframes hpw-v5-row-in {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: none; }
+}
+.hpw-v5-ota-price {
+  color: var(--v5-muted);
+  text-decoration: line-through;
+  font-variant-numeric: tabular-nums;
+}
+
+.hpw-v5-guarantee {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
+  color: var(--v5-muted);
+  letter-spacing: 0.04em;
+  margin-bottom: 12px;
+}
+
+/* CTA — placeholder div serves only to size + position the floating
+   BookButtonPortal anchor that overlays it. Kept visually invisible
+   (transparent background + transparent glyphs) so any sub-pixel
+   misalignment between the placeholder and the floating <a> does not
+   leak a coloured rectangle. The portal's <a> is the visible button. */
+.hpw-v5-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  padding: 13px 16px;
+  background: transparent;
+  color: transparent;
+  border: none;
+  border-radius: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  font-family: inherit;
+}
+.hpw-v5-cta svg { display: none; }
+
+.hpw-v5-footer {
+  margin-top: 12px;
+  text-align: center;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--v5-faint);
+}
+
+/* Desktop bump (≥ 768px): bigger panel, hero, and stamp. */
+@media (min-width: 768px) {
+  .hpw-v5 { width: 380px; padding: 28px; }
+  .hpw-v5-price { font-size: 88px; }
+  .hpw-v5-stamp { width: 80px; height: 80px; top: -4px; right: -4px; }
+  .hpw-v5-stamp-2 { font-size: 26px; }
+}
+
+/* Mobile (< 768px) — slide up from below + larger sheet feel. */
+@media (max-width: 767px) {
+  .hpw-v5 {
+    animation: hpw-v5-reveal-mobile 360ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+    padding: 22px;
+  }
+  @keyframes hpw-v5-reveal-mobile {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: none; }
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hpw-v5,
+  .hpw-v5-stamp,
+  .hpw-v5-ota-row {
+    animation: none !important;
+  }
+  /* Keep the stamp at its rest rotation — the spec wants it to "appear at
+     -8deg even with reduced motion". */
+  .hpw-v5-stamp { transform: rotate(-8deg); }
+}

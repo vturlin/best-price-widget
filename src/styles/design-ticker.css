@@ -1,0 +1,304 @@
+/* =========================================================================
+   TICKER DESIGN — Bloomberg-style rail + expandable panel
+   -------------------------------------------------------------------------
+   Closed state: a 36px-tall bottom rail with a marquee of competitor OTA
+   prices.
+   Open state: a dark expandable panel growing UPWARD with a count-down
+   hero price, savings line, OTA comparison table, and CTA.
+   Selected via config.widgetDesign === 'ticker'.
+
+   The container keeps the corner-anchored positioning + the --hpw-scale
+   transform from .hpw-pos-* (defined in shared.css) — same chrome as the
+   default widget, so the operator's `position` and `size` configs still
+   drive placement/scale. The rail and panel inside size to the root's
+   width below (320px to match the default panel).
+   ========================================================================= */
+
+.hpw-tk-root {
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  --tk-rail-bg:      #1A1410;
+  --tk-panel-bg:     #0A0805;
+  --tk-divider:      #2A1F18;
+  --tk-text-strong:  #F5E9D6;
+  --tk-text:         #E8DAC4;
+  --tk-text-mute:    #A89684;
+  --tk-text-dim:     #7A6859;
+  --tk-text-faint:   #5C4838;
+  --tk-up:           #E76F51;
+  --tk-down:         #4ADE80;
+  --tk-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --tk-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+
+  display: block;
+}
+
+.hpw-tk-panel {
+  background: var(--tk-panel-bg);
+  color: var(--tk-text);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 500ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  border-top: none;
+}
+.hpw-tk-panel.is-open {
+  max-height: 380px;
+  border-top: 1px solid var(--tk-divider);
+}
+
+.hpw-tk-panel-inner { padding: 20px 22px 16px; }
+
+.hpw-tk-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+}
+
+.hpw-tk-kicker {
+  font-family: 'Open Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  color: var(--tk-text-mute);
+  text-transform: uppercase;
+}
+
+/* When the kicker also serves as the date-picker trigger, make it look
+   subtly interactive without breaking the editorial type. */
+.hpw-tk-kicker-btn {
+  background: transparent;
+  border: 0;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  border-radius: 2px;
+  cursor: pointer;
+  color: var(--tk-text-mute);
+  transition: background 120ms ease, color 120ms ease;
+}
+.hpw-tk-kicker-btn:hover,
+.hpw-tk-kicker-btn.is-open {
+  background: rgba(245, 233, 214, 0.06);
+  color: var(--tk-text);
+}
+.hpw-tk-kicker-btn:focus-visible {
+  outline: 1px solid var(--tk-down);
+  outline-offset: 2px;
+}
+
+.hpw-tk-livestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--tk-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--tk-text-faint);
+}
+
+.hpw-tk-hero {
+  font-family: var(--tk-serif);
+  font-size: 76px;
+  font-weight: 500;
+  line-height: 0.95;
+  color: var(--tk-text-strong);
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hpw-tk-savings {
+  font-family: var(--tk-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--tk-down);
+  margin-top: 6px;
+  opacity: 0.5;
+  transition: opacity 400ms ease;
+}
+.hpw-tk-savings.is-settled { opacity: 1; }
+
+.hpw-tk-table {
+  margin-top: 14px;
+  border: 1px solid var(--tk-divider);
+  border-radius: 2px;
+  font-family: var(--tk-mono);
+  font-size: 11px;
+}
+
+.hpw-tk-table-head {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  padding: 8px 12px;
+  font-size: 9px;
+  color: var(--tk-text-faint);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--tk-divider);
+}
+
+.hpw-tk-table-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  padding: 8px 12px;
+  color: var(--tk-text-mute);
+  border-bottom: 1px dashed var(--tk-divider);
+  align-items: baseline;
+}
+.hpw-tk-table-row:last-child { border-bottom: none; }
+
+.hpw-tk-table-direct {
+  color: var(--tk-text-strong);
+  font-weight: 600;
+  background: rgba(201, 168, 122, 0.05);
+  border-bottom: none;
+}
+
+.hpw-tk-cell-num  { font-variant-numeric: tabular-nums; }
+.hpw-tk-cell-up   { color: var(--tk-up); }
+.hpw-tk-cell-down { color: var(--tk-down); }
+
+/* Ticker CTA placeholder — sized only, kept visually invisible so the
+   floating BookButtonPortal anchor is the single visible button. */
+.hpw-tk-cta {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 2px;
+  font-family: var(--tk-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  text-align: center;
+  background: transparent !important;
+  color: transparent !important;
+}
+
+.hpw-tk-footer {
+  margin-top: 12px;
+  text-align: center;
+  font-family: var(--tk-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--tk-text-faint);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ─── Rail (always visible, the closed state) ─── */
+.hpw-tk-rail {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 36px;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid rgba(201, 168, 122, 0.2);
+  background: var(--tk-rail-bg);
+  cursor: pointer;
+  font-family: var(--tk-mono);
+}
+.hpw-tk-rail:focus-visible {
+  outline: 2px solid var(--tk-down);
+  outline-offset: -2px;
+}
+
+.hpw-tk-fade-left,
+.hpw-tk-fade-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  z-index: 2;
+  pointer-events: none;
+}
+.hpw-tk-fade-left  { left: 0;  background: linear-gradient(90deg,  var(--tk-rail-bg), transparent); }
+.hpw-tk-fade-right { right: 0; background: linear-gradient(270deg, var(--tk-rail-bg), transparent); }
+
+.hpw-tk-live {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--tk-down);
+  letter-spacing: 0.16em;
+}
+
+.hpw-tk-live-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--tk-down);
+  animation: hpw-tk-pulse 1.5s ease-in-out infinite;
+}
+
+.hpw-tk-hint {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  pointer-events: none;
+}
+
+.hpw-tk-stream { position: relative; height: 100%; }
+
+.hpw-tk-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 28px;
+  white-space: nowrap;
+  height: 100%;
+  padding-left: 80px;
+  font-size: 11px;
+  color: var(--tk-text-mute);
+  letter-spacing: 0.06em;
+  animation: hpw-tk-scroll 24s linear infinite;
+}
+.hpw-tk-track.is-paused {
+  animation: none;
+  opacity: 0.3;
+  transition: opacity 300ms ease;
+}
+
+.hpw-tk-stream-item { display: inline-flex; align-items: center; gap: 8px; }
+.hpw-tk-stream-name  { color: var(--tk-text-dim); }
+.hpw-tk-stream-price { color: var(--tk-text); font-variant-numeric: tabular-nums; }
+.hpw-tk-stream-up    { color: var(--tk-up); }
+.hpw-tk-stream-down  { color: var(--tk-down); }
+.hpw-tk-stream-sep   { color: var(--tk-text-faint); }
+
+.hpw-tk-stream-direct       { font-weight: 700; }
+.hpw-tk-stream-direct-label { font-weight: 700; }
+.hpw-tk-stream-direct-price {
+  color: var(--tk-text-strong);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes hpw-tk-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes hpw-tk-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hpw-tk-track { transform: none !important; }
+  .hpw-tk-live-dot { opacity: 1 !important; }
+  .hpw-tk-panel { transition: none !important; }
+}

@@ -1,0 +1,435 @@
+/* =========================================================================
+   HOTEL PRICE WIDGET — SHARED STYLES
+   -------------------------------------------------------------------------
+   Reset, container chrome (positions + sizes + scale), mobile bottom-sheet
+   behaviour, RTL flips, the date-picker popover, and the BookButtonPortal
+   marker. Everything that is not specific to a single design variant lives
+   here. Variant-specific styles are in design-default.css and
+   design-ticker.css and are concatenated into a single dist/widget.css at
+   build time (see vite.config.js).
+   ========================================================================= */
+
+:host, .hpw-root { all: initial; }
+/* Allow the host site's font to flow through the shadow boundary so the
+   widget blends with the surrounding page typography. */
+:host { font-family: inherit; }
+.hpw-root, .hpw-root * { box-sizing: border-box; }
+
+.hpw-root {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #1a1a1a;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ----- Container & positioning ----------------------------------------- */
+
+.hpw-container {
+  position: fixed;
+  z-index: 2147483000;
+  --hpw-brand: #1a1a1a;
+  --hpw-brand-ink: #ffffff;
+  --hpw-ivory: #faf7f2;
+  --hpw-ivory-deep: #f1ece2;
+  --hpw-rule: #e6dfd1;
+  --hpw-ink: #1a1a1a;
+  --hpw-ink-soft: #6b6558;
+  --hpw-sage: #5a7a5a;
+  --hpw-shadow: 0 14px 28px -12px rgba(26, 26, 26, 0.28),
+                0 5px 10px -5px rgba(26, 26, 26, 0.16),
+                0 0 0 1px rgba(26, 26, 26, 0.04);
+  /* Base scale: original 1.0 / 1.1 / 1.2 across small/medium/large was too
+     heavy on the page; the whole range is multiplied by 0.85 * 0.9 = 0.765,
+     so the default ends up ~24% smaller than the very first iteration.
+     Relative spacing between variants is preserved. */
+  --hpw-scale: 0.765;
+}
+
+/* Size variants — driven by config.size (small | medium | large).
+   transform-origin is set per position so the widget scales outward from
+   its anchor corner, not its visual center. */
+.hpw-container.hpw-size-medium { --hpw-scale: 0.8415; }
+.hpw-container.hpw-size-large  { --hpw-scale: 0.918; }
+
+.hpw-pos-bottom-right  { right: 14px; bottom: 14px; transform-origin: bottom right; transform: scale(var(--hpw-scale)); }
+.hpw-pos-bottom-left   { left: 14px;  bottom: 14px; transform-origin: bottom left;  transform: scale(var(--hpw-scale)); }
+.hpw-pos-center-right  { right: 14px; top: 50%; transform-origin: center right; transform: translateY(-50%) scale(var(--hpw-scale)); }
+.hpw-pos-center-left   { left: 14px;  top: 50%; transform-origin: center left;  transform: translateY(-50%) scale(var(--hpw-scale)); }
+.hpw-pos-top-right     { right: 14px; top: 14px; transform-origin: top right; transform: scale(var(--hpw-scale)); }
+.hpw-pos-top-left      { left: 14px;  top: 14px; transform-origin: top left;  transform: scale(var(--hpw-scale)); }
+
+/* Dark theme — auto-detected when config.backgroundColor luminance < 0.5 */
+.hpw-dark.hpw-container {
+  --hpw-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.6),
+                0 5px 10px -5px rgba(0, 0, 0, 0.5),
+                0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+
+/* ----- Stay picker fallback trigger -----------------------------------
+   The current designs (V5 + ticker) supply their own renderTrigger to
+   StayPicker. These rules style the default trigger that renders when no
+   override is provided — kept defensive in case a future variant relies
+   on it. */
+
+.hpw-stay { position: relative; }
+
+.hpw-stay-summary {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  grid-template-rows: auto auto;
+  grid-template-areas:
+    "label nights"
+    "value nights";
+  row-gap: 2px;
+  column-gap: 10px;
+  align-items: center;
+  width: 100%;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 13px;
+  color: inherit;
+  cursor: pointer;
+  transition: background 140ms, border-color 140ms;
+  box-sizing: border-box;
+  text-align: left;
+}
+.hpw-stay-summary:hover {
+  background: rgba(255, 255, 255, 0.8);
+  border-color: rgba(0, 0, 0, 0.16);
+}
+.hpw-dark .hpw-stay-summary {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+.hpw-dark .hpw-stay-summary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.hpw-stay-label {
+  grid-area: label;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(0, 0, 0, 0.55);
+  font-weight: 600;
+  white-space: nowrap;
+}
+.hpw-dark .hpw-stay-label { color: rgba(255, 255, 255, 0.6); }
+
+.hpw-stay-value {
+  grid-area: value;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  min-width: 0;
+}
+
+.hpw-stay-arrow {
+  color: rgba(0, 0, 0, 0.35);
+  font-weight: normal;
+}
+.hpw-dark .hpw-stay-arrow { color: rgba(255, 255, 255, 0.4); }
+
+.hpw-stay-nights {
+  grid-area: nights;
+  padding: 2px 8px;
+  background: rgba(0, 0, 0, 0.06);
+  border-radius: 20px;
+  font-size: 11px;
+  color: rgba(0, 0, 0, 0.6);
+  white-space: nowrap;
+  font-weight: 500;
+  align-self: center;
+}
+.hpw-dark .hpw-stay-nights {
+  background: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* ----- Date-picker popover (react-day-picker) -------------------------- */
+
+.hpw-datepicker-popover {
+  margin-top: 10px;
+  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
+  box-shadow: none;
+  padding: 14px 8px 10px;
+  animation: hpw-popover-in 150ms ease-out;
+}
+
+@keyframes hpw-popover-in {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.hpw-dark .hpw-datepicker-popover {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Reset rdp styles and apply our own */
+.hpw-datepicker-popover .rdp-root {
+  --rdp-accent-color: var(--hpw-brand);
+  --rdp-accent-background-color: transparent;
+  --rdp-day-height: 34px;
+  --rdp-day-width: 34px;
+  --rdp-weekday-padding: 4px 0;
+  --rdp-weekday-text-transform: none;
+  --rdp-nav_button-height: 28px;
+  --rdp-nav_button-width: 28px;
+  font-family: inherit;
+  font-size: 13px;
+}
+
+/* Highlighted check-in while waiting for check-out click */
+.hpw-datepicker-popover .rdp-checkin-selected .rdp-day_button {
+  background: #1a1a1a;
+  color: white;
+  font-weight: 700;
+  border-radius: 8px;
+}
+
+/* Month caption — centered title with arrows at extremes */
+.hpw-datepicker-popover .rdp-month_caption {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 0 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(0, 0, 0, 0.85);
+}
+.hpw-dark .hpw-datepicker-popover .rdp-month_caption {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Navigation — small arrows at the edges of the caption row */
+.hpw-datepicker-popover .rdp-nav {
+  display: flex;
+  justify-content: space-between;
+  position: absolute;
+  top: 14px;
+  left: 10px;
+  right: 10px;
+  pointer-events: none;
+}
+
+.hpw-datepicker-popover .rdp-button_previous,
+.hpw-datepicker-popover .rdp-button_next {
+  pointer-events: auto;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: rgba(0, 0, 0, 0.65);
+  cursor: pointer;
+  transition: background 140ms;
+}
+.hpw-datepicker-popover .rdp-button_previous:hover,
+.hpw-datepicker-popover .rdp-button_next:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+.hpw-datepicker-popover .rdp-button_previous:disabled,
+.hpw-datepicker-popover .rdp-button_next:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+.hpw-dark .hpw-datepicker-popover .rdp-button_previous,
+.hpw-dark .hpw-datepicker-popover .rdp-button_next {
+  color: rgba(255, 255, 255, 0.65);
+}
+.hpw-dark .hpw-datepicker-popover .rdp-button_previous:hover,
+.hpw-dark .hpw-datepicker-popover .rdp-button_next:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.hpw-datepicker-popover .rdp-chevron {
+  fill: currentColor;
+  width: 14px;
+  height: 14px;
+}
+
+/* Weekdays row (Mo Tu We ...) */
+.hpw-datepicker-popover .rdp-weekday {
+  font-size: 11px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.45);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 0;
+}
+.hpw-dark .hpw-datepicker-popover .rdp-weekday {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Day buttons */
+.hpw-datepicker-popover .rdp-day {
+  padding: 2px;
+}
+
+.hpw-datepicker-popover .rdp-day_button {
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(0, 0, 0, 0.82);
+  cursor: pointer;
+  transition: background 140ms, color 140ms;
+  font-family: inherit;
+}
+.hpw-datepicker-popover .rdp-day_button:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.06);
+}
+.hpw-dark .hpw-datepicker-popover .rdp-day_button {
+  color: rgba(255, 255, 255, 0.85);
+}
+.hpw-dark .hpw-datepicker-popover .rdp-day_button:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+/* Outside days */
+.hpw-datepicker-popover .rdp-outside .rdp-day_button {
+  color: rgba(0, 0, 0, 0.25);
+  font-weight: 400;
+}
+.hpw-dark .hpw-datepicker-popover .rdp-outside .rdp-day_button {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+/* Today */
+.hpw-datepicker-popover .rdp-today .rdp-day_button {
+  background: color-mix(in srgb, var(--hpw-bg) 60%, rgba(0, 0, 0, 0.08));
+  font-weight: 700;
+}
+@supports not (background: color-mix(in srgb, white, black)) {
+  .hpw-datepicker-popover .rdp-today .rdp-day_button {
+    background: rgba(0, 0, 0, 0.05);
+  }
+}
+
+/* Range middle */
+.hpw-datepicker-popover .rdp-range_middle .rdp-day_button {
+  background: color-mix(in srgb, var(--hpw-brand) 12%, transparent);
+  border-radius: 0;
+  color: rgba(0, 0, 0, 0.82);
+  font-weight: 500;
+}
+@supports not (background: color-mix(in srgb, white, black)) {
+  .hpw-datepicker-popover .rdp-range_middle .rdp-day_button {
+    background: rgba(139, 90, 60, 0.1);
+  }
+}
+
+/* Range start / end */
+.hpw-datepicker-popover .rdp-range_start .rdp-day_button,
+.hpw-datepicker-popover .rdp-range_end .rdp-day_button,
+.hpw-datepicker-popover .rdp-selected:not(.rdp-range_middle) .rdp-day_button {
+  background: #1a1a1a;
+  color: white;
+  font-weight: 700;
+  border-radius: 8px;
+}
+.hpw-datepicker-popover .rdp-range_start .rdp-day_button {
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.hpw-datepicker-popover .rdp-range_end .rdp-day_button {
+  border-top-left-radius: 0;
+  border-bottom-left-radius: 0;
+}
+.hpw-datepicker-popover .rdp-range_start.rdp-range_end .rdp-day_button {
+  border-radius: 8px;
+}
+
+/* Disabled */
+.hpw-datepicker-popover .rdp-disabled { opacity: 0.25; }
+.hpw-datepicker-popover .rdp-disabled .rdp-day_button { cursor: not-allowed; }
+.hpw-datepicker-popover .rdp-disabled .rdp-day_button:hover {
+  background: transparent !important;
+}
+
+.hpw-datepicker-popover .rdp-month { padding: 0; }
+.hpw-datepicker-popover .rdp-weekdays { margin-bottom: 2px; }
+
+/* Calendar popover: overlay positioning for the V5 stamp & ticker designs.
+   Both variants use position:absolute from .hpw-stay (already
+   position:relative) so the popover floats over panel content rather than
+   displacing it. */
+.hpw-design-default .hpw-v5 .hpw-datepicker-popover,
+.hpw-design-ticker .hpw-datepicker-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  z-index: 10;
+  border-radius: 8px;
+  padding: 10px 6px 6px;
+}
+
+.hpw-design-default .hpw-v5 .hpw-datepicker-popover {
+  background: var(--v5-surface, #FAF4E8);
+  border-color: var(--v5-rule, rgba(58, 40, 24, 0.12));
+  box-shadow: 0 12px 32px rgba(58, 40, 24, 0.18);
+}
+
+.hpw-design-ticker .hpw-datepicker-popover {
+  background: #0A0A0A;
+  border-color: rgba(245, 233, 214, 0.10);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+}
+
+/* ----- Mobile bottom-sheet anchoring ----------------------------------- */
+
+@media (max-width: 520px) {
+  .hpw-pos-bottom-right,
+  .hpw-pos-bottom-left { left: 8px; right: 8px; bottom: 8px; }
+  .hpw-pos-center-right,
+  .hpw-pos-center-left { left: 8px; right: 8px; top: auto; bottom: 8px; transform: none; }
+}
+
+@media (max-width: 640px) {
+  .hpw-container.hpw-mobile.hpw-pos-bottom-right,
+  .hpw-container.hpw-mobile.hpw-pos-bottom-left,
+  .hpw-container.hpw-mobile.hpw-pos-center-right,
+  .hpw-container.hpw-mobile.hpw-pos-center-left {
+    left: auto;
+    right: 16px;
+    bottom: 16px;
+    top: auto;
+    transform: none;
+  }
+
+  .hpw-container.hpw-mobile.hpw-expanded {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    transform: none !important;
+  }
+}
+
+/* ----- Reduced motion default ------------------------------------------ */
+/* Each design also defines its own reduced-motion overrides for animations
+   it owns — this is the global guard so any keyframes left ungated still
+   stop on user request. */
+@media (prefers-reduced-motion: reduce) {
+  .hpw-container *, .hpw-container *::before, .hpw-container *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
