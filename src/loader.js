@@ -103,6 +103,9 @@ export function normalizeConfig(raw) {
       ? raw.position
       : 'bottom-right',
     size: ['small', 'medium', 'large'].includes(raw.size) ? raw.size : 'small',
+    // Closed-state design variant. 'default' = wax-seal + cream
+    // price flag, 'ticker' = dark Bloomberg-style live-rates panel.
+    toggleDesign: raw.toggleDesign === 'ticker' ? 'ticker' : 'default',
     brandColor: String(raw.brandColor || '#1a1a1a'),
     // Optional override for the wax-seal toggle. Empty string = inherit
     // brandColor; any non-empty value wins for the closed-state seal.

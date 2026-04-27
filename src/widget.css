@@ -628,6 +628,227 @@
 }
 
 .hpw-toggle-check { flex-shrink: 0; display: block; }
+
+/* ====================================================================
+   Closed-state — Ticker variant (Bloomberg terminal aesthetic)
+   ====================================================================
+   Selected via config.toggleDesign === 'ticker'. Self-contained color
+   scheme (intentionally not driven by --hpw-brand — the Bloomberg look
+   needs the dark/red/green palette to read correctly).
+   ==================================================================== */
+
+.hpw-ticker {
+  --ticker-bg:         #0F0E0C;
+  --ticker-bg-alt:     #1A1410;
+  --ticker-border:     #2A2520;
+  --ticker-text:       #F5E9D6;
+  --ticker-text-mute:  #A89684;
+  --ticker-text-dim:   #7A6859;
+  --ticker-up:         #C44536;
+  --ticker-down:       #3FB950;
+  --ticker-down-soft:  rgba(63, 185, 80, 0.4);
+  --ticker-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  display: flex;
+  align-items: stretch;
+  width: 360px;
+  padding: 0;
+  background: var(--ticker-bg);
+  border: 1px solid var(--ticker-border);
+  border-radius: 2px;
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.32),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.04);
+  overflow: hidden;
+  cursor: pointer;
+  font-family: var(--ticker-mono);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.hpw-ticker:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 10px 22px rgba(0, 0, 0, 0.40),
+    inset 0 0 0 0.5px rgba(255, 255, 255, 0.04);
+}
+.hpw-ticker:focus-visible {
+  outline: 2px solid var(--ticker-down);
+  outline-offset: 2px;
+}
+
+/* LEFT — vertical "LIVE RATES" rail */
+.hpw-ticker-rail {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 8px 10px;
+  background: var(--ticker-bg-alt);
+  border-right: 1px solid var(--ticker-border);
+  flex-shrink: 0;
+}
+
+.hpw-ticker-rail-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--ticker-down);
+  box-shadow: 0 0 6px var(--ticker-down);
+  animation: hpw-ticker-pulse 1.6s ease-in-out infinite;
+}
+
+.hpw-ticker-rail-text {
+  font-size: 7px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--ticker-text-dim);
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+  margin-top: 2px;
+}
+
+/* CENTER — two stacked rows */
+.hpw-ticker-content {
+  flex: 1;
+  min-width: 0;       /* CRITICAL: lets the marquee actually clip */
+  display: flex;
+  flex-direction: column;
+  padding: 8px 0;
+}
+
+/* ROW 1 — competitor prices marquee */
+.hpw-ticker-marquee {
+  position: relative;
+  overflow: hidden;
+  padding-bottom: 6px;
+  -webkit-mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 24px),
+    transparent 100%
+  );
+  mask-image: linear-gradient(
+    90deg,
+    transparent 0,
+    #000 12px,
+    #000 calc(100% - 24px),
+    transparent 100%
+  );
+}
+
+.hpw-ticker-track {
+  display: inline-flex;
+  gap: 22px;
+  white-space: nowrap;
+  animation: hpw-ticker-scroll 28s linear infinite;
+  /* duration override comes from inline style on the element so it
+     scales with the number of competitors — see TickerToggle in JSX */
+}
+
+.hpw-ticker-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 10px;
+  font-weight: 500;
+  font-family: var(--ticker-mono);
+  letter-spacing: 0.04em;
+  color: var(--ticker-text-mute);
+  font-variant-numeric: tabular-nums;
+}
+
+.hpw-ticker-src {
+  color: var(--ticker-text-dim);
+  font-weight: 700;
+}
+
+.hpw-ticker-price-up {
+  color: var(--ticker-up);
+  font-variant-numeric: tabular-nums;
+}
+
+.hpw-ticker-delta-up {
+  color: var(--ticker-up);
+  font-size: 9px;
+}
+
+/* SEPARATOR */
+.hpw-ticker-sep {
+  height: 1px;
+  background: var(--ticker-border);
+  margin: 0 12px;
+}
+
+/* ROW 2 — DIRECT rate fixed line */
+.hpw-ticker-direct {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 14px 0;
+}
+
+.hpw-ticker-direct-left,
+.hpw-ticker-direct-right {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.hpw-ticker-direct-left { align-items: center; gap: 8px; }
+
+.hpw-ticker-badge {
+  font-family: var(--ticker-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  color: var(--ticker-down);
+  padding: 2px 5px;
+  border: 1px solid var(--ticker-down-soft);
+  border-radius: 1px;
+}
+
+.hpw-ticker-best {
+  font-family: var(--ticker-mono);
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--ticker-text-dim);
+  letter-spacing: 0.04em;
+}
+
+.hpw-ticker-direct-price {
+  font-family: 'Cormorant Garamond', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--ticker-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.hpw-ticker-delta-down {
+  font-family: var(--ticker-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--ticker-down);
+}
+
+/* ANIMATIONS */
+@keyframes hpw-ticker-scroll {
+  0%   { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+@keyframes hpw-ticker-pulse {
+  0%, 100% { opacity: 1; }
+  50%      { opacity: 0.4; }
+}
+
+/* Reduced motion: the global rule above already kills the animations.
+   Make sure the marquee freezes legibly at translateX(0) instead of
+   mid-scroll — explicit transform: none for safety. */
+@media (prefers-reduced-motion: reduce) {
+  .hpw-ticker-track { transform: none !important; }
+  .hpw-ticker-rail-dot { opacity: 1 !important; }
+}
    
    /* ----- CTA ----------------------------------------------------------- */
    

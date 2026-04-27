@@ -542,7 +542,26 @@ export default function Widget({ config }) {
       ].filter(Boolean).join(' ')}
       style={brandStyle}
     >
-      {!expanded && (
+      {!expanded && config.toggleDesign === 'ticker' && (
+        <TickerToggle
+          onClick={handleOpen}
+          ariaLabel={t('openWidget')}
+          directPrice={
+            directChannel && rates?.status === 'ok'
+              ? Math.round(directChannel.total)
+              : null
+          }
+          competitors={otaChannels.map((c) => ({
+            src: getChannelName(c.id, rates),
+            price: Math.round(c.total),
+          }))}
+          currency={currency}
+          locale={locale}
+          formatCurrency={formatCurrency}
+        />
+      )}
+
+      {!expanded && config.toggleDesign !== 'ticker' && (
         <button
           type="button"
           className="hpw-toggle"
@@ -922,4 +941,109 @@ function isColorDark(cssColor) {
   }
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance < 0.5;
+}
+// ─── Closed-state ticker variant (Bloomberg aesthetic) ─────────────
+// Live competitor prices scrolling on a marquee, hotel direct rate
+// fixed below in green. The metaphor sells itself: "live competitive
+// intelligence, our price beats the market". Placeholder values are
+// shown when rates aren't loaded yet so the ticker frame stays
+// visible (no jumpy mount).
+function TickerToggle({
+  onClick,
+  ariaLabel,
+  directPrice,
+  competitors,
+  currency,
+  locale,
+  formatCurrency,
+}) {
+  // Compute deltas (rounded to 1 decimal) per competitor and pick the
+  // cheapest non-direct as reference for the direct's negative delta.
+  const items = competitors.length
+    ? competitors
+    : [
+        { src: 'BOOKING.COM', price: directPrice ? Math.round(directPrice * 1.18) : 0 },
+        { src: 'EXPEDIA',     price: directPrice ? Math.round(directPrice * 1.21) : 0 },
+        { src: 'HOTELS.COM',  price: directPrice ? Math.round(directPrice * 1.16) : 0 },
+        { src: 'AGODA',       price: directPrice ? Math.round(directPrice * 1.13) : 0 },
+      ];
+
+  const cheapest = items.reduce(
+    (min, c) => (c.price && c.price < min ? c.price : min),
+    Infinity
+  );
+  const directDelta =
+    directPrice && Number.isFinite(cheapest) && cheapest > 0
+      ? ((directPrice - cheapest) / cheapest) * 100
+      : null;
+
+  // Marquee duration scales with content so scroll speed stays
+  // perceptually constant whether you have 4 or 12 competitors.
+  const marqueeDuration = Math.max(20, items.length * 4);
+
+  // Track is rendered TWICE back-to-back so a -50% translateX loops
+  // seamlessly without a visible jump.
+  const track = items.concat(items);
+
+  return (
+    <button
+      type="button"
+      className="hpw-ticker"
+      onClick={onClick}
+      aria-label={ariaLabel}
+    >
+      <div className="hpw-ticker-rail" aria-hidden="true">
+        <span className="hpw-ticker-rail-dot" />
+        <span className="hpw-ticker-rail-text">LIVE RATES</span>
+      </div>
+
+      <div className="hpw-ticker-content">
+        <div className="hpw-ticker-marquee" aria-hidden="true">
+          <div
+            className="hpw-ticker-track"
+            style={{ animationDuration: `${marqueeDuration}s` }}
+          >
+            {track.map((item, i) => {
+              const delta =
+                directPrice && directPrice > 0
+                  ? ((item.price - directPrice) / directPrice) * 100
+                  : 0;
+              return (
+                <span key={i} className="hpw-ticker-item">
+                  <span className="hpw-ticker-src">{String(item.src).toUpperCase()}</span>
+                  <span className="hpw-ticker-price-up">
+                    {formatCurrency(item.price, currency, locale)}
+                  </span>
+                  <span className="hpw-ticker-delta-up">
+                    ▲ {delta.toFixed(1)}%
+                  </span>
+                </span>
+              );
+            })}
+          </div>
+        </div>
+
+        <div className="hpw-ticker-sep" />
+
+        <div className="hpw-ticker-direct">
+          <span className="hpw-ticker-direct-left">
+            <span className="hpw-ticker-badge">DIRECT</span>
+            <span className="hpw-ticker-best">BEST RATE</span>
+          </span>
+          <span className="hpw-ticker-direct-right">
+            <span className="hpw-ticker-direct-price">
+              {directPrice
+                ? formatCurrency(directPrice, currency, locale)
+                : '—'}
+            </span>
+            {directDelta !== null && (
+              <span className="hpw-ticker-delta-down" aria-hidden="true">
+                ▼ {directDelta.toFixed(1)}%
+              </span>
+            )}
+          </span>
+        </div>
+      </div>
+    </button>
+  );
 }
