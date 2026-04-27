@@ -533,6 +533,7 @@ export default function Widget({ config }) {
       dir={rtl ? 'rtl' : 'ltr'}
       className={[
         'hpw-container',
+        `hpw-design-${config.widgetDesign || 'default'}`,
         positionClass,
         `hpw-size-${config.size || 'small'}`,
         expanded && 'hpw-expanded',
@@ -542,26 +543,32 @@ export default function Widget({ config }) {
       ].filter(Boolean).join(' ')}
       style={brandStyle}
     >
-      {!expanded && config.toggleDesign === 'ticker' && (
-        <TickerToggle
-          onClick={handleOpen}
-          ariaLabel={t('openWidget')}
+      {config.widgetDesign === 'ticker' && (
+        <TickerVariant
+          expanded={expanded}
+          onToggle={() => (expanded ? handleClose() : handleOpen())}
           directPrice={
             directChannel && rates?.status === 'ok'
               ? Math.round(directChannel.total)
               : null
           }
           competitors={otaChannels.map((c) => ({
-            src: getChannelName(c.id, rates),
+            name: getChannelName(c.id, rates),
             price: Math.round(c.total),
           }))}
           currency={currency}
           locale={locale}
+          checkIn={checkIn}
+          checkOut={checkOut}
+          formatDate={formatDate}
           formatCurrency={formatCurrency}
+          brandAccent={config.brandColor || '#C9A87A'}
+          bookBtnPlaceholderRef={setBookBtnPlaceholderEl}
+          t={t}
         />
       )}
 
-      {!expanded && config.toggleDesign !== 'ticker' && (
+      {config.widgetDesign !== 'ticker' && !expanded && (
         <button
           type="button"
           className="hpw-toggle"
@@ -653,7 +660,7 @@ export default function Widget({ config }) {
         </button>
       )}
 
-      {expanded && (
+      {config.widgetDesign !== 'ticker' && expanded && (
         <div className="hpw-panel">
           <button
             type="button"
@@ -768,13 +775,8 @@ export default function Widget({ config }) {
           >
             {t('bookNow')} →
           </div>
-          <BookButtonPortal
-            placeholderEl={bookBtnPlaceholderEl}
-            href={reserveHref}
-            onClick={handleBook}
-            label={`${t('bookNow')} →`}
-            brandColor={config.brandColor || '#1a1a1a'}
-          />
+          {/* BookButtonPortal moved to widget-root level so the ticker
+              variant can share the same overlay anchor — see below. */}
 
           {/* Footer */}
           <footer className="hpw-footer">
@@ -782,6 +784,17 @@ export default function Widget({ config }) {
             </footer>
         </div>
       )}
+
+      {/* Single Book button overlay anchor at the widget root. Whichever
+          variant currently owns the ref (default panel placeholder OR
+          ticker CTA) is the one this floating <a> follows. */}
+      <BookButtonPortal
+        placeholderEl={bookBtnPlaceholderEl}
+        href={reserveHref}
+        onClick={handleBook}
+        label={`${t('bookNow')} →`}
+        brandColor={config.brandColor || '#1a1a1a'}
+      />
     </div>
   );
 }
@@ -942,108 +955,237 @@ function isColorDark(cssColor) {
   const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
   return luminance < 0.5;
 }
-// ─── Closed-state ticker variant (Bloomberg aesthetic) ─────────────
-// Live competitor prices scrolling on a marquee, hotel direct rate
-// fixed below in green. The metaphor sells itself: "live competitive
-// intelligence, our price beats the market". Placeholder values are
-// shown when rates aren't loaded yet so the ticker frame stays
-// visible (no jumpy mount).
-function TickerToggle({
-  onClick,
-  ariaLabel,
+
+// ─── Ticker variant — full widget (rail + expandable panel) ────────
+// Bloomberg-terminal aesthetic. Closed = thin 36px black bottom rail
+// with a marquee of competitor OTA prices (each shown as more
+// expensive than direct, in red). Open = a 380px dark panel that
+// expands UPWARD with a count-down hero price (animates from
+// cheapest OTA → direct rate over 1200ms ease-out cubic), a savings
+// line in green, an OTA comparison table, and a "LOCK THIS RATE" CTA.
+//
+// Reuses the parent widget's BookButtonPortal — the CTA placeholder
+// element gets the bookBtnPlaceholderRef passed from Widget root.
+function TickerVariant({
+  expanded,
+  onToggle,
   directPrice,
   competitors,
   currency,
   locale,
+  checkIn,
+  checkOut,
+  formatDate,
   formatCurrency,
+  brandAccent,
+  bookBtnPlaceholderRef,
+  t,
 }) {
-  // Compute deltas (rounded to 1 decimal) per competitor and pick the
-  // cheapest non-direct as reference for the direct's negative delta.
+  // Cheapest competitor drives savings + count-down start. Falls back
+  // to a placeholder spread if rates aren't loaded yet so the rail
+  // stays populated rather than flashing empty.
   const items = competitors.length
     ? competitors
     : [
-        { src: 'BOOKING.COM', price: directPrice ? Math.round(directPrice * 1.18) : 0 },
-        { src: 'EXPEDIA',     price: directPrice ? Math.round(directPrice * 1.21) : 0 },
-        { src: 'HOTELS.COM',  price: directPrice ? Math.round(directPrice * 1.16) : 0 },
-        { src: 'AGODA',       price: directPrice ? Math.round(directPrice * 1.13) : 0 },
+        { name: 'Booking.com', price: directPrice ? Math.round(directPrice * 1.18) : 0 },
+        { name: 'Expedia',     price: directPrice ? Math.round(directPrice * 1.21) : 0 },
+        { name: 'Hotels.com',  price: directPrice ? Math.round(directPrice * 1.16) : 0 },
+        { name: 'Agoda',       price: directPrice ? Math.round(directPrice * 1.13) : 0 },
       ];
 
   const cheapest = items.reduce(
     (min, c) => (c.price && c.price < min ? c.price : min),
     Infinity
   );
-  const directDelta =
-    directPrice && Number.isFinite(cheapest) && cheapest > 0
-      ? ((directPrice - cheapest) / cheapest) * 100
-      : null;
+  const hasCheapest =
+    Number.isFinite(cheapest) && cheapest > 0 && directPrice > 0;
+  const savings = hasCheapest ? cheapest - directPrice : 0;
+  const savingsPct =
+    hasCheapest && cheapest > 0
+      ? Math.round((savings / cheapest) * 100)
+      : 0;
 
-  // Marquee duration scales with content so scroll speed stays
-  // perceptually constant whether you have 4 or 12 competitors.
   const marqueeDuration = Math.max(20, items.length * 4);
+  const trackItems = items.concat(items).concat(items);
 
-  // Track is rendered TWICE back-to-back so a -50% translateX loops
-  // seamlessly without a visible jump.
-  const track = items.concat(items);
+  // Count-down: cheapest → direct over 1200ms ease-out cubic when
+  // opening; reset to cheapest when closing so the next open replays
+  // fresh. Cancel any in-flight RAF on cleanup.
+  const [displayed, setDisplayed] = useState(directPrice || 0);
+  const rafRef = useRef(null);
+  useEffect(() => {
+    if (!hasCheapest) {
+      setDisplayed(directPrice || 0);
+      return;
+    }
+    if (!expanded) {
+      setDisplayed(cheapest);
+      return;
+    }
+    const start = performance.now();
+    const from = cheapest;
+    const to = directPrice;
+    const duration = 1200;
+    const tick = (now) => {
+      const elapsed = (now - start) / duration;
+      const tt = Math.min(elapsed, 1);
+      const eased = 1 - Math.pow(1 - tt, 3);
+      setDisplayed(Math.round(from + (to - from) * eased));
+      if (tt < 1) rafRef.current = requestAnimationFrame(tick);
+    };
+    rafRef.current = requestAnimationFrame(tick);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [expanded, directPrice, cheapest, hasCheapest]);
+
+  const settled = expanded && displayed === directPrice;
+  const railLabel = expanded
+    ? 'Close best-price panel'
+    : hasCheapest && savings > 0
+      ? 'Open best-price panel — direct rate beats ' +
+        items.length + ' sites by ' +
+        formatCurrency(savings, currency, locale)
+      : (t && t('openWidget')) || 'Open best-price panel';
 
   return (
-    <button
-      type="button"
-      className="hpw-ticker"
-      onClick={onClick}
-      aria-label={ariaLabel}
-    >
-      <div className="hpw-ticker-rail" aria-hidden="true">
-        <span className="hpw-ticker-rail-dot" />
-        <span className="hpw-ticker-rail-text">LIVE RATES</span>
+    <div className="hpw-tk-root">
+      <div
+        id="hpw-tk-panel"
+        className={'hpw-tk-panel ' + (expanded ? 'is-open' : '')}
+        aria-hidden={!expanded}
+      >
+        <div className="hpw-tk-panel-inner">
+          <div className="hpw-tk-header">
+            <span className="hpw-tk-kicker">
+              LIVE RATE · {formatDate(checkIn, locale)}–{formatDate(checkOut, locale)}
+            </span>
+            <span className="hpw-tk-livestamp" aria-hidden="true">
+              <span className="hpw-tk-live-dot" />
+              <span>LIVE</span>
+            </span>
+          </div>
+
+          <div className="hpw-tk-hero">
+            {directPrice
+              ? formatCurrency(displayed, currency, locale)
+              : '—'}
+          </div>
+
+          {hasCheapest && (
+            <div
+              className={'hpw-tk-savings ' + (settled ? 'is-settled' : '')}
+            >
+              ▼ −{formatCurrency(savings, currency, locale)} ({savingsPct}%) vs cheapest OTA
+            </div>
+          )}
+
+          <div className="hpw-tk-table" role="table">
+            <div className="hpw-tk-table-head" role="row">
+              <span role="columnheader">Source</span>
+              <span role="columnheader">Rate</span>
+              <span role="columnheader">Δ</span>
+            </div>
+            {items.map((ota, i) => {
+              const diff = directPrice ? ota.price - directPrice : 0;
+              return (
+                <div key={'ota-' + i} className="hpw-tk-table-row" role="row">
+                  <span role="cell">{ota.name}</span>
+                  <span role="cell" className="hpw-tk-cell-num">
+                    {formatCurrency(ota.price, currency, locale)}
+                  </span>
+                  <span role="cell" className="hpw-tk-cell-up">
+                    +{formatCurrency(diff, currency, locale)}
+                  </span>
+                </div>
+              );
+            })}
+            <div className="hpw-tk-table-row hpw-tk-table-direct" role="row">
+              <span role="cell">This site (direct)</span>
+              <span role="cell" className="hpw-tk-cell-num">
+                {directPrice ? formatCurrency(directPrice, currency, locale) : '—'}
+              </span>
+              <span role="cell" className="hpw-tk-cell-down">—</span>
+            </div>
+          </div>
+
+          {/* CTA placeholder — BookButtonPortal at widget-root level
+              overlays the real anchor here. */}
+          <div
+            ref={bookBtnPlaceholderRef}
+            className="hpw-tk-cta"
+            style={{ background: brandAccent, color: '#1A1410' }}
+            aria-hidden="true"
+          >
+            Lock this rate →
+          </div>
+
+          <div className="hpw-tk-footer">Powered by d·edge</div>
+        </div>
       </div>
 
-      <div className="hpw-ticker-content">
-        <div className="hpw-ticker-marquee" aria-hidden="true">
+      <button
+        type="button"
+        className="hpw-tk-rail"
+        onClick={onToggle}
+        aria-expanded={expanded}
+        aria-controls="hpw-tk-panel"
+        aria-label={railLabel}
+      >
+        <span className="hpw-tk-fade-left" aria-hidden="true" />
+        <span className="hpw-tk-fade-right" aria-hidden="true" />
+        <span className="hpw-tk-live" aria-hidden="true">
+          <span className="hpw-tk-live-dot" />
+          <span>LIVE</span>
+        </span>
+        <span
+          className="hpw-tk-hint"
+          aria-hidden="true"
+          style={{ color: brandAccent }}
+        >
+          {expanded ? '▾ COLLAPSE' : '▴ EXPAND'}
+        </span>
+        <div className="hpw-tk-stream" aria-hidden="true">
           <div
-            className="hpw-ticker-track"
-            style={{ animationDuration: `${marqueeDuration}s` }}
+            className={'hpw-tk-track ' + (expanded ? 'is-paused' : '')}
+            style={{ animationDuration: marqueeDuration + 's' }}
           >
-            {track.map((item, i) => {
-              const delta =
-                directPrice && directPrice > 0
-                  ? ((item.price - directPrice) / directPrice) * 100
-                  : 0;
+            {trackItems.map((ota, i) => {
+              const diff = directPrice ? ota.price - directPrice : 0;
+              const last = i === trackItems.length - 1;
               return (
-                <span key={i} className="hpw-ticker-item">
-                  <span className="hpw-ticker-src">{String(item.src).toUpperCase()}</span>
-                  <span className="hpw-ticker-price-up">
-                    {formatCurrency(item.price, currency, locale)}
+                <span key={i} className="hpw-tk-stream-item">
+                  <span className="hpw-tk-stream-name">
+                    {String(ota.name).toUpperCase()}
                   </span>
-                  <span className="hpw-ticker-delta-up">
-                    ▲ {delta.toFixed(1)}%
+                  <span className="hpw-tk-stream-price">
+                    {formatCurrency(ota.price, currency, locale)}
                   </span>
+                  <span className="hpw-tk-stream-up">
+                    +{formatCurrency(diff, currency, locale)}
+                  </span>
+                  {!last && <span className="hpw-tk-stream-sep">·</span>}
                 </span>
               );
             })}
-          </div>
-        </div>
-
-        <div className="hpw-ticker-sep" />
-
-        <div className="hpw-ticker-direct">
-          <span className="hpw-ticker-direct-left">
-            <span className="hpw-ticker-badge">DIRECT</span>
-            <span className="hpw-ticker-best">BEST RATE</span>
-          </span>
-          <span className="hpw-ticker-direct-right">
-            <span className="hpw-ticker-direct-price">
-              {directPrice
-                ? formatCurrency(directPrice, currency, locale)
-                : '—'}
-            </span>
-            {directDelta !== null && (
-              <span className="hpw-ticker-delta-down" aria-hidden="true">
-                ▼ {directDelta.toFixed(1)}%
+            {hasCheapest && directPrice && (
+              <span
+                className="hpw-tk-stream-item hpw-tk-stream-direct"
+                style={{ color: brandAccent }}
+              >
+                <span className="hpw-tk-stream-direct-label">DIRECT</span>
+                <span className="hpw-tk-stream-direct-price">
+                  {formatCurrency(directPrice, currency, locale)}
+                </span>
+                <span className="hpw-tk-stream-down">
+                  −{formatCurrency(savings, currency, locale)}
+                </span>
+                <span className="hpw-tk-stream-sep">·</span>
               </span>
             )}
-          </span>
+          </div>
         </div>
-      </div>
-    </button>
+      </button>
+    </div>
   );
 }

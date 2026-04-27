@@ -630,226 +630,299 @@
 .hpw-toggle-check { flex-shrink: 0; display: block; }
 
 /* ====================================================================
-   Closed-state — Ticker variant (Bloomberg terminal aesthetic)
+   Ticker variant — full widget (rail + expandable panel)
    ====================================================================
-   Selected via config.toggleDesign === 'ticker'. Self-contained color
-   scheme (intentionally not driven by --hpw-brand — the Bloomberg look
-   needs the dark/red/green palette to read correctly).
+   Selected via config.widgetDesign === 'ticker'. The container becomes
+   a full-width bottom strip (overrides .hpw-pos-* corner anchoring),
+   the rail anchors at the bottom, the panel grows upward.
    ==================================================================== */
 
-.hpw-ticker {
-  --ticker-bg:         #0F0E0C;
-  --ticker-bg-alt:     #1A1410;
-  --ticker-border:     #2A2520;
-  --ticker-text:       #F5E9D6;
-  --ticker-text-mute:  #A89684;
-  --ticker-text-dim:   #7A6859;
-  --ticker-up:         #C44536;
-  --ticker-down:       #3FB950;
-  --ticker-down-soft:  rgba(63, 185, 80, 0.4);
-  --ticker-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+.hpw-container.hpw-design-ticker {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  width: 100%;
+  transform: none;
+}
+.hpw-container.hpw-design-ticker.hpw-pos-bottom-right,
+.hpw-container.hpw-design-ticker.hpw-pos-bottom-left,
+.hpw-container.hpw-design-ticker.hpw-pos-center-right,
+.hpw-container.hpw-design-ticker.hpw-pos-center-left,
+.hpw-container.hpw-design-ticker.hpw-pos-top-right,
+.hpw-container.hpw-design-ticker.hpw-pos-top-left {
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: auto;
+  transform: none;
+}
 
-  display: flex;
-  align-items: stretch;
-  width: 360px;
-  padding: 0;
-  background: var(--ticker-bg);
-  border: 1px solid var(--ticker-border);
-  border-radius: 2px;
-  box-shadow:
-    0 6px 18px rgba(0, 0, 0, 0.32),
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.04);
+.hpw-tk-root {
+  --tk-rail-bg:      #1A1410;
+  --tk-panel-bg:     #0A0805;
+  --tk-divider:      #2A1F18;
+  --tk-text-strong:  #F5E9D6;
+  --tk-text:         #E8DAC4;
+  --tk-text-mute:    #A89684;
+  --tk-text-dim:     #7A6859;
+  --tk-text-faint:   #5C4838;
+  --tk-up:           #E76F51;
+  --tk-down:         #4ADE80;
+  --tk-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --tk-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+
+  width: 100%;
+  display: block;
+}
+
+.hpw-tk-panel {
+  background: var(--tk-panel-bg);
+  color: var(--tk-text);
+  max-height: 0;
   overflow: hidden;
-  cursor: pointer;
-  font-family: var(--ticker-mono);
-  transition: transform 180ms ease, box-shadow 180ms ease;
+  transition: max-height 500ms cubic-bezier(0.2, 0.8, 0.3, 1);
+  border-top: none;
 }
-.hpw-ticker:hover {
-  transform: translateY(-1px);
-  box-shadow:
-    0 10px 22px rgba(0, 0, 0, 0.40),
-    inset 0 0 0 0.5px rgba(255, 255, 255, 0.04);
-}
-.hpw-ticker:focus-visible {
-  outline: 2px solid var(--ticker-down);
-  outline-offset: 2px;
+.hpw-tk-panel.is-open {
+  max-height: 380px;
+  border-top: 1px solid var(--tk-divider);
 }
 
-/* LEFT — vertical "LIVE RATES" rail */
-.hpw-ticker-rail {
+.hpw-tk-panel-inner { padding: 20px 22px 16px; }
+
+.hpw-tk-header {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 8px 10px;
-  background: var(--ticker-bg-alt);
-  border-right: 1px solid var(--ticker-border);
-  flex-shrink: 0;
+  margin-bottom: 14px;
 }
 
-.hpw-ticker-rail-dot {
+.hpw-tk-kicker {
+  font-family: 'Open Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.24em;
+  color: var(--tk-text-mute);
+  text-transform: uppercase;
+}
+
+.hpw-tk-livestamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--tk-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: var(--tk-text-faint);
+}
+
+.hpw-tk-hero {
+  font-family: var(--tk-serif);
+  font-size: 76px;
+  font-weight: 500;
+  line-height: 0.95;
+  color: var(--tk-text-strong);
+  letter-spacing: -0.025em;
+  font-variant-numeric: tabular-nums;
+}
+
+.hpw-tk-savings {
+  font-family: var(--tk-mono);
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: var(--tk-down);
+  margin-top: 6px;
+  opacity: 0.5;
+  transition: opacity 400ms ease;
+}
+.hpw-tk-savings.is-settled { opacity: 1; }
+
+.hpw-tk-table {
+  margin-top: 14px;
+  border: 1px solid var(--tk-divider);
+  border-radius: 2px;
+  font-family: var(--tk-mono);
+  font-size: 11px;
+}
+
+.hpw-tk-table-head {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  padding: 8px 12px;
+  font-size: 9px;
+  color: var(--tk-text-faint);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--tk-divider);
+}
+
+.hpw-tk-table-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 12px;
+  padding: 8px 12px;
+  color: var(--tk-text-mute);
+  border-bottom: 1px dashed var(--tk-divider);
+  align-items: baseline;
+}
+.hpw-tk-table-row:last-child { border-bottom: none; }
+
+.hpw-tk-table-direct {
+  color: var(--tk-text-strong);
+  font-weight: 600;
+  background: rgba(201, 168, 122, 0.05);
+  border-bottom: none;
+}
+
+.hpw-tk-cell-num  { font-variant-numeric: tabular-nums; }
+.hpw-tk-cell-up   { color: var(--tk-up); }
+.hpw-tk-cell-down { color: var(--tk-down); }
+
+.hpw-tk-cta {
+  margin-top: 14px;
+  padding: 14px 16px;
+  border: 0;
+  border-radius: 2px;
+  font-family: var(--tk-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+  text-align: center;
+  cursor: pointer;
+}
+
+.hpw-tk-footer {
+  margin-top: 12px;
+  text-align: center;
+  font-family: var(--tk-mono);
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--tk-text-faint);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+/* ─── Rail (always visible, the closed state) ─── */
+.hpw-tk-rail {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 36px;
+  overflow: hidden;
+  padding: 0;
+  border: 0;
+  border-top: 1px solid rgba(201, 168, 122, 0.2);
+  background: var(--tk-rail-bg);
+  cursor: pointer;
+  font-family: var(--tk-mono);
+}
+.hpw-tk-rail:focus-visible {
+  outline: 2px solid var(--tk-down);
+  outline-offset: -2px;
+}
+
+.hpw-tk-fade-left,
+.hpw-tk-fade-right {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 60px;
+  z-index: 2;
+  pointer-events: none;
+}
+.hpw-tk-fade-left  { left: 0;  background: linear-gradient(90deg,  var(--tk-rail-bg), transparent); }
+.hpw-tk-fade-right { right: 0; background: linear-gradient(270deg, var(--tk-rail-bg), transparent); }
+
+.hpw-tk-live {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--tk-down);
+  letter-spacing: 0.16em;
+}
+
+.hpw-tk-live-dot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--ticker-down);
-  box-shadow: 0 0 6px var(--ticker-down);
-  animation: hpw-ticker-pulse 1.6s ease-in-out infinite;
+  background: var(--tk-down);
+  animation: hpw-tk-pulse 1.5s ease-in-out infinite;
 }
 
-.hpw-ticker-rail-text {
-  font-size: 7px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  color: var(--ticker-text-dim);
-  writing-mode: vertical-rl;
-  transform: rotate(180deg);
-  margin-top: 2px;
-}
-
-/* CENTER — two stacked rows */
-.hpw-ticker-content {
-  flex: 1;
-  min-width: 0;       /* CRITICAL: lets the marquee actually clip */
-  display: flex;
-  flex-direction: column;
-  padding: 8px 0;
-}
-
-/* ROW 1 — competitor prices marquee */
-.hpw-ticker-marquee {
-  position: relative;
-  overflow: hidden;
-  padding-bottom: 6px;
-  -webkit-mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 12px,
-    #000 calc(100% - 24px),
-    transparent 100%
-  );
-  mask-image: linear-gradient(
-    90deg,
-    transparent 0,
-    #000 12px,
-    #000 calc(100% - 24px),
-    transparent 100%
-  );
-}
-
-.hpw-ticker-track {
-  display: inline-flex;
-  gap: 22px;
-  white-space: nowrap;
-  animation: hpw-ticker-scroll 28s linear infinite;
-  /* duration override comes from inline style on the element so it
-     scales with the number of competitors — see TickerToggle in JSX */
-}
-
-.hpw-ticker-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 10px;
-  font-weight: 500;
-  font-family: var(--ticker-mono);
-  letter-spacing: 0.04em;
-  color: var(--ticker-text-mute);
-  font-variant-numeric: tabular-nums;
-}
-
-.hpw-ticker-src {
-  color: var(--ticker-text-dim);
-  font-weight: 700;
-}
-
-.hpw-ticker-price-up {
-  color: var(--ticker-up);
-  font-variant-numeric: tabular-nums;
-}
-
-.hpw-ticker-delta-up {
-  color: var(--ticker-up);
-  font-size: 9px;
-}
-
-/* SEPARATOR */
-.hpw-ticker-sep {
-  height: 1px;
-  background: var(--ticker-border);
-  margin: 0 12px;
-}
-
-/* ROW 2 — DIRECT rate fixed line */
-.hpw-ticker-direct {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 6px 14px 0;
-}
-
-.hpw-ticker-direct-left,
-.hpw-ticker-direct-right {
-  display: inline-flex;
-  align-items: baseline;
-  gap: 6px;
-}
-.hpw-ticker-direct-left { align-items: center; gap: 8px; }
-
-.hpw-ticker-badge {
-  font-family: var(--ticker-mono);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.22em;
-  color: var(--ticker-down);
-  padding: 2px 5px;
-  border: 1px solid var(--ticker-down-soft);
-  border-radius: 1px;
-}
-
-.hpw-ticker-best {
-  font-family: var(--ticker-mono);
-  font-size: 10px;
-  font-weight: 500;
-  color: var(--ticker-text-dim);
-  letter-spacing: 0.04em;
-}
-
-.hpw-ticker-direct-price {
-  font-family: 'Cormorant Garamond', 'EB Garamond', Garamond, 'Times New Roman', serif;
-  font-size: 18px;
-  font-weight: 500;
-  letter-spacing: -0.02em;
-  color: var(--ticker-text);
-  font-variant-numeric: tabular-nums;
-}
-
-.hpw-ticker-delta-down {
-  font-family: var(--ticker-mono);
+.hpw-tk-hint {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 3;
   font-size: 9px;
   font-weight: 600;
-  color: var(--ticker-down);
+  letter-spacing: 0.16em;
+  pointer-events: none;
 }
 
-/* ANIMATIONS */
-@keyframes hpw-ticker-scroll {
+.hpw-tk-stream { position: relative; height: 100%; }
+
+.hpw-tk-track {
+  display: inline-flex;
+  align-items: center;
+  gap: 28px;
+  white-space: nowrap;
+  height: 100%;
+  padding-left: 80px;
+  font-size: 11px;
+  color: var(--tk-text-mute);
+  letter-spacing: 0.06em;
+  animation: hpw-tk-scroll 24s linear infinite;
+}
+.hpw-tk-track.is-paused {
+  animation: none;
+  opacity: 0.3;
+  transition: opacity 300ms ease;
+}
+
+.hpw-tk-stream-item { display: inline-flex; align-items: center; gap: 8px; }
+.hpw-tk-stream-name  { color: var(--tk-text-dim); }
+.hpw-tk-stream-price { color: var(--tk-text); font-variant-numeric: tabular-nums; }
+.hpw-tk-stream-up    { color: var(--tk-up); }
+.hpw-tk-stream-down  { color: var(--tk-down); }
+.hpw-tk-stream-sep   { color: var(--tk-text-faint); }
+
+.hpw-tk-stream-direct       { font-weight: 700; }
+.hpw-tk-stream-direct-label { font-weight: 700; }
+.hpw-tk-stream-direct-price {
+  color: var(--tk-text-strong);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+@keyframes hpw-tk-scroll {
   0%   { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-
-@keyframes hpw-ticker-pulse {
+@keyframes hpw-tk-pulse {
   0%, 100% { opacity: 1; }
   50%      { opacity: 0.4; }
 }
 
-/* Reduced motion: the global rule above already kills the animations.
-   Make sure the marquee freezes legibly at translateX(0) instead of
-   mid-scroll — explicit transform: none for safety. */
 @media (prefers-reduced-motion: reduce) {
-  .hpw-ticker-track { transform: none !important; }
-  .hpw-ticker-rail-dot { opacity: 1 !important; }
+  .hpw-tk-track { transform: none !important; }
+  .hpw-tk-live-dot { opacity: 1 !important; }
+  .hpw-tk-panel { transition: none !important; }
 }
-   
+
+
    /* ----- CTA ----------------------------------------------------------- */
    
    .hpw-cta {
