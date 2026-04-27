@@ -29,6 +29,7 @@ import {
   isDismissedThisSession,
   markDismissedThisSession,
 } from './analytics.js';
+import { initTracker, track as trackerSend } from './tracker.js';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
@@ -255,6 +256,14 @@ export default function Widget({ config }) {
     initAnalytics({config, _hotelId: config._hotelId || config.hotelName });
   }, [config]);
 
+  // Init first-party tracker + fire widget_loaded once. Skipped in
+  // preview mode so admin previews don't pollute production stats.
+  useEffect(() => {
+    if (config._preview) return;
+    initTracker(config);
+    trackerSend('widget_loaded');
+  }, [config]);
+
   // Load rates whenever dates or core config changes
   useEffect(() => {
     let cancelled = false;
@@ -342,6 +351,7 @@ export default function Widget({ config }) {
       if (!expanded) {
         setExpanded(true);
         trackOpened();  // Same event as manual open; mode implicit from context
+        trackerSend('widget_opened');
       }
     };
 
@@ -381,6 +391,7 @@ export default function Widget({ config }) {
     if (expanded) return;
     setExpanded(true);
     trackOpened();
+    trackerSend('widget_opened');
   }
 
   function handleClose() {
@@ -418,6 +429,13 @@ export default function Widget({ config }) {
       directPrice: directChannel?.total || null,
       checkIn,
       checkOut,
+    });
+    trackerSend('book_clicked', {
+      nights,
+      checkIn,
+      checkOut,
+      directPrice: directChannel?.total || null,
+      currency: rates?.currency || config.currency || 'EUR',
     });
   }
 

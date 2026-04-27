@@ -113,6 +113,13 @@ export function normalizeConfig(raw) {
       dataLayerName: String(raw.analytics?.dataLayerName || 'dataLayer'),
     },
 
+    // First-party tracker (Phase 1: 3 events). Optional. When set, the
+    // widget posts widget_loaded / widget_opened / book_clicked events
+    // here, gated on window.HPW_TRACKER_CONSENT === true.
+    trackerEndpoint: typeof raw.trackerEndpoint === 'string' && raw.trackerEndpoint
+      ? raw.trackerEndpoint
+      : null,
+
     // Preview mode (admin-only, never in published configs)
     _preview: raw._preview === true,
   };
