@@ -29,7 +29,12 @@ import {
   isDismissedThisSession,
   markDismissedThisSession,
 } from './analytics.js';
-import { initTracker, track as trackerSend, peekUid } from './tracker.js';
+import {
+  initTracker,
+  track as trackerSend,
+  peekUid,
+  exposeOnWindow as exposeTrackerOnWindow,
+} from './tracker.js';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
@@ -258,9 +263,13 @@ export default function Widget({ config }) {
 
   // Init first-party tracker + fire widget_loaded once. Skipped in
   // preview mode so admin previews don't pollute production stats.
+  // Also exposes window.HPW.track so the host page (or a GTM tag on
+  // the booking-flow confirmation page) can fire custom events with
+  // booking metadata without owning the cookie/endpoint plumbing.
   useEffect(() => {
     if (config._preview) return;
     initTracker(config);
+    exposeTrackerOnWindow();
     trackerSend('widget_loaded');
   }, [config]);
 

@@ -130,8 +130,15 @@ export function peekUid() {
  * tracking is not enabled for this hotel, the endpoint is not
  * configured, or the browser blocks the request — we never bubble
  * errors up to the widget.
+ *
+ * `data` is a free-form key/value object. Three keys get lifted to
+ * top-level fields the server writes into typed BigQuery columns:
+ *   - bookingId  → STRING
+ *   - price      → NUMERIC
+ *   - currency   → STRING (3-letter ISO uppercase)
+ * Anything else stays in the JSON payload column.
  */
-export function track(event, payload) {
+export function track(event, data) {
   if (!consentGranted() || !trackingEnabled()) return;
   const url = endpoint();
   if (!url) return;
@@ -141,7 +148,8 @@ export function track(event, payload) {
   const hotelId = configRef?._hotelId || configRef?.hotelName || null;
   if (!hotelId) return;
 
-  const body = JSON.stringify({
+  const safe = data && typeof data === 'object' ? data : {};
+  const body = {
     uid,
     hotelId,
     event,
@@ -149,9 +157,14 @@ export function track(event, payload) {
     payload: {
       pageUrl: typeof location !== 'undefined' ? location.href : null,
       referrer: typeof document !== 'undefined' ? document.referrer : null,
-      ...(payload && typeof payload === 'object' ? payload : {}),
+      ...safe,
     },
-  });
+  };
+  if (typeof safe.bookingId === 'string') body.bookingId = safe.bookingId;
+  if (typeof safe.price === 'number') body.price = safe.price;
+  if (typeof safe.currency === 'string') body.currency = safe.currency;
+
+  const json = JSON.stringify(body);
 
   try {
     // sendBeacon is preferred: it queues the request even after the page
@@ -160,7 +173,7 @@ export function track(event, payload) {
       typeof navigator !== 'undefined' &&
       typeof navigator.sendBeacon === 'function'
     ) {
-      const blob = new Blob([body], { type: 'application/json' });
+      const blob = new Blob([json], { type: 'application/json' });
       const ok = navigator.sendBeacon(url, blob);
       if (ok) return;
     }
@@ -168,11 +181,24 @@ export function track(event, payload) {
     fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body,
+      body: json,
       keepalive: true,
       credentials: 'omit',
     }).catch(() => {});
   } catch {
     // Swallow — the widget must never be broken by tracking failures.
   }
+}
+
+/**
+ * Expose track on a stable global so host pages (a GTM Custom HTML
+ * tag, the booking flow's confirmation page, etc.) can fire custom
+ * events without owning their own copy of the cookie / endpoint
+ * plumbing. Idempotent — safe to call on every Widget mount.
+ */
+export function exposeOnWindow() {
+  if (typeof window === 'undefined') return;
+  // Don't clobber an existing HPW namespace if one is set up by the
+  // host page; just merge our methods in.
+  window.HPW = Object.assign(window.HPW || {}, { track });
 }
