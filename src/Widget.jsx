@@ -273,6 +273,25 @@ export default function Widget({ config }) {
     trackerSend('widget_loaded');
   }, [config]);
 
+  // Cross-domain landing suppression: if hpw_uid is on the URL, the
+  // visitor just came through this widget on another page (the Book
+  // button decorated the URL). Reopening the widget on the booking
+  // engine would feel like spam. Mark the session as dismissed so the
+  // auto-open effect below bails. Runs regardless of consent state —
+  // the sessionStorage flag is an opaque "1", no identifier.
+  useEffect(() => {
+    if (config._preview) return;
+    if (typeof location === 'undefined') return;
+    try {
+      const p = new URLSearchParams(location.search);
+      if (p.get('hpw_uid')) {
+        markDismissedThisSession(config.hotelName);
+      }
+    } catch {
+      // sessionStorage may be unavailable (private mode); ignore.
+    }
+  }, [config._preview, config.hotelName]);
+
   // Load rates whenever dates or core config changes
   useEffect(() => {
     let cancelled = false;
