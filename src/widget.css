@@ -637,29 +637,15 @@
    the rail anchors at the bottom, the panel grows upward.
    ==================================================================== */
 
-.hpw-container.hpw-design-ticker {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: auto;
-  width: 100%;
-  transform: none;
-}
-.hpw-container.hpw-design-ticker.hpw-pos-bottom-right,
-.hpw-container.hpw-design-ticker.hpw-pos-bottom-left,
-.hpw-container.hpw-design-ticker.hpw-pos-center-right,
-.hpw-container.hpw-design-ticker.hpw-pos-center-left,
-.hpw-container.hpw-design-ticker.hpw-pos-top-right,
-.hpw-container.hpw-design-ticker.hpw-pos-top-left {
-  left: 0;
-  right: 0;
-  bottom: 0;
-  top: auto;
-  transform: none;
-}
+/* Ticker container keeps the corner-anchored positioning + the
+   --hpw-scale transform from .hpw-pos-* — same chrome as the default
+   widget, so the operator's `position` and `size` configs still drive
+   placement/scale. The rail and panel inside size to the root's
+   width below (320px to match the default panel). */
 
 .hpw-tk-root {
+  width: 320px;
+  max-width: calc(100vw - 24px);
   --tk-rail-bg:      #1A1410;
   --tk-panel-bg:     #0A0805;
   --tk-divider:      #2A1F18;
@@ -673,7 +659,6 @@
   --tk-mono: 'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
   --tk-serif: 'Cormorant Garamond', 'Playfair Display', Georgia, serif;
 
-  width: 100%;
   display: block;
 }
 
