@@ -152,24 +152,37 @@ function BookButtonPortal({ placeholderEl, href, onClick, label, brandColor }) {
       return;
     }
 
-    const update = () => setRect(placeholderEl.getBoundingClientRect());
+    // Only push a new rect into state when one of the four values
+    // actually changes. Avoids re-rendering 60×/sec under the rAF
+    // polling loop below, which would otherwise be wasteful.
+    const update = () => {
+      const r = placeholderEl.getBoundingClientRect();
+      setRect((prev) => {
+        if (
+          prev &&
+          prev.top === r.top &&
+          prev.left === r.left &&
+          prev.width === r.width &&
+          prev.height === r.height
+        ) {
+          return prev;
+        }
+        return r;
+      });
+    };
     update();
 
-    // The default panel reveal animates `transform: translateY(8px) → 0`
-    // over 320ms, and the ticker panel animates `max-height` over 500ms.
-    // ResizeObserver doesn't fire for transform-driven moves, so poll
-    // every animation frame for a short window after mount to keep the
-    // floating anchor glued to the placeholder. After that the
-    // ResizeObserver + window resize listener are enough.
+    // Track the placeholder's position continuously via rAF. The
+    // default V5 panel reveal animates `transform: translateY` (320ms)
+    // and the ticker panel animates `max-height` open/close (500ms);
+    // both move the placeholder without changing its size, so
+    // ResizeObserver alone is not enough. One getBoundingClientRect()
+    // per frame is cheap (~60Hz, ~0.1ms) and keeps the floating <a>
+    // glued to the placeholder no matter what triggers a layout shift.
     let rafId = null;
-    const stopAt = performance.now() + 600;
-    const tick = (now) => {
+    const tick = () => {
       update();
-      if (now < stopAt) {
-        rafId = requestAnimationFrame(tick);
-      } else {
-        rafId = null;
-      }
+      rafId = requestAnimationFrame(tick);
     };
     rafId = requestAnimationFrame(tick);
 
