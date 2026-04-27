@@ -29,7 +29,7 @@ import {
   isDismissedThisSession,
   markDismissedThisSession,
 } from './analytics.js';
-import { initTracker, track as trackerSend } from './tracker.js';
+import { initTracker, track as trackerSend, peekUid } from './tracker.js';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
@@ -446,9 +446,22 @@ export default function Widget({ config }) {
 
   // Rendered as the Book button's href so the user's trusted click can be
   // decorated by GTM's cross-domain linker (synthetic clicks are ignored).
-  const reserveHref = (config.reserveUrl || '')
+  // When tracking is enabled and consent has been granted, also append
+  // hpw_uid + hpw_hotel so the booking engine's confirmation page can
+  // attribute the sale back to this widget visit.
+  let reserveHref = (config.reserveUrl || '')
     .replace('{checkIn}', checkIn)
     .replace('{checkOut}', checkOut) || undefined;
+  if (reserveHref) {
+    const uid = peekUid();
+    if (uid) {
+      const hotelId = config._hotelId || config.hotelName || '';
+      const sep = reserveHref.includes('?') ? '&' : '?';
+      reserveHref +=
+        `${sep}hpw_uid=${encodeURIComponent(uid)}` +
+        `&hpw_hotel=${encodeURIComponent(hotelId)}`;
+    }
+  }
 
   return (
     <div

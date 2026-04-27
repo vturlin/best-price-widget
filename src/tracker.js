@@ -112,6 +112,20 @@ export function getOrCreateUid() {
 }
 
 /**
+ * Read-only variant — returns the cached uid (or the cookie if any)
+ * without ever writing. Safe to call during render. The widget uses
+ * this to decorate the Book URL with hpw_uid so the booking-engine's
+ * confirmation page can attribute the sale.
+ */
+export function peekUid() {
+  if (cachedUid) return cachedUid;
+  if (!consentGranted() || !trackingEnabled()) return null;
+  const existing = readCookie(COOKIE_NAME);
+  if (existing) cachedUid = existing;
+  return cachedUid || null;
+}
+
+/**
  * Fire an event. No-ops silently when consent is not granted,
  * tracking is not enabled for this hotel, the endpoint is not
  * configured, or the browser blocks the request — we never bubble
