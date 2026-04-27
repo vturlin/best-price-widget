@@ -15,9 +15,9 @@
   "position": "bottom-right",
   "size": "small",
   "widgetDesign": "default",
-  "brandColor": "#8B5A3C",
-  "toggleColor": "#b69096",
-  "backgroundColor": "#FFFFFF",
+  "brandColor": "#665a47",
+  "toggleColor": "",
+  "backgroundColor": "#f2eee7",
   "enabledLocales": [
     "en",
     "fr",
