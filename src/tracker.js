@@ -203,9 +203,21 @@ export function track(event, data) {
       ...safe,
     },
   };
-  if (typeof safe.bookingId === 'string') body.bookingId = safe.bookingId;
-  if (typeof safe.price === 'number') body.price = safe.price;
-  if (typeof safe.currency === 'string') body.currency = safe.currency;
+  // Coerce lenient inputs so GTM dataLayer variables (often strings,
+  // sometimes numbers) end up in the right shape for the server's
+  // typed columns. Drop silently if the value is unusable.
+  if (safe.bookingId != null && safe.bookingId !== '') {
+    body.bookingId = String(safe.bookingId);
+  }
+  if (safe.price != null) {
+    const n =
+      typeof safe.price === 'number' ? safe.price : parseFloat(safe.price);
+    if (Number.isFinite(n)) body.price = n;
+  }
+  if (safe.currency != null) {
+    const c = String(safe.currency).toUpperCase();
+    if (/^[A-Z]{3}$/.test(c)) body.currency = c;
+  }
 
   const json = JSON.stringify(body);
 
