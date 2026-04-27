@@ -54,6 +54,8 @@
    .hpw-pos-bottom-left   { left: 14px;  bottom: 14px; transform-origin: bottom left;  transform: scale(var(--hpw-scale)); }
    .hpw-pos-center-right  { right: 14px; top: 50%; transform-origin: center right; transform: translateY(-50%) scale(var(--hpw-scale)); }
    .hpw-pos-center-left   { left: 14px;  top: 50%; transform-origin: center left;  transform: translateY(-50%) scale(var(--hpw-scale)); }
+   .hpw-pos-top-right     { right: 14px; top: 14px; transform-origin: top right; transform: scale(var(--hpw-scale)); }
+   .hpw-pos-top-left      { left: 14px;  top: 14px; transform-origin: top left;  transform: scale(var(--hpw-scale)); }
    
    /* ============ COLLAPSED PILL ============ */
    
