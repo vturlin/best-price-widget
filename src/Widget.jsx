@@ -145,7 +145,12 @@ function BookButtonPortal({ placeholderEl, href, onClick, label, brandColor }) {
   const [rect, setRect] = useState(null);
 
   useLayoutEffect(() => {
-    if (!placeholderEl) return;
+    // Panel just closed — drop the rect so the floating <a> unmounts
+    // instead of lingering at its last-known position on the page.
+    if (!placeholderEl) {
+      setRect(null);
+      return;
+    }
 
     const update = () => setRect(placeholderEl.getBoundingClientRect());
     update();
