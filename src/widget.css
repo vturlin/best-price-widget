@@ -534,76 +534,98 @@
 
 /* Pill-shaped button, horizontal, inspired by Stripe/Linear CTAs.
    Shape: rounded-full, compact padding, clean shadow. */
+/* Closed-state toggle: a wax-seal medallion pinned to a cream price flag.
+   Single <button> that the parent makes interactive; visuals come from
+   two stacked spans (.hpw-toggle-seal and .hpw-toggle-flag).
+
+   No size variants here — the existing --hpw-scale on .hpw-container
+   already scales the whole assembly via transform; pixel values below
+   are the absolute reference at scale 1.0. */
 .hpw-toggle {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
-  padding: 10px 18px;
+  background: none;
   border: 0;
-  border-radius: 999px;              /* fully rounded pill */
-  background: var(--hpw-brand);
-  color: black;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  padding: 0;
   cursor: pointer;
-  box-shadow:
-    0 4px 14px rgba(0, 0, 0, 0.14),
-    0 1px 2px rgba(0, 0, 0, 0.06);
-  transition: box-shadow 200ms, transform 200ms, filter 160ms;
+  font-family: 'Open Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  line-height: 1;
+  transition: transform 180ms ease;
   white-space: nowrap;
-  line-height: 1.2;
 }
 
 .hpw-toggle:hover {
   transform: translateY(-1px);
-  box-shadow:
-    0 8px 22px rgba(0, 0, 0, 0.18),
-    0 2px 4px rgba(0, 0, 0, 0.08);
-  filter: brightness(1.06);
+}
+.hpw-toggle:hover .hpw-toggle-flag {
+  box-shadow: 0 6px 14px rgba(58, 40, 24, 0.14);
+}
+.hpw-toggle:focus-visible {
+  outline: 2px solid var(--hpw-brand);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
-.hpw-toggle:active {
-  transform: translateY(0);
-  filter: brightness(0.96);
+/* Wax seal medallion — sits on top of the flag, overlapping by 16px */
+.hpw-toggle-seal {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  /* drop-shadow follows the SVG circle's actual edge instead of a square */
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.18));
+}
+.hpw-toggle-seal svg { display: block; }
+
+/* Cream price flag — the existing --hpw-bg from the admin's
+   backgroundColor field drives the cream/linen tone. */
+.hpw-toggle-flag {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  margin-left: -16px;
+  padding: 12px 18px 12px 24px;
+  background: var(--hpw-bg);
+  border: 1px solid #D4C4A8;
+  border-left: 0;
+  border-radius: 0 2px 2px 0;
+  box-shadow: 0 4px 10px rgba(58, 40, 24, 0.10);
+  transition: box-shadow 180ms ease;
 }
 
-/* Label — main text, clean weight */
-.hpw-toggle-label {
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: 0.005em;
-}
-
-/* Separator dot between label and price */
-.hpw-toggle-separator {
-  opacity: 0.45;
-  font-weight: 400;
-}
-
-/* Price — slightly bigger, tight spacing */
-.hpw-toggle-price {
-  font-size: 14px;
+/* Two-line micro-eyebrow ("BEST PRICE" / "GUARANTEED") */
+.hpw-toggle-eyebrow {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  font-size: 8px;
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.32em;
+  line-height: 1;
+  color: #7A6859;
+  text-transform: uppercase;
 }
 
-/* Size variants */
-.hpw-size-small .hpw-toggle {
-  padding: 8px 14px;
-  gap: 8px;
-}
-.hpw-size-small .hpw-toggle-label { font-size: 12px; }
-.hpw-size-small .hpw-toggle-price { font-size: 13px; }
-
-.hpw-size-medium .hpw-toggle {
-  padding: 10px 18px;
+.hpw-toggle-divider {
+  width: 1px;
+  height: 22px;
+  background: #D4C4A8;
 }
 
-.hpw-size-large .hpw-toggle {
-  padding: 12px 22px;
-  gap: 12px;
+.hpw-toggle-price-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
-.hpw-size-large .hpw-toggle-label { font-size: 14px; }
-.hpw-size-large .hpw-toggle-price { font-size: 16px; }
+
+.hpw-toggle-price {
+  font-family: 'Cormorant Garamond', 'EB Garamond', Garamond, 'Times New Roman', serif;
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: #1A1410;
+}
+
+.hpw-toggle-check { flex-shrink: 0; display: block; }
    
    /* ----- CTA ----------------------------------------------------------- */
    

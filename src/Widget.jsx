@@ -16,7 +16,7 @@
  * or partial data.
  */
 
-import { useState, useEffect, useMemo, useRef, useLayoutEffect } from 'react';
+import { useState, useEffect, useMemo, useRef, useLayoutEffect, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { loadRatesFromApi, buildPreviewData } from './data.js';
 import { resolveLocale, loadLocale, makeT, isRtl } from './i18n.js';
@@ -35,6 +35,7 @@ import {
   peekUid,
   exposeOnWindow as exposeTrackerOnWindow,
 } from './tracker.js';
+import { deriveWaxStops } from './wax.js';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
@@ -234,6 +235,30 @@ export default function Widget({ config }) {
     }),
     [config.brandColor, config.backgroundColor]
   );
+
+  // Wax-seal palette derived from the brand color via OKLCH, so every
+  // brand reads as a deep saturated wax. Cached per brandColor inside
+  // wax.js, useMemo's only job is to lift it onto the React tree.
+  const wax = useMemo(
+    () => deriveWaxStops(config.brandColor || '#1a1a1a'),
+    [config.brandColor]
+  );
+
+  // Stable, unique id for the radial-gradient <defs> so two widgets on
+  // the same page can't collide (e.g. preview + live).
+  const sealGradId = useId().replace(/[:]/g, '_') + '-seal';
+
+  // The closed-state label is a two-line eyebrow. Split the localized
+  // string at its midpoint by word so "Best Price Guaranteed" →
+  // "BEST PRICE" / "GUARANTEED" and "Meilleur Prix Garanti" →
+  // "MEILLEUR PRIX" / "GARANTI" both look right.
+  const eyebrowLines = useMemo(() => {
+    const raw = String(i18n.t('bestPriceGuaranteed') || '').trim();
+    const words = raw.split(/\s+/).filter(Boolean);
+    if (words.length <= 1) return [raw, ''];
+    const mid = Math.ceil(words.length / 2);
+    return [words.slice(0, mid).join(' '), words.slice(mid).join(' ')];
+  }, [i18n]);
 
   // Figure out which channels to display, and which rows in the OTAs list
   const directChannel = rates?.channels?.[DIRECT_CHANNEL_ID] || null;
@@ -513,17 +538,88 @@ export default function Widget({ config }) {
           onClick={handleOpen}
           aria-label={t('openWidget')}
         >
-          <span className="hpw-toggle-label">
-            {t('bestPriceGuaranteed')}
+          <span className="hpw-toggle-seal" aria-hidden="true">
+            <svg width="60" height="60" viewBox="0 0 60 60">
+              <defs>
+                <radialGradient id={sealGradId} cx="50%" cy="50%" r="50%">
+                  <stop offset="0%" stopColor={wax.center} />
+                  <stop offset="50%" stopColor={wax.mid} />
+                  <stop offset="100%" stopColor={wax.edge} />
+                </radialGradient>
+              </defs>
+              <circle
+                cx="30"
+                cy="30"
+                r="28"
+                fill={`url(#${sealGradId})`}
+                stroke={wax.edge}
+                strokeWidth="0.5"
+              />
+              <circle
+                cx="30"
+                cy="30"
+                r="25"
+                fill="none"
+                stroke={wax.ringColor}
+                strokeWidth="2"
+              />
+              <g transform="translate(30 30)">
+                <path
+                  d="M0 -12 L11 -8 V0 C11 7 0 13 0 13 C0 13 -11 7 -11 0 V-8 Z"
+                  fill="none"
+                  stroke={wax.markColor}
+                  strokeWidth="1.3"
+                  strokeLinejoin="round"
+                  strokeLinecap="round"
+                />
+                <text
+                  x="0"
+                  y="0"
+                  textAnchor="middle"
+                  dominantBaseline="central"
+                  fill={wax.markColor}
+                  fontFamily="'Cormorant Garamond', 'EB Garamond', Garamond, 'Times New Roman', serif"
+                  fontSize="16"
+                  fontWeight="500"
+                  letterSpacing="-0.02em"
+                >
+                  €
+                </text>
+              </g>
+            </svg>
           </span>
-          {directChannel && rates?.status === 'ok' && (
-            <>
-              <span className="hpw-toggle-separator">·</span>
-              <span className="hpw-toggle-price">
-                {formatCurrency(directChannel.total, currency, locale)}
-              </span>
-            </>
-          )}
+          <span className="hpw-toggle-flag">
+            <span className="hpw-toggle-eyebrow">
+              <span>{eyebrowLines[0]}</span>
+              {eyebrowLines[1] && <span>{eyebrowLines[1]}</span>}
+            </span>
+            {directChannel && rates?.status === 'ok' && (
+              <>
+                <span className="hpw-toggle-divider" aria-hidden="true" />
+                <span className="hpw-toggle-price-row">
+                  <span className="hpw-toggle-price">
+                    {formatCurrency(directChannel.total, currency, locale)}
+                  </span>
+                  <svg
+                    className="hpw-toggle-check"
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    aria-hidden="true"
+                  >
+                    <path
+                      d="M2.5 6.2 L5 8.5 L9.5 3.5"
+                      fill="none"
+                      stroke={wax.mid}
+                      strokeWidth="1.6"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                </span>
+              </>
+            )}
+          </span>
         </button>
       )}
 
