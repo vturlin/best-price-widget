@@ -134,6 +134,12 @@ export function normalizeConfig(raw) {
 
     // Preview mode (admin-only, never in published configs)
     _preview: raw._preview === true,
+    // Admin-only initial state override for the preview iframe.
+    // 'open' or 'closed', undefined falls back to default behavior.
+    _previewState:
+      raw._previewState === 'open' || raw._previewState === 'closed'
+        ? raw._previewState
+        : null,
   };
 }
 
@@ -167,6 +173,19 @@ export async function loadConfig() {
   const previewConfig = extractPreviewConfig();
   if (previewConfig) {
     previewConfig._hotelId = previewConfig._hotelId || 'preview';
+    // Admin-only override carried in a sibling query param: lets the
+    // admin's Appearance tab flip between the wax-seal toggle and the
+    // open panel without re-encoding the whole config.
+    try {
+      const previewState = new URLSearchParams(window.location.search).get(
+        'previewState'
+      );
+      if (previewState === 'closed' || previewState === 'open') {
+        previewConfig._previewState = previewState;
+      }
+    } catch {
+      /* SSR / non-browser fallback: leave undefined */
+    }
     return normalizeConfig(previewConfig);
   }
 

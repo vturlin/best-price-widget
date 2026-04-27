@@ -387,12 +387,22 @@ export default function Widget({ config }) {
 
   // Auto-open triggers
   useEffect(() => {
+    // Preview-only override from the admin's Appearance tab. When set,
+    // it's the source of truth for the initial state — beats both
+    // autoOpenMode and the dismiss flag.
+    if (config._preview && config._previewState === 'closed') return;
+    if (config._preview && config._previewState === 'open') {
+      if (!expanded) setExpanded(true);
+      return;
+    }
+
     const mode = config.autoOpenMode;
     if (!mode || mode === 'disabled') return;
     if (expanded) return;
     if (!config._preview && isDismissedThisSession(config.hotelName)) return;
 
-    // In preview: open immediately (instant feedback in admin)
+    // In preview without an explicit state override: open immediately
+    // for instant feedback in the admin.
     if (config._preview) {
       setExpanded(true);
       return;
@@ -436,7 +446,7 @@ export default function Widget({ config }) {
       if (scrollHandler) window.removeEventListener('scroll', scrollHandler);
     };
   }, [config.autoOpenMode, config.autoOpenDelay, config.autoOpenScrollPercent,
-      config._preview, config.hotelName, expanded]);
+      config._preview, config._previewState, config.hotelName, expanded]);
 
   // ─── Handlers ─────────────────────────────────────────────────────
 
