@@ -236,12 +236,13 @@ export default function Widget({ config }) {
     [config.brandColor, config.backgroundColor]
   );
 
-  // Wax-seal palette derived from the brand color via OKLCH, so every
-  // brand reads as a deep saturated wax. Cached per brandColor inside
-  // wax.js, useMemo's only job is to lift it onto the React tree.
+  // Wax-seal palette derived via OKLCH. Reads the optional toggleColor
+  // override first, falls back to brandColor — so the operator can
+  // pick a different hue for the closed-state seal without changing
+  // the brand color used elsewhere in the widget.
   const wax = useMemo(
-    () => deriveWaxStops(config.brandColor || '#1a1a1a'),
-    [config.brandColor]
+    () => deriveWaxStops(config.toggleColor || config.brandColor || '#1a1a1a'),
+    [config.toggleColor, config.brandColor]
   );
 
   // Stable, unique id for the radial-gradient <defs> so two widgets on

@@ -97,6 +97,12 @@ export function normalizeConfig(raw) {
       : 'bottom-right',
     size: ['small', 'medium', 'large'].includes(raw.size) ? raw.size : 'small',
     brandColor: String(raw.brandColor || '#1a1a1a'),
+    // Optional override for the wax-seal toggle. Empty string = inherit
+    // brandColor; any non-empty value wins for the closed-state seal.
+    toggleColor:
+      typeof raw.toggleColor === 'string' && raw.toggleColor.trim()
+        ? raw.toggleColor.trim()
+        : '',
     backgroundColor: String(raw.backgroundColor || '#faf7f2'),
 
     // Languages
