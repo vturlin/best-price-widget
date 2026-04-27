@@ -403,10 +403,13 @@
 }
 
 @media (max-width: 640px) {
-  .hpw-container.hpw-mobile.hpw-pos-bottom-right,
-  .hpw-container.hpw-mobile.hpw-pos-bottom-left,
-  .hpw-container.hpw-mobile.hpw-pos-center-right,
-  .hpw-container.hpw-mobile.hpw-pos-center-left {
+  /* Default design: keep the wax-seal toggle as a small corner pill
+     when closed; the V5 panel turns into a full-width bottom sheet
+     when opened (the .hpw-expanded rule below). */
+  .hpw-container.hpw-mobile.hpw-design-default.hpw-pos-bottom-right,
+  .hpw-container.hpw-mobile.hpw-design-default.hpw-pos-bottom-left,
+  .hpw-container.hpw-mobile.hpw-design-default.hpw-pos-center-right,
+  .hpw-container.hpw-mobile.hpw-design-default.hpw-pos-center-left {
     left: auto;
     right: 16px;
     bottom: 16px;
@@ -414,6 +417,19 @@
     transform: none;
   }
 
+  /* Ticker + Vegas: span the full viewport width and pin to the bottom
+     in both states. The rail / toggle reads as a full-width strip and
+     the panel/chassis open as a bottom sheet aligned to the same edge. */
+  .hpw-container.hpw-mobile.hpw-design-ticker,
+  .hpw-container.hpw-mobile.hpw-design-vegas {
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    top: auto !important;
+    transform: none !important;
+  }
+
+  /* Default expanded: same full-width sheet treatment. */
   .hpw-container.hpw-mobile.hpw-expanded {
     left: 0 !important;
     right: 0 !important;

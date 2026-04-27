@@ -354,11 +354,16 @@
   .hpw-v5-stamp-2 { font-size: 26px; }
 }
 
-/* Mobile (< 768px) — slide up from below + larger sheet feel. */
+/* Mobile (< 768px) — full-width bottom sheet. The container is
+   already pinned to the bottom edge by shared.css; the panel spans
+   100% and only the top corners are rounded for a sheet feel. */
 @media (max-width: 767px) {
   .hpw-v5 {
-    animation: hpw-v5-reveal-mobile 360ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+    width: 100%;
+    max-width: 100%;
+    border-radius: 14px 14px 0 0;
     padding: 22px;
+    animation: hpw-v5-reveal-mobile 360ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
   }
   @keyframes hpw-v5-reveal-mobile {
     from { opacity: 0; transform: translateY(24px); }

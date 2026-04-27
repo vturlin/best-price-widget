@@ -471,6 +471,21 @@
   text-transform: uppercase;
 }
 
+/* ----- Mobile: full-width chassis + toggle, sheet radius -------------- */
+
+@media (max-width: 767px) {
+  .hpw-vg-toggle {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 6px 6px 0 0;
+  }
+  .hpw-vg-chassis {
+    width: 100%;
+    max-width: 100%;
+    border-radius: 8px 8px 0 0;
+  }
+}
+
 /* ----- Reduced motion ------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

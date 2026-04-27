@@ -297,6 +297,15 @@
   50%      { opacity: 0.4; }
 }
 
+/* Mobile: rail + panel span the full viewport width. The container
+   pin to the bottom edge is handled in shared.css. */
+@media (max-width: 767px) {
+  .hpw-tk-root {
+    width: 100%;
+    max-width: 100%;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .hpw-tk-track { transform: none !important; }
   .hpw-tk-live-dot { opacity: 1 !important; }
