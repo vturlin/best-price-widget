@@ -68,6 +68,13 @@ export function normalizeConfig(raw) {
   if (!raw || typeof raw !== 'object') return null;
 
   return {
+    // Stamped by loadConfig() before calling us — the canonical
+    // hotelId (matches the file name in public/configs/). Used by the
+    // tracker so events are attributed to the right hotel; falling
+    // back to hotelName here would send the human-readable label
+    // (potentially with accents/spaces) and the server would 404.
+    _hotelId: raw._hotelId || null,
+
     // Identity
     hotelName: String(raw.hotelName || ''),
     hotelDomain: String(raw.hotelDomain || ''),
