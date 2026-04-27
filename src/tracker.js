@@ -21,26 +21,34 @@
 const COOKIE_NAME = 'hpw_uid';
 const COOKIE_TTL_DAYS = 183; // ~6 months
 
+// Endpoint is fixed at build time via VITE_TRACKER_ENDPOINT (read by
+// Vite at compile time and inlined into the bundle). For local dev or
+// to override per page without rebuilding, set window.HPW_TRACKER_ENDPOINT
+// before the widget loads. Per-hotel toggling is done via the
+// `trackerEnabled` boolean on the config — the URL never travels in
+// the JSON published to GitHub.
+const BUILT_IN_ENDPOINT = import.meta.env?.VITE_TRACKER_ENDPOINT || null;
+
 let configRef = null;
 let cachedUid = null;
 
 /**
  * Wire up the tracker. Call once from Widget mount with the resolved
- * config. Endpoint resolution priority:
- *   1. config.trackerEndpoint        (per-hotel override)
- *   2. window.HPW_TRACKER_ENDPOINT   (page-level override / dev)
- *   3. null → tracker stays inert (no requests fired)
+ * config.
  */
 export function initTracker(config) {
   configRef = config || null;
 }
 
 function endpoint() {
-  if (configRef?.trackerEndpoint) return configRef.trackerEndpoint;
   if (typeof window !== 'undefined' && window.HPW_TRACKER_ENDPOINT) {
     return window.HPW_TRACKER_ENDPOINT;
   }
-  return null;
+  return BUILT_IN_ENDPOINT;
+}
+
+function trackingEnabled() {
+  return !!configRef?.trackerEnabled;
 }
 
 /**
@@ -87,10 +95,11 @@ function generateUid() {
 /**
  * Returns the user's persistent ID, creating + persisting it on first
  * call. Returns null when consent has not been granted (we never set
- * a cookie before consent).
+ * a cookie before consent) or when tracking is not enabled for this
+ * hotel.
  */
 export function getOrCreateUid() {
-  if (!consentGranted()) return null;
+  if (!consentGranted() || !trackingEnabled()) return null;
   if (cachedUid) return cachedUid;
   const existing = readCookie(COOKIE_NAME);
   if (existing) {
@@ -103,12 +112,13 @@ export function getOrCreateUid() {
 }
 
 /**
- * Fire an event. No-ops silently when consent is not granted, the
- * tracker endpoint is not configured, or the browser blocks the
- * request — we do not bubble errors up to the widget.
+ * Fire an event. No-ops silently when consent is not granted,
+ * tracking is not enabled for this hotel, the endpoint is not
+ * configured, or the browser blocks the request — we never bubble
+ * errors up to the widget.
  */
 export function track(event, payload) {
-  if (!consentGranted()) return;
+  if (!consentGranted() || !trackingEnabled()) return;
   const url = endpoint();
   if (!url) return;
   const uid = getOrCreateUid();
