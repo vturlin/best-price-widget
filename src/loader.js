@@ -92,7 +92,14 @@ export function normalizeConfig(raw) {
     currency: String(raw.currency || 'EUR'),
 
     // Appearance
-    position: ['bottom-right', 'bottom-left', 'top-right', 'top-left'].includes(raw.position)
+    position: [
+      'bottom-right',
+      'bottom-left',
+      'center-right',
+      'center-left',
+      'top-right',
+      'top-left',
+    ].includes(raw.position)
       ? raw.position
       : 'bottom-right',
     size: ['small', 'medium', 'large'].includes(raw.size) ? raw.size : 'small',
