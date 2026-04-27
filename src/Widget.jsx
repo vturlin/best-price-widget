@@ -150,11 +150,30 @@ function BookButtonPortal({ placeholderEl, href, onClick, label, brandColor }) {
     const update = () => setRect(placeholderEl.getBoundingClientRect());
     update();
 
+    // The default panel reveal animates `transform: translateY(8px) → 0`
+    // over 320ms, and the ticker panel animates `max-height` over 500ms.
+    // ResizeObserver doesn't fire for transform-driven moves, so poll
+    // every animation frame for a short window after mount to keep the
+    // floating anchor glued to the placeholder. After that the
+    // ResizeObserver + window resize listener are enough.
+    let rafId = null;
+    const stopAt = performance.now() + 600;
+    const tick = (now) => {
+      update();
+      if (now < stopAt) {
+        rafId = requestAnimationFrame(tick);
+      } else {
+        rafId = null;
+      }
+    };
+    rafId = requestAnimationFrame(tick);
+
     const ro = new ResizeObserver(update);
     ro.observe(placeholderEl);
     window.addEventListener('resize', update);
 
     return () => {
+      if (rafId) cancelAnimationFrame(rafId);
       ro.disconnect();
       window.removeEventListener('resize', update);
     };
@@ -1336,7 +1355,7 @@ function V5StampPanel({
         </svg>
       </div>
 
-      <div className="hpw-v5-footer">{t('poweredBy') || 'Powered by'} d·edge</div>
+      <div className="hpw-v5-footer">{t('poweredBy') || 'Powered by D-EDGE'}</div>
     </div>
   );
 }

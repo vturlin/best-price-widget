@@ -788,6 +788,10 @@
 .hpw-tk-cell-up   { color: var(--tk-up); }
 .hpw-tk-cell-down { color: var(--tk-down); }
 
+/* Ticker CTA placeholder — sized only, kept visually invisible so the
+   floating BookButtonPortal anchor is the single visible button. The
+   inline `background` and `color` from JSX get suppressed by the
+   transparent overrides below. */
 .hpw-tk-cta {
   margin-top: 14px;
   padding: 14px 16px;
@@ -799,7 +803,8 @@
   letter-spacing: 0.32em;
   text-transform: uppercase;
   text-align: center;
-  cursor: pointer;
+  background: transparent !important;
+  color: transparent !important;
 }
 
 .hpw-tk-footer {
@@ -1141,9 +1146,11 @@
   margin-bottom: 12px;
 }
 
-/* CTA — placeholder div is shaped + colored; BookButtonPortal
-   overlays the real <a> tag on top of it. The text inside is for
-   layout only (the floating <a> uses its own label). */
+/* CTA — placeholder div serves only to size + position the floating
+   BookButtonPortal anchor that overlays it. Kept visually invisible
+   (transparent background + transparent glyphs) so any sub-pixel
+   misalignment between the placeholder and the floating <a> does not
+   leak a coloured rectangle. The portal's <a> is the visible button. */
 .hpw-v5-cta {
   display: inline-flex;
   align-items: center;
@@ -1151,23 +1158,17 @@
   gap: 10px;
   width: 100%;
   padding: 13px 16px;
-  background: var(--v5-cta-bg);
-  color: var(--v5-cta-ink);
+  background: transparent;
+  color: transparent;
   border: none;
   border-radius: 2px;
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  cursor: pointer;
   font-family: inherit;
-  /* Animate in after the panel + rows have settled. */
-  animation: hpw-v5-fade-in 200ms ease 320ms both;
 }
-@keyframes hpw-v5-fade-in {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
+.hpw-v5-cta svg { display: none; }
 
 .hpw-v5-footer {
   margin-top: 12px;
@@ -1205,8 +1206,7 @@
 @media (prefers-reduced-motion: reduce) {
   .hpw-v5,
   .hpw-v5-stamp,
-  .hpw-v5-ota-row,
-  .hpw-v5-cta {
+  .hpw-v5-ota-row {
     animation: none !important;
   }
   /* Keep the stamp at its rest rotation since the spec wants it to
