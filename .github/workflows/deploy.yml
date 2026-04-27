@@ -28,15 +28,6 @@ jobs:
       - run: npm install --no-audit --no-fund
 
       - run: npm run build
-        env:
-          # First-party tracker endpoint, baked into the widget bundle.
-          # Set in GitHub → Settings → Secrets and variables → Actions
-          # → Variables → New repository variable, name TRACKER_ENDPOINT,
-          # value e.g. https://your-admin.run.app/api/track
-          # If unset, the widget runs without a built-in endpoint and
-          # tracking is effectively off (the runtime override
-          # window.HPW_TRACKER_ENDPOINT can still wire it up per page).
-          VITE_TRACKER_ENDPOINT: ${{ vars.TRACKER_ENDPOINT }}
 
       - name: Copy demo as index
         run: cp dist/demo.html dist/index.html
