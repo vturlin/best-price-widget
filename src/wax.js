@@ -82,26 +82,32 @@ const cache = new Map();
 
 /**
  * Derive { center, mid, edge, markColor, ringColor, isLight } from any
- * CSS-hex brand color. The wax stops feed the medallion's radial
- * gradient; markColor / ringColor stay legible on every brand.
+ * CSS-hex brand color. The mid stop is the brand color almost
+ * verbatim; center is a brighter highlight, edge a darker shadow, all
+ * keeping the original hue. The radial-gradient pattern (plus the
+ * engraved mark, the inner ring, and the drop shadow) carries the
+ * "wax-seal" feel — we don't anchor lightness anymore, so a red brand
+ * stays red and a navy brand stays navy.
  */
 export function deriveWaxStops(brandColor) {
   const key = (brandColor || '').toLowerCase();
   if (cache.has(key)) return cache.get(key);
 
   const [L, C, H] = hexToOklch(brandColor || '#7A2E1F');
-  // Anchor lightness so every brand reads as a deep saturated wax;
-  // raise saturation floor so muted brands still feel "waxy".
-  const midL = Math.min(0.45, Math.max(0.32, L));
-  const midC = Math.max(C, 0.10);
 
-  const mid = oklchToHex([midL, midC, H]);
-  const center = oklchToHex([midL + 0.10, midC + 0.02, H]);
-  const edge = oklchToHex([Math.max(midL - 0.10, 0), Math.max(midC - 0.02, 0.06), H]);
+  // Mid keeps the brand's L and C verbatim. Center lifts L by ~0.08 for
+  // the highlight; edge drops L by ~0.10 for the shadow. Tiny C taper
+  // on the edge keeps the rim from looking neon on very saturated
+  // brands. No L clamp / C floor — a true grey stays grey, and a
+  // vibrant red stays vibrant.
+  const mid = oklchToHex([L, C, H]);
+  const center = oklchToHex([Math.min(L + 0.08, 0.95), C, H]);
+  const edge = oklchToHex([Math.max(L - 0.10, 0.05), Math.max(C - 0.01, 0), H]);
 
-  // The clamp keeps midL ≤ 0.45 so cream is the typical answer; the
-  // light-branch is kept in case a future caller widens the clamp.
-  const isLight = midL >= 0.55;
+  // Mark + ring contrast off the actual brand lightness now that mid
+  // tracks it. Threshold 0.55 keeps cream on most brands and switches
+  // to ink only when the brand is genuinely light.
+  const isLight = L >= 0.55;
   const markColor = isLight ? '#1A1410' : '#F5E9D6';
   const ringColor = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(245,233,214,0.18)';
 
