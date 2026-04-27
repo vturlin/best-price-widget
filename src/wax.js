@@ -79,6 +79,27 @@ function oklchToHex([L, C, H]) {
 // re-renders on every state change in the parent; recomputing the OKLCH
 // trip on each render would be wasteful.
 const cache = new Map();
+const stampCache = new Map();
+
+// Mix two hex colors in OKLCH at proportion `p` (0=a, 1=b).
+// Used for surface-ink → muted/faint derivations in V5.
+export function mixHex(a, b, p) {
+  const [La, Ca, Ha] = hexToOklch(a);
+  const [Lb, Cb, Hb] = hexToOklch(b);
+  // Hue interpolation needs to take the shortest arc. For our use
+  // (mixing similar warm tones) the brute-force lerp is acceptable.
+  return oklchToHex([
+    La + (Lb - La) * p,
+    Ca + (Cb - Ca) * p,
+    Ha + (Hb - Ha) * p,
+  ]);
+}
+
+// Parse a hex into [r, g, b] for rgba() string output.
+function hexToRgbStr(hex, alpha) {
+  const [r, g, b] = hexToRgb(hex);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
 
 /**
  * Derive { center, mid, edge, markColor, ringColor, isLight } from any
@@ -113,5 +134,45 @@ export function deriveWaxStops(brandColor) {
 
   const out = { center, mid, edge, markColor, ringColor, isLight };
   cache.set(key, out);
+  return out;
+}
+
+/**
+ * Derive the V5 wax-stamp palette. Uses the spec's classic anchored-
+ * lightness approach (clamp L to [0.32, 0.45], floor C at 0.10) so
+ * every brand reads as a deep saturated wax — the stamp is the hero,
+ * it needs to feel "pressed" regardless of the brand's natural
+ * lightness. (The closed-state toggle's deriveWaxStops above does not
+ * clamp, on purpose — different element, different needs.)
+ *
+ * Returns: { face, edge, shadow, ink, ringHi }
+ *   face   — stamp background (radial fill)
+ *   edge   — stamp border
+ *   shadow — colored drop shadow (rgba string at 35% alpha)
+ *   ink    — text inside the stamp (cream on dark wax, deep-ink on light)
+ *   ringHi — inner highlight ring (cream-on-dark or shadow-on-light)
+ */
+export function deriveStampStops(brandColor) {
+  const key = (brandColor || '').toLowerCase();
+  if (stampCache.has(key)) return stampCache.get(key);
+
+  const [L, C, H] = hexToOklch(brandColor || '#7A2E1F');
+  const midL = Math.min(0.45, Math.max(0.32, L));
+  const midC = Math.max(C, 0.10);
+
+  const face = oklchToHex([midL, midC, H]);
+  const edge = oklchToHex([
+    Math.max(midL - 0.10, 0),
+    Math.max(midC - 0.02, 0.06),
+    H,
+  ]);
+
+  const isLight = midL >= 0.55;
+  const ink = isLight ? '#1A1410' : '#F5E9D6';
+  const ringHi = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(245,233,214,0.18)';
+  const shadow = hexToRgbStr(face, 0.35);
+
+  const out = { face, edge, shadow, ink, ringHi, isLight };
+  stampCache.set(key, out);
   return out;
 }

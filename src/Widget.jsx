@@ -35,7 +35,7 @@ import {
   peekUid,
   exposeOnWindow as exposeTrackerOnWindow,
 } from './tracker.js';
-import { deriveWaxStops } from './wax.js';
+import { deriveWaxStops, deriveStampStops, mixHex } from './wax.js';
 import { DayPicker } from 'react-day-picker';
 import 'react-day-picker/dist/style.css';
 
@@ -661,128 +661,25 @@ export default function Widget({ config }) {
       )}
 
       {config.widgetDesign !== 'ticker' && expanded && (
-        <div className="hpw-panel">
-          <button
-            type="button"
-            className="hpw-close"
-            onClick={handleClose}
-            aria-label={t('close')}
-          >×</button>
-          {/* Stay block — summary button + popover calendar */}
-          <StayPicker
-            checkIn={checkIn}
-            checkOut={checkOut}
-            nights={nights}
-            locale={locale}
-            onChange={(newCheckIn, newCheckOut) => {
-              setCheckIn(newCheckIn);
-              setCheckOut(newCheckOut);
-              trackDatesChanged(
-                newCheckIn,
-                newCheckOut,
-                daysBetween(newCheckIn, newCheckOut)
-              );
-            }}
-            t={t}
-          />
-          {/* Body */}
-          {loading ? (
-            <div className="hpw-loading">{t('loading')}</div>
-          ) : showFallback ? (
-            <div className="hpw-fallback">
-              <p className="hpw-fallback-title">{t('bestPriceGuaranteed')}</p>
-              <p className="hpw-fallback-sub">{t('fallbackText')}</p>
-            </div>
-          ) : (
-            <>
-              {/* Our direct price */}
-              <div className="hpw-our-price">
-                <span className="hpw-our-price-label">
-                  {t('priceOnOfficialWebsite')}
-                </span>
-                <div className="hpw-our-price-amount">
-                  {formatCurrency(directChannel.total, currency, locale)}
-                </div>
-                <span className="hpw-our-price-sub">
-                  {t('totalFor')} {nights} {nights > 1 ? t('nights') : t('night')}
-                </span>
-
-                {rates.savingsAmount != null && rates.savingsAmount > 0 && (
-                  <div className="hpw-savings-badge">
-                    {t('youSave')}{' '}
-                    <strong>{formatCurrency(rates.savingsAmount, currency, locale)}</strong>
-                    {' '}({rates.savingsPercent}%)
-                    {rates.bestOtaChannelId && (
-                      <>
-                        {' '}{t('vs')}{' '}
-                        {getChannelName(rates.bestOtaChannelId, rates)}
-                      </>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* OTAs comparison */}
-              {otaChannels.length > 0 && (
-                <div className="hpw-otas">
-                  <ul className="hpw-otas-list">
-                    {(otasExpanded ? otaChannels : otaChannels.slice(0, 2)).map((ch) => {
-                      const delta = ch.total - directChannel.total;
-                      return (
-                        <li key={ch.id} className="hpw-ota-row">
-                          <span className="hpw-ota-name">
-                            {getChannelName(ch.id, rates)}
-                          </span>
-                          <span className="hpw-ota-right">
-                            <span className="hpw-ota-price">
-                              {formatCurrency(ch.total, currency, locale)}
-                            </span>
-                            {delta > 0 && (
-                              <span className="hpw-ota-delta">
-                                -{formatCurrency(delta, currency, locale)}
-                              </span>
-                            )}
-                          </span>
-                        </li>
-                      );
-                    })}
-                  </ul>
-                  {otaChannels.length > 2 && (
-                    <button
-                      type="button"
-                      className="hpw-otas-toggle"
-                      onClick={() => setOtasExpanded((v) => !v)}
-                    >
-                      {otasExpanded
-                        ? t('hideChannels')
-                        : t('showAllChannels', { count: otaChannels.length, n: otaChannels.length })}
-                      <span className={`hpw-otas-arrow ${otasExpanded ? 'up' : ''}`}>▼</span>
-                    </button>
-                  )}
-                </div>
-              )}
-            </>
-          )}
-
-          {/* Book button — rendered via portal into light DOM so GTM's
-              cross-domain linker can see the click target (shadow DOM
-              retargets event.target to the host). The placeholder below
-              reserves layout space inside the panel. */}
-          <div
-            ref={setBookBtnPlaceholderEl}
-            className="hpw-book-btn-placeholder"
-            aria-hidden="true"
-          >
-            {t('bookNow')} →
-          </div>
-          {/* BookButtonPortal moved to widget-root level so the ticker
-              variant can share the same overlay anchor — see below. */}
-
-          {/* Footer */}
-          <footer className="hpw-footer">
-              {t('poweredBy')}
-            </footer>
-        </div>
+        <V5StampPanel
+          config={config}
+          t={t}
+          locale={locale}
+          checkIn={checkIn}
+          checkOut={checkOut}
+          nights={nights}
+          rates={rates}
+          loading={loading}
+          showFallback={showFallback}
+          directChannel={directChannel}
+          otaChannels={otaChannels}
+          getChannelName={getChannelName}
+          formatDate={formatDate}
+          formatCurrency={formatCurrency}
+          currency={currency}
+          onClose={handleClose}
+          bookBtnPlaceholderRef={setBookBtnPlaceholderEl}
+        />
       )}
 
       {/* Single Book button overlay anchor at the widget root. Whichever
@@ -1186,6 +1083,196 @@ function TickerVariant({
           </div>
         </div>
       </button>
+    </div>
+  );
+}
+
+// ─── Default open panel — V5 Stamp ──────────────────────────────────
+// Cream/linen panel with a wax-stamp savings medallion in the top-
+// right. Editorial, opinionated. The stamp is the hero (it does the
+// emotional work); the rest of the panel is calm and structural —
+// no "+€diff" column on the OTA table, no green winner, just
+// competitor prices with line-through to underline the savings.
+//
+// Surface colors are sourced from the existing config object with
+// defaults: config.surface / config.surfaceInk / config.ctaBg /
+// config.ctaInk. Stamp wax color comes from config.brandColor (or
+// the optional toggleColor override) via deriveStampStops.
+function V5StampPanel({
+  config,
+  t,
+  locale,
+  checkIn,
+  checkOut,
+  nights,
+  rates,
+  loading,
+  showFallback,
+  directChannel,
+  otaChannels,
+  getChannelName,
+  formatDate,
+  formatCurrency,
+  currency,
+  onClose,
+  bookBtnPlaceholderRef,
+}) {
+  // Surface palette from config with V5 defaults. Hotel brand wins;
+  // when nothing is configured we land on the cream/ink V5 identity.
+  const surface = config.surface || '#FAF4E8';
+  const surfaceInk = config.surfaceInk || '#3A2818';
+  const ctaBg = config.ctaBg || surfaceInk;
+  const ctaInk = config.ctaInk || surface;
+
+  // Derived support tones — kept perceptually relative to whatever
+  // surface/ink the operator picked. mixHex is OKLCH-based so a navy
+  // ink on cream surface still produces a recognizable "muted" mid.
+  const muted = useMemo(() => mixHex(surfaceInk, surface, 0.45), [surfaceInk, surface]);
+  const faint = useMemo(() => mixHex(surfaceInk, surface, 0.65), [surfaceInk, surface]);
+
+  const stamp = useMemo(
+    () => deriveStampStops(config.toggleColor || config.brandColor || '#7A2E1F'),
+    [config.toggleColor, config.brandColor]
+  );
+
+  const cssVars = {
+    '--v5-surface': surface,
+    '--v5-ink': surfaceInk,
+    '--v5-muted': muted,
+    '--v5-faint': faint,
+    '--v5-cta-bg': ctaBg,
+    '--v5-cta-ink': ctaInk,
+    '--v5-stamp-face': stamp.face,
+    '--v5-stamp-edge': stamp.edge,
+    '--v5-stamp-shadow': stamp.shadow,
+    '--v5-stamp-ink': stamp.ink,
+    '--v5-stamp-ringhi': stamp.ringHi,
+    // Hairline borders and footer color are derived from ink + surface
+    // so brand changes propagate consistently.
+    '--v5-rule': mixHex(surfaceInk, surface, 0.82),
+  };
+
+  // Esc key closes regardless of focus location inside the panel.
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const directPrice = directChannel?.total || null;
+  const directLabel = directPrice ? formatCurrency(directPrice, currency, locale) : '—';
+  const savings = rates?.savingsAmount > 0 ? rates.savingsAmount : 0;
+  const savingsPct = rates?.savingsPercent > 0 ? rates.savingsPercent : 0;
+  const savingsLabel = formatCurrency(savings, currency, locale);
+
+  return (
+    <div
+      className="hpw-v5"
+      style={cssVars}
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="hpw-v5-price"
+    >
+      <button
+        type="button"
+        className="hpw-v5-close"
+        onClick={onClose}
+        aria-label={t('close')}
+      >
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <path d="M3 3 L11 11 M11 3 L3 11" stroke="currentColor"
+                strokeWidth="1.2" strokeLinecap="round" />
+        </svg>
+      </button>
+
+      <div className="hpw-v5-dates">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+          <rect x="1.5" y="2.5" width="9" height="8" rx="1"
+                fill="none" stroke="currentColor" strokeWidth="1" />
+          <path d="M1.5 5 L10.5 5 M4 1.5 L4 3 M8 1.5 L8 3"
+                stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+        </svg>
+        <span className="hpw-v5-dates-range">
+          {formatDate(checkIn, locale)} → {formatDate(checkOut, locale)}
+        </span>
+        <span className="hpw-v5-dates-sep">·</span>
+        <span className="hpw-v5-dates-nights">
+          {nights} {nights > 1 ? t('nights') : t('night')}
+        </span>
+      </div>
+
+      <div className="hpw-v5-hero">
+        <div className="hpw-v5-kicker">{t('directRate') || 'Direct rate'}</div>
+        <div id="hpw-v5-price" className="hpw-v5-price">
+          {loading ? '…' : directLabel}
+        </div>
+
+        {savings > 0 && (
+          <>
+            <div className="hpw-v5-stamp" aria-hidden="true">
+              <div className="hpw-v5-stamp-1">{t('youSave') || 'You save'}</div>
+              <div className="hpw-v5-stamp-2">
+                {savingsLabel}
+              </div>
+              <div className="hpw-v5-stamp-3">−{savingsPct}%</div>
+            </div>
+            <span className="hpw-v5-sr">
+              You save {savingsLabel} — that's {savingsPct}% off the cheapest OTA rate.
+            </span>
+          </>
+        )}
+      </div>
+
+      {!loading && !showFallback && otaChannels.length > 0 && (
+        <div className="hpw-v5-otas">
+          {otaChannels.map((ch) => {
+            const priceLabel = formatCurrency(ch.total, currency, locale);
+            const name = getChannelName(ch.id, rates);
+            return (
+              <div className="hpw-v5-ota-row" key={ch.id}>
+                <span>{name}</span>
+                <span
+                  className="hpw-v5-ota-price"
+                  aria-label={`${name}: was ${priceLabel}, struck through`}
+                >
+                  {priceLabel}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      <div className="hpw-v5-guarantee">
+        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+          <path d="M6 1 L10.5 3 V6 C10.5 8.5 6 11 6 11 C6 11 1.5 8.5 1.5 6 V3 Z M4 6 L5.5 7.5 L8.5 4.5"
+                fill="none" stroke="currentColor" strokeWidth="1"
+                strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+        <span>
+          {t('bestPriceGuaranteed') || 'Best price guarantee'} · {t('noFees') || 'No fees'}
+        </span>
+      </div>
+
+      {/* CTA placeholder — BookButtonPortal at widget-root overlays the
+          real <a> on top of this. Color tokens applied here so the
+          floating anchor inherits the look. */}
+      <div
+        ref={bookBtnPlaceholderRef}
+        className="hpw-v5-cta"
+        aria-hidden="true"
+      >
+        {t('bookNow') || 'Book direct'}
+        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+          <path d="M2.5 7 L11 7 M7 3 L11 7 L7 11"
+                fill="none" stroke="currentColor" strokeWidth="1.4"
+                strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+
+      <div className="hpw-v5-footer">{t('poweredBy') || 'Powered by'} d·edge</div>
     </div>
   );
 }
