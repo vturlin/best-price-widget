@@ -92,37 +92,80 @@ function generateUid() {
   return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
+// Cross-domain linker: if the host hotel page passed an hpw_uid via
+// the URL (the booking-engine flow does this — see Widget.jsx where
+// the Book href is decorated), pick it up and adopt it as the local
+// identity. Lets a single visitor keep the same uid across the host
+// page and the booking-engine domain even though cookies are
+// per-origin. Returns null if no valid uid is on the URL.
+function readUidFromUrl() {
+  if (typeof location === 'undefined') return null;
+  try {
+    const p = new URLSearchParams(location.search);
+    const u = p.get('hpw_uid');
+    if (!u) return null;
+    // Validate shape — same constraints as the server uid check.
+    // 8-64 chars, hex (or hex-with-dashes for legacy UUID-style).
+    if (u.length < 8 || u.length > 64) return null;
+    if (!/^[a-f0-9-]+$/i.test(u)) return null;
+    return u;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Returns the user's persistent ID, creating + persisting it on first
  * call. Returns null when consent has not been granted (we never set
  * a cookie before consent) or when tracking is not enabled for this
  * hotel.
+ *
+ * Resolution order:
+ *   1. cached value (already resolved in this page)
+ *   2. ?hpw_uid in the URL — cross-domain handoff. Adopted as the
+ *      local cookie so the visitor is identified the same way on the
+ *      host hotel page and on the booking-engine domain.
+ *   3. existing first-party cookie on this origin
+ *   4. fresh random uid
  */
 export function getOrCreateUid() {
   if (!consentGranted() || !trackingEnabled()) return null;
   if (cachedUid) return cachedUid;
+
+  const fromUrl = readUidFromUrl();
+  if (fromUrl) {
+    cachedUid = fromUrl;
+    writeCookie(COOKIE_NAME, cachedUid, COOKIE_TTL_DAYS);
+    return cachedUid;
+  }
+
   const existing = readCookie(COOKIE_NAME);
   if (existing) {
     cachedUid = existing;
     return cachedUid;
   }
+
   cachedUid = generateUid();
   writeCookie(COOKIE_NAME, cachedUid, COOKIE_TTL_DAYS);
   return cachedUid;
 }
 
 /**
- * Read-only variant — returns the cached uid (or the cookie if any)
- * without ever writing. Safe to call during render. The widget uses
- * this to decorate the Book URL with hpw_uid so the booking-engine's
- * confirmation page can attribute the sale.
+ * Read-only variant — returns the cached uid, the cookie, or a uid
+ * already on the URL (cross-domain handoff still in flight) without
+ * ever writing. Safe to call during render. Used to decorate the
+ * Book URL.
  */
 export function peekUid() {
   if (cachedUid) return cachedUid;
   if (!consentGranted() || !trackingEnabled()) return null;
   const existing = readCookie(COOKIE_NAME);
-  if (existing) cachedUid = existing;
-  return cachedUid || null;
+  if (existing) {
+    cachedUid = existing;
+    return cachedUid;
+  }
+  const fromUrl = readUidFromUrl();
+  return fromUrl || null;
 }
 
 /**
