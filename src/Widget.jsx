@@ -1177,10 +1177,11 @@ function TickerVariant({
 // no "+€diff" column on the OTA table, no green winner, just
 // competitor prices with line-through to underline the savings.
 //
-// Surface colors are sourced from the existing config object with
-// defaults: config.surface / config.surfaceInk / config.ctaBg /
-// config.ctaInk. Stamp wax color comes from config.brandColor (or
-// the optional toggleColor override) via deriveStampStops.
+// Surface colors are sourced from config.backgroundColor (the admin's
+// "Background" field), with optional advanced overrides via
+// config.surface / config.surfaceInk / config.ctaBg / config.ctaInk.
+// Stamp wax color comes from config.brandColor (or the optional
+// toggleColor override) via deriveStampStops.
 function V5StampPanel({
   config,
   t,
@@ -1201,10 +1202,14 @@ function V5StampPanel({
   onDatesChange,
   bookBtnPlaceholderRef,
 }) {
-  // Surface palette from config with V5 defaults. Hotel brand wins;
-  // when nothing is configured we land on the cream/ink V5 identity.
-  const surface = config.surface || '#FAF4E8';
-  const surfaceInk = config.surfaceInk || '#3A2818';
+  // Surface = the admin-configured Background color (with the V5
+  // cream as the fallback only when nothing is configured). Ink auto-
+  // flips to cream when the chosen surface is dark, so contrast holds
+  // whether the operator picks #FAF4E8 or #1A1A1A.
+  const surface =
+    config.surface || config.backgroundColor || '#FAF4E8';
+  const surfaceInk =
+    config.surfaceInk || (isColorDark(surface) ? '#F5E9D6' : '#3A2818');
   const ctaBg = config.ctaBg || surfaceInk;
   const ctaInk = config.ctaInk || surface;
 
