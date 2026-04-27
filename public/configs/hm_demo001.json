@@ -14,7 +14,9 @@
   "currency": "EUR",
   "position": "bottom-right",
   "size": "small",
-  "brandColor": "#b6a690",
+  "toggleDesign": "ticker",
+  "brandColor": "#b69096",
+  "toggleColor": "",
   "backgroundColor": "#e6ded1",
   "enabledLocales": [
     "en",
