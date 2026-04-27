@@ -104,14 +104,21 @@ export function normalizeConfig(raw) {
       : 'bottom-right',
     size: ['small', 'medium', 'large'].includes(raw.size) ? raw.size : 'small',
     // Whole-widget design variant. 'default' = wax-seal toggle +
-    // standard floating panel; 'ticker' = full-width bottom rail +
-    // dark Bloomberg-style panel.
+    // V5 stamp panel; 'ticker' = full-width bottom rail + dark
+    // Bloomberg-style panel; 'vegas' = bordeaux/gold slot machine.
     // Backwards-compat: read either widgetDesign (current) or
     // toggleDesign (previous name) so older configs keep working.
     widgetDesign:
       raw.widgetDesign === 'ticker' || raw.toggleDesign === 'ticker'
         ? 'ticker'
-        : 'default',
+        : raw.widgetDesign === 'vegas' || raw.toggleDesign === 'vegas'
+          ? 'vegas'
+          : 'default',
+    // Vegas sub-variant: ornament density inside the slot-machine design.
+    // Only consumed when widgetDesign === 'vegas'.
+    vegasVariant: ['sobre', 'standard', 'riche', 'extravagant'].includes(raw.vegasVariant)
+      ? raw.vegasVariant
+      : 'standard',
     brandColor: String(raw.brandColor || '#1a1a1a'),
     // Optional override for the wax-seal toggle. Empty string = inherit
     // brandColor; any non-empty value wins for the closed-state seal.

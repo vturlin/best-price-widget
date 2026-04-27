@@ -620,7 +620,7 @@ export default function Widget({ config }) {
         />
       )}
 
-      {config.widgetDesign !== 'ticker' && !expanded && (
+      {(!config.widgetDesign || config.widgetDesign === 'default') && !expanded && (
         <button
           type="button"
           className="hpw-toggle"
@@ -712,7 +712,7 @@ export default function Widget({ config }) {
         </button>
       )}
 
-      {config.widgetDesign !== 'ticker' && expanded && (
+      {(!config.widgetDesign || config.widgetDesign === 'default') && expanded && (
         <V5StampPanel
           config={config}
           t={t}
@@ -743,9 +743,48 @@ export default function Widget({ config }) {
         />
       )}
 
+      {config.widgetDesign === 'vegas' && !expanded && (
+        <button
+          type="button"
+          className="hpw-vg-toggle"
+          onClick={handleOpen}
+          aria-label={t('openWidget')}
+        >
+          <span className="hpw-vg-toggle-kicker">★ JACKPOT ★</span>
+          {directChannel && rates?.status === 'ok' && (
+            <span className="hpw-vg-toggle-price">
+              {formatCurrency(directChannel.total, currency, locale)}
+            </span>
+          )}
+          <span className="hpw-vg-toggle-play">PLAY</span>
+        </button>
+      )}
+
+      {config.widgetDesign === 'vegas' && expanded && (
+        <VegasSlot
+          variant={config.vegasVariant || 'standard'}
+          locale={locale}
+          checkIn={checkIn}
+          checkOut={checkOut}
+          nights={nights}
+          rates={rates}
+          loading={loading}
+          showFallback={showFallback}
+          directChannel={directChannel}
+          otaChannels={otaChannels}
+          getChannelName={getChannelName}
+          formatDate={formatDate}
+          formatCurrency={formatCurrency}
+          currency={currency}
+          onClose={handleClose}
+          bookBtnPlaceholderRef={setBookBtnPlaceholderEl}
+          t={t}
+        />
+      )}
+
       {/* Single Book button overlay anchor at the widget root. Whichever
-          variant currently owns the ref (default panel placeholder OR
-          ticker CTA) is the one this floating <a> follows. */}
+          variant currently owns the ref (default panel placeholder, ticker
+          CTA, or vegas CTA) is the one this floating <a> follows. */}
       <BookButtonPortal
         placeholderEl={bookBtnPlaceholderEl}
         href={reserveHref}
@@ -1384,6 +1423,368 @@ function V5StampPanel({
       </div>
 
       <div className="hpw-v5-footer">{t('poweredBy') || 'Powered by D-EDGE'}</div>
+    </div>
+  );
+}
+
+// ─── Vegas variant — slot machine ──────────────────────────────────
+// Three reels spin in cascade and settle on DIRECT / €{price} / WIN. The
+// reveal is preordained — direct rate beats every OTA — and the slot
+// staging is just the dramatic delivery. Hardcoded bordeaux/gold palette
+// (does not adapt to brandColor, per design spec).
+//
+// Sub-variants control ornament density, not the core behaviour:
+//   sobre / standard / riche / extravagant
+// The reel animation, payline, and CTA layout are identical across all
+// four — only chassis colour, bulbs presence, ornaments and JACKPOT glow
+// differ. Driven by config.vegasVariant.
+
+const VG_REEL_HEIGHT = 56;
+const VG_REEL_REPEATS = 12;
+const VG_SETTLE_MS = 280;
+
+const VG_OTAS = ['BOOKING', 'EXPEDIA', 'HOTELS', 'AGODA', 'KAYAK', 'DIRECT'];
+const VG_VERDICTS = ['LOSS', 'OVER', 'PAY', 'NOPE', 'MISS', 'WIN'];
+
+function VegasReel({ kind, symbols, targetIndex, spinKey }) {
+  // stopAt is per-reel (cascade); passed implicitly via kind so the parent
+  // doesn't have to thread three timing constants. Reel 1 stops earliest,
+  // reel 3 latest — total ~1800ms from start of spin.
+  const stopAt =
+    kind === 'ota' ? 960 :
+    kind === 'price' ? 1240 :
+    1520;
+
+  const trackRef = useRef(null);
+
+  useEffect(() => {
+    if (!trackRef.current || !spinKey) return;
+
+    const safe = ((targetIndex % symbols.length) + symbols.length) % symbols.length;
+    const finalY = -(((VG_REEL_REPEATS - 1) * symbols.length) + safe) * VG_REEL_HEIGHT;
+    const overshootY = finalY - VG_REEL_HEIGHT * 0.5;
+
+    const startTime = performance.now();
+    let raf;
+
+    const tick = (now) => {
+      const elapsed = now - startTime;
+      let y;
+      if (elapsed < stopAt) {
+        // Phase 1 — spin: ease toward overshootY (past the target)
+        const t = elapsed / stopAt;
+        const eased = 1 - Math.pow(1 - t, 2.5);
+        y = overshootY * eased;
+      } else if (elapsed < stopAt + VG_SETTLE_MS) {
+        // Phase 2 — settle: bounce back from overshoot to final
+        const t = (elapsed - stopAt) / VG_SETTLE_MS;
+        const eased = 1 - Math.pow(1 - t, 3);
+        y = overshootY + (finalY - overshootY) * eased;
+      } else {
+        y = finalY;
+        if (trackRef.current) {
+          trackRef.current.style.transform = `translateY(${y}px)`;
+        }
+        return; // animation complete
+      }
+      if (trackRef.current) {
+        trackRef.current.style.transform = `translateY(${y}px)`;
+      }
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+
+    return () => {
+      if (raf) cancelAnimationFrame(raf);
+    };
+  }, [spinKey, stopAt, targetIndex, symbols]);
+
+  const symbolClass =
+    kind === 'ota' ? 'hpw-vg-symbol-ota' :
+    kind === 'price' ? 'hpw-vg-symbol-price' :
+    'hpw-vg-symbol-verdict';
+
+  return (
+    <div className="hpw-vg-reel">
+      <div ref={trackRef} className="hpw-vg-reel-track">
+        {Array.from({ length: VG_REEL_REPEATS }).flatMap((_, r) =>
+          symbols.map((s, i) => (
+            <div key={`${r}-${i}`} className={`hpw-vg-symbol ${symbolClass}`}>
+              {s}
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function VegasBulbs() {
+  // 11 bulbs evenly spaced. Static at rest; the parent's .hpw-vg-flash
+  // class triggers the cascade keyframes.
+  return (
+    <div className="hpw-vg-bulbs" aria-hidden="true">
+      {Array.from({ length: 11 }).map((_, i) => (
+        <span key={i} className="hpw-vg-bulb" />
+      ))}
+    </div>
+  );
+}
+
+function VegasOrnament({ corner }) {
+  // Filigree corner used by the "riche" variant. Drawn once and flipped
+  // via CSS for the other three corners.
+  return (
+    <svg
+      className={`hpw-vg-ornament ${corner}`}
+      viewBox="0 0 28 28"
+      aria-hidden="true"
+    >
+      <path
+        d="M2 2 L8 2 M2 2 L2 8 M2 2 Q12 4 14 14 M6 6 Q9 9 12 12"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.2"
+        strokeLinecap="round"
+      />
+      <circle cx="3" cy="3" r="1.4" fill="currentColor" />
+    </svg>
+  );
+}
+
+function VegasSlot({
+  variant,
+  locale,
+  checkIn,
+  checkOut,
+  nights,
+  rates,
+  loading,
+  showFallback,
+  directChannel,
+  otaChannels,
+  getChannelName,
+  formatDate,
+  formatCurrency,
+  currency,
+  onClose,
+  bookBtnPlaceholderRef,
+  t,
+}) {
+  // ── Animation state machine ────────────────────────────────────────
+  // spinKey 0 = pre-spin (reels at translateY 0). Bumping it (auto on
+  // mount, manually via SPIN button) triggers a fresh animation cycle.
+  // phase: 'idle' before any spin → 'spinning' during → 'settled' after.
+  const [spinKey, setSpinKey] = useState(0);
+  const [phase, setPhase] = useState('idle');
+
+  // Auto-spin 450ms after the panel mounts, every open. The spec wants
+  // the reveal to feel inevitable, not earned.
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setSpinKey((k) => k + 1);
+      setPhase('spinning');
+    }, 450);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Settle the phase once the longest reel finishes (1520ms stopAt +
+  // 280ms settle = 1800ms from spin start). The 'settled' class drives
+  // the bulb cascade, the payline glow and the gold reel outlines.
+  useEffect(() => {
+    if (phase !== 'spinning') return;
+    const timer = setTimeout(() => setPhase('settled'), 1800);
+    return () => clearTimeout(timer);
+  }, [spinKey, phase]);
+
+  function handleSpin() {
+    setSpinKey((k) => k + 1);
+    setPhase('spinning');
+  }
+
+  // ── Reel data ──────────────────────────────────────────────────────
+  const directPrice = directChannel?.total || null;
+
+  // Reel 2 symbols: a handful of decoy OTA prices + the direct price as
+  // the cheapest. Falls back to a representative spread if rates aren't
+  // loaded yet so the reel never reads empty.
+  const priceSymbols = useMemo(() => {
+    const decoys = [];
+    if (otaChannels && otaChannels.length) {
+      for (const ch of otaChannels.slice(0, 4)) {
+        decoys.push(formatCurrency(Math.round(ch.total), currency, locale));
+      }
+    }
+    while (decoys.length < 4) {
+      const fake = directPrice
+        ? Math.round(directPrice * (1.10 + decoys.length * 0.04))
+        : 800 + decoys.length * 30;
+      decoys.push(formatCurrency(fake, currency, locale));
+    }
+    decoys.push(directPrice ? formatCurrency(directPrice, currency, locale) : '—');
+    decoys.push(directPrice ? formatCurrency(directPrice, currency, locale) : '—');
+    return decoys;
+  }, [otaChannels, directPrice, currency, locale, formatCurrency]);
+
+  // Targets: always land on the last index of each pool (DIRECT / direct
+  // price / WIN), so the reveal is inevitable.
+  const otaTargetIndex = VG_OTAS.length - 1;
+  const priceTargetIndex = priceSymbols.length - 1;
+  const verdictTargetIndex = VG_VERDICTS.length - 1;
+
+  // ── Payline + meta data ────────────────────────────────────────────
+  const savings = rates?.savingsAmount > 0 ? rates.savingsAmount : 0;
+  const savingsLabel = savings > 0
+    ? formatCurrency(savings, currency, locale)
+    : null;
+
+  const cheapestOta = otaChannels && otaChannels.length ? otaChannels[0] : null;
+  const cheapestOtaName = cheapestOta ? getChannelName(cheapestOta.id, rates) : null;
+  const cheapestOtaPrice = cheapestOta
+    ? formatCurrency(Math.round(cheapestOta.total), currency, locale)
+    : null;
+
+  // ── Esc to close ───────────────────────────────────────────────────
+  useEffect(() => {
+    const onKey = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [onClose]);
+
+  const settled = phase === 'settled';
+  const safeVariant = ['sobre', 'standard', 'riche', 'extravagant'].includes(variant)
+    ? variant
+    : 'standard';
+
+  return (
+    <div className="hpw-vg-root">
+      <div
+        className={[
+          'hpw-vg-chassis',
+          `hpw-vg-${safeVariant}`,
+          settled && 'hpw-vg-flash',
+        ].filter(Boolean).join(' ')}
+        role="dialog"
+        aria-modal="false"
+        aria-label={t('bestPriceGuaranteed') || 'Best price guaranteed'}
+      >
+        <button
+          type="button"
+          className="hpw-vg-close"
+          onClick={onClose}
+          aria-label={t('close') || 'Close'}
+        >
+          <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+            <path d="M3 3 L9 9 M9 3 L3 9" stroke="currentColor"
+                  strokeWidth="1.4" strokeLinecap="round" />
+          </svg>
+        </button>
+
+        {/* Top bulb row(s) — sobre hides via CSS, riche doubles up */}
+        <VegasBulbs />
+        {safeVariant === 'riche' && <VegasBulbs />}
+
+        <div className="hpw-vg-header">
+          {safeVariant === 'extravagant' && (
+            <span className="hpw-vg-sunburst" aria-hidden="true" />
+          )}
+          {safeVariant === 'riche' && (
+            <>
+              <VegasOrnament corner="tl" />
+              <VegasOrnament corner="tr" />
+            </>
+          )}
+          <div className="hpw-vg-kicker">★ HÔTEL ROYALE ★</div>
+          <div className="hpw-vg-title">
+            {t('bestPriceGuaranteed') || 'Best Price'}
+          </div>
+        </div>
+
+        <div className="hpw-vg-bezel">
+          <div className="hpw-vg-reels">
+            <VegasReel
+              kind="ota"
+              symbols={VG_OTAS}
+              targetIndex={otaTargetIndex}
+              spinKey={spinKey}
+            />
+            <VegasReel
+              kind="price"
+              symbols={priceSymbols}
+              targetIndex={priceTargetIndex}
+              spinKey={spinKey}
+            />
+            <VegasReel
+              kind="verdict"
+              symbols={VG_VERDICTS}
+              targetIndex={verdictTargetIndex}
+              spinKey={spinKey}
+            />
+          </div>
+
+          <div className="hpw-vg-payline" aria-live="polite">
+            {savingsLabel
+              ? `★ JACKPOT ★ — ${(t('youSave') || 'YOU SAVE').toUpperCase()} ${savingsLabel}`
+              : `★ ${(t('bestPriceGuaranteed') || 'BEST PRICE GUARANTEED').toUpperCase()} ★`}
+          </div>
+        </div>
+
+        {safeVariant === 'riche' && (
+          <>
+            <VegasOrnament corner="bl" />
+            <VegasOrnament corner="br" />
+          </>
+        )}
+
+        {/* Bottom bulb row(s) — same rule as the top */}
+        <VegasBulbs />
+        {safeVariant === 'riche' && <VegasBulbs />}
+
+        <div className="hpw-vg-buttons">
+          <button
+            type="button"
+            className="hpw-vg-spin"
+            onClick={handleSpin}
+            disabled={phase === 'spinning'}
+            aria-label="Spin again"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M3 8 A5 5 0 1 1 8 13 M8 13 L6 11 M8 13 L6 15"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.5"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+            SPIN
+          </button>
+
+          {/* CTA placeholder — BookButtonPortal at the widget root overlays
+              the real <a> on top of this. */}
+          <div
+            ref={bookBtnPlaceholderRef}
+            className="hpw-vg-cta"
+            aria-hidden="true"
+          >
+            BOOK DIRECT {directPrice
+              ? formatCurrency(directPrice, currency, locale)
+              : ''} →
+          </div>
+        </div>
+      </div>
+
+      <div className="hpw-vg-meta">
+        {formatDate(checkIn, locale).toUpperCase()} → {formatDate(checkOut, locale).toUpperCase()}
+        {' · '}
+        {nights} {nights > 1 ? (t('nights') || 'NIGHTS').toUpperCase() : (t('night') || 'NIGHT').toUpperCase()}
+        {cheapestOtaName && cheapestOtaPrice && (
+          <> · vs {cheapestOtaName.toUpperCase()} {cheapestOtaPrice}</>
+        )}
+      </div>
     </div>
   );
 }

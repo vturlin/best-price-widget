@@ -24,6 +24,7 @@ import { readFileSync } from 'node:fs';
     'src/styles/shared.css',
     'src/styles/design-default.css',
     'src/styles/design-ticker.css',
+    'src/styles/design-vegas.css',
   ];
 
   function readConcatenatedCss() {

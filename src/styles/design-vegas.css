@@ -1,0 +1,470 @@
+/* =========================================================================
+   VEGAS DESIGN — Slot machine
+   -------------------------------------------------------------------------
+   The reveal "direct rate beats every OTA" staged as a slot machine. Three
+   reels spin in cascade and settle on DIRECT / €{price} / WIN. Hardcoded
+   bordeaux-and-gold palette (per spec — does not adapt to brandColor).
+
+   Sub-variants (config.vegasVariant), ordered from sober to extravagant:
+     sobre        — matte bordeaux, no bulbs, italic serif
+     standard     — static gold bulbs, single brass ring (default)
+     riche        — double bulb rows + corner ornaments
+     extravagant  — bulb chase loop, sunburst, neon JACKPOT glow
+   Modifier classes are applied on .hpw-vg-chassis as
+   .hpw-vg-sobre / .hpw-vg-standard / .hpw-vg-riche / .hpw-vg-extravagant.
+   ========================================================================= */
+
+/* ----- Tokens (chassis-scoped so the bordeaux/gold never leaks) -------- */
+
+.hpw-vg-root,
+.hpw-vg-chassis,
+.hpw-vg-toggle {
+  --vg-red-1:    #C0392B;
+  --vg-red-2:    #922B21;
+  --vg-red-3:    #6B1F18;
+  --vg-red-mat:  #7A2A20;
+  --vg-gold:     #F5D875;
+  --vg-gold-2:   #C9A87A;
+  --vg-brass:    #6B4F32;
+  --vg-ink:      #1A1410;
+  --vg-cream-1:  #F5EFE6;
+  --vg-cream-2:  #E8DAC4;
+  --vg-charcoal: #0A0805;
+  --vg-sand:     #A89684;
+  --vg-mono:     'JetBrains Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --vg-serif:    'Cormorant Garamond', 'Playfair Display', Georgia, serif;
+  --vg-sans:     'Open Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ----- Closed-state toggle: "★ JACKPOT ★ — €{price} PLAY" -------------- */
+
+.hpw-vg-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  width: 320px;
+  max-width: calc(100vw - 24px);
+  height: 56px;
+  padding: 0 18px;
+  background: linear-gradient(180deg, var(--vg-red-1), var(--vg-red-2) 60%, var(--vg-red-3));
+  border: 0;
+  border-radius: 6px;
+  cursor: pointer;
+  font-family: var(--vg-sans);
+  color: var(--vg-gold);
+  box-shadow:
+    inset 0 1px 0 rgba(245, 216, 117, 0.25),
+    inset 0 0 0 1px var(--vg-gold-2),
+    0 8px 22px -8px rgba(107, 31, 24, 0.6),
+    0 2px 6px rgba(0, 0, 0, 0.4);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.hpw-vg-toggle:hover { transform: translateY(-1px); }
+.hpw-vg-toggle:active { transform: translateY(0); }
+.hpw-vg-toggle:focus-visible {
+  outline: 2px solid var(--vg-gold);
+  outline-offset: 3px;
+}
+.hpw-vg-toggle-kicker {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  text-transform: uppercase;
+}
+.hpw-vg-toggle-price {
+  font-family: var(--vg-serif);
+  font-size: 24px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  color: var(--vg-cream-1);
+}
+.hpw-vg-toggle-play {
+  font-family: var(--vg-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.32em;
+  padding: 4px 8px;
+  border: 1px solid var(--vg-gold);
+  border-radius: 2px;
+}
+
+/* ----- Open chassis ---------------------------------------------------- */
+
+.hpw-vg-chassis {
+  position: relative;
+  width: 360px;
+  max-width: calc(100vw - 24px);
+  padding: 14px 16px 12px;
+  background: linear-gradient(180deg, var(--vg-red-1) 0%, var(--vg-red-2) 50%, var(--vg-red-3) 100%);
+  color: var(--vg-gold);
+  border-radius: 8px;
+  box-shadow:
+    0 16px 40px -10px rgba(107, 31, 24, 0.65),
+    0 4px 14px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(245, 216, 117, 0.18);
+  font-family: var(--vg-sans);
+  animation: hpw-vg-reveal 320ms cubic-bezier(0.2, 0.8, 0.3, 1) both;
+}
+
+@keyframes hpw-vg-reveal {
+  from { opacity: 0; transform: translateY(8px) scale(0.985); }
+  to   { opacity: 1; transform: none; }
+}
+
+.hpw-vg-close {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  background: transparent;
+  border: 0;
+  border-radius: 50%;
+  color: var(--vg-gold);
+  opacity: 0.7;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 140ms;
+  z-index: 4;
+}
+.hpw-vg-close:hover { opacity: 1; }
+.hpw-vg-close:focus-visible { outline: 1px solid var(--vg-gold); outline-offset: 1px; }
+
+/* ----- Sobre variant: matte, less saturated, no bulbs, italic serif ---- */
+
+.hpw-vg-sobre {
+  background: linear-gradient(180deg, var(--vg-red-mat) 0%, #5C201A 100%);
+  box-shadow:
+    0 12px 28px -10px rgba(80, 22, 18, 0.5),
+    0 2px 8px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(245, 216, 117, 0.10);
+}
+.hpw-vg-sobre .hpw-vg-bulbs { display: none; }
+.hpw-vg-sobre .hpw-vg-title {
+  font-style: italic;
+  letter-spacing: 0.10em;
+}
+
+/* ----- Bulbs row (standard / riche / extravagant) ---------------------- */
+
+.hpw-vg-bulbs {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+  margin: 2px 0;
+}
+.hpw-vg-bulb {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 30%, #FFF2A8 0%, var(--vg-gold) 55%, #B8932E 100%);
+  box-shadow:
+    0 0 4px rgba(245, 216, 117, 0.65),
+    0 0 8px rgba(245, 216, 117, 0.30);
+  flex-shrink: 0;
+  transition: opacity 200ms ease;
+}
+
+/* Riche: doubled rows top + bottom (.hpw-vg-bulbs-double renders 2× spans) */
+.hpw-vg-riche .hpw-vg-bulbs + .hpw-vg-bulbs {
+  margin-top: -2px;
+  opacity: 0.7;
+}
+
+/* Extravagant: chase loop on bulbs */
+@keyframes hpw-vg-chase {
+  0%, 100% { opacity: 1; box-shadow: 0 0 4px rgba(245, 216, 117, 0.65), 0 0 8px rgba(245, 216, 117, 0.30); }
+  50%      { opacity: 0.45; box-shadow: 0 0 2px rgba(245, 216, 117, 0.35); }
+}
+.hpw-vg-extravagant .hpw-vg-bulb {
+  animation: hpw-vg-chase 1.2s ease-in-out infinite;
+}
+.hpw-vg-extravagant .hpw-vg-bulb:nth-child(11n+2)  { animation-delay: 0.10s; }
+.hpw-vg-extravagant .hpw-vg-bulb:nth-child(11n+3)  { animation-delay: 0.20s; }
+.hpw-vg-extravagant .hpw-vg-bulb:nth-child(11n+4)  { animation-delay: 0.30s; }
+.hpw-vg-extravagant .hpw-vg-bulb:nth-child(11n+5)  { animation-delay: 0.40s; }
+.hpw-vg-extravagant .hpw-vg-bulb:nth-child(11n+6)  { animation-delay: 0.50s; }
+.hpw-vg-extravagant .hpw-vg-bulb:nth-child(11n+7)  { animation-delay: 0.60s; }
+.hpw-vg-extravagant .hpw-vg-bulb:nth-child(11n+8)  { animation-delay: 0.70s; }
+.hpw-vg-extravagant .hpw-vg-bulb:nth-child(11n+9)  { animation-delay: 0.80s; }
+.hpw-vg-extravagant .hpw-vg-bulb:nth-child(11n+10) { animation-delay: 0.90s; }
+.hpw-vg-extravagant .hpw-vg-bulb:nth-child(11n+11) { animation-delay: 1.00s; }
+
+/* Jackpot cascade — used by all variants on settle, overrides chase */
+.hpw-vg-flash .hpw-vg-bulb {
+  animation: hpw-vg-flash 900ms ease-out both;
+}
+.hpw-vg-flash .hpw-vg-bulb:nth-child(2)  { animation-delay: 60ms; }
+.hpw-vg-flash .hpw-vg-bulb:nth-child(3)  { animation-delay: 120ms; }
+.hpw-vg-flash .hpw-vg-bulb:nth-child(4)  { animation-delay: 180ms; }
+.hpw-vg-flash .hpw-vg-bulb:nth-child(5)  { animation-delay: 240ms; }
+.hpw-vg-flash .hpw-vg-bulb:nth-child(6)  { animation-delay: 300ms; }
+.hpw-vg-flash .hpw-vg-bulb:nth-child(7)  { animation-delay: 360ms; }
+.hpw-vg-flash .hpw-vg-bulb:nth-child(8)  { animation-delay: 420ms; }
+.hpw-vg-flash .hpw-vg-bulb:nth-child(9)  { animation-delay: 480ms; }
+.hpw-vg-flash .hpw-vg-bulb:nth-child(10) { animation-delay: 540ms; }
+.hpw-vg-flash .hpw-vg-bulb:nth-child(11) { animation-delay: 600ms; }
+@keyframes hpw-vg-flash {
+  0%   { transform: scale(1); box-shadow: 0 0 4px rgba(245, 216, 117, 0.65), 0 0 8px rgba(245, 216, 117, 0.30); }
+  30%  { transform: scale(1.6); box-shadow: 0 0 12px rgba(245, 216, 117, 1), 0 0 22px rgba(245, 216, 117, 0.7); }
+  100% { transform: scale(1); box-shadow: 0 0 4px rgba(245, 216, 117, 0.65), 0 0 8px rgba(245, 216, 117, 0.30); }
+}
+
+/* ----- Header --------------------------------------------------------- */
+
+.hpw-vg-header {
+  position: relative;
+  text-align: center;
+  padding: 6px 0 4px;
+}
+.hpw-vg-kicker {
+  font-family: var(--vg-serif);
+  font-size: 9px;
+  letter-spacing: 0.42em;
+  color: var(--vg-gold);
+  text-transform: uppercase;
+}
+.hpw-vg-title {
+  font-family: var(--vg-serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  color: var(--vg-gold);
+  text-transform: uppercase;
+  text-shadow: 0 0 6px rgba(245, 216, 117, 0.35);
+  margin-top: 1px;
+}
+
+/* Riche: corner ornaments via inline SVG slots in JSX */
+.hpw-vg-ornament {
+  position: absolute;
+  width: 28px;
+  height: 28px;
+  color: var(--vg-gold);
+  opacity: 0.85;
+  pointer-events: none;
+}
+.hpw-vg-ornament.tl { top: 4px;  left: 4px;  }
+.hpw-vg-ornament.tr { top: 4px;  right: 4px; transform: scaleX(-1); }
+.hpw-vg-ornament.bl { bottom: 4px; left: 4px;  transform: scaleY(-1); }
+.hpw-vg-ornament.br { bottom: 4px; right: 4px; transform: scale(-1, -1); }
+
+/* Extravagant: sunburst behind the header */
+.hpw-vg-sunburst {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    repeating-conic-gradient(
+      from 0deg at 50% 0%,
+      rgba(245, 216, 117, 0.10) 0deg 6deg,
+      transparent 6deg 18deg
+    );
+  mask-image: linear-gradient(180deg, rgba(0,0,0,0.9), transparent 75%);
+  -webkit-mask-image: linear-gradient(180deg, rgba(0,0,0,0.9), transparent 75%);
+}
+
+/* ----- Bezel + reels -------------------------------------------------- */
+
+.hpw-vg-bezel {
+  margin: 8px 0 6px;
+  padding: 12px;
+  background: var(--vg-charcoal);
+  border-radius: 4px;
+  box-shadow:
+    inset 0 4px 12px rgba(0, 0, 0, 0.7),
+    0 0 0 2px var(--vg-gold-2),
+    0 0 0 4px var(--vg-brass);
+}
+
+.hpw-vg-reels {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+}
+
+.hpw-vg-reel {
+  position: relative;
+  height: 56px;
+  background: linear-gradient(180deg, var(--vg-cream-1) 0%, var(--vg-cream-2) 100%);
+  border-radius: 2px;
+  overflow: hidden;
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.20),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.10);
+}
+/* Glass reflection (top) + dark inner shadow (bottom) */
+.hpw-vg-reel::before,
+.hpw-vg-reel::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 14px;
+  pointer-events: none;
+  z-index: 2;
+}
+.hpw-vg-reel::before {
+  top: 0;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+}
+.hpw-vg-reel::after {
+  bottom: 0;
+  background: linear-gradient(0deg, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0));
+}
+
+/* Outline on settle (jackpot flash) */
+.hpw-vg-flash .hpw-vg-reel {
+  box-shadow:
+    inset 0 2px 4px rgba(0, 0, 0, 0.20),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.10),
+    0 0 0 2px var(--vg-gold);
+  transition: box-shadow 180ms ease;
+}
+
+.hpw-vg-reel-track {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: flex;
+  flex-direction: column;
+  /* JS sets transform inline */
+}
+
+.hpw-vg-symbol {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--vg-ink);
+  font-variant-numeric: tabular-nums;
+}
+.hpw-vg-symbol-ota {
+  font-family: var(--vg-mono);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.10em;
+  text-transform: uppercase;
+}
+.hpw-vg-symbol-price {
+  font-family: var(--vg-serif);
+  font-size: 22px;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+.hpw-vg-symbol-verdict {
+  font-family: var(--vg-mono);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* ----- Payline strip -------------------------------------------------- */
+
+.hpw-vg-payline {
+  margin-top: 8px;
+  padding: 5px 10px;
+  background: var(--vg-charcoal);
+  border-radius: 2px;
+  font-family: var(--vg-mono);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  color: var(--vg-gold);
+  text-align: center;
+  text-transform: uppercase;
+  opacity: 0.45;
+  transition: opacity 280ms ease, text-shadow 280ms ease;
+}
+.hpw-vg-flash .hpw-vg-payline {
+  opacity: 1;
+  text-shadow: 0 0 8px rgba(245, 216, 117, 0.6);
+}
+.hpw-vg-extravagant.hpw-vg-flash .hpw-vg-payline {
+  /* Neon JACKPOT */
+  text-shadow:
+    0 0 4px rgba(245, 216, 117, 0.9),
+    0 0 10px rgba(245, 216, 117, 0.7),
+    0 0 18px rgba(245, 216, 117, 0.4);
+}
+
+/* ----- Buttons row ---------------------------------------------------- */
+
+.hpw-vg-buttons {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.hpw-vg-spin {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  background: transparent;
+  color: var(--vg-gold);
+  border: 1px solid var(--vg-gold);
+  border-radius: 2px;
+  font-family: var(--vg-mono);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 140ms ease, color 140ms ease;
+}
+.hpw-vg-spin:hover { background: rgba(245, 216, 117, 0.10); }
+.hpw-vg-spin:disabled { opacity: 0.4; cursor: not-allowed; }
+.hpw-vg-spin:focus-visible { outline: 1px solid var(--vg-gold); outline-offset: 2px; }
+.hpw-vg-spin svg { width: 12px; height: 12px; }
+
+/* BOOK DIRECT placeholder — invisible like the V5/ticker placeholders.
+   The portal anchor (rendered to document.body) is the visible button. */
+.hpw-vg-cta {
+  flex: 1;
+  height: 40px;
+  padding: 0;
+  background: transparent !important;
+  color: transparent !important;
+  border: 0;
+  border-radius: 2px;
+  font-family: var(--vg-mono);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ----- Meta line (under chassis) -------------------------------------- */
+
+.hpw-vg-meta {
+  margin-top: 8px;
+  font-family: var(--vg-mono);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--vg-sand);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+/* ----- Reduced motion ------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+  .hpw-vg-chassis,
+  .hpw-vg-bulb,
+  .hpw-vg-reel-track {
+    animation: none !important;
+    transition: none !important;
+  }
+}
