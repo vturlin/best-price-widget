@@ -1732,9 +1732,18 @@ function VegasSlot({
           </div>
 
           <div className="hpw-vg-payline" aria-live="polite">
-            {savingsLabel
-              ? `★ JACKPOT ★ — ${(t('youSave') || 'YOU SAVE').toUpperCase()} ${savingsLabel}`
-              : `★ ${(t('bestPriceGuaranteed') || 'BEST PRICE GUARANTEED').toUpperCase()} ★`}
+            {savingsLabel ? (
+              <>
+                <span>★ JACKPOT ★</span>
+                <span>
+                  {(t('youSave') || 'YOU SAVE').toUpperCase()} {savingsLabel}
+                </span>
+              </>
+            ) : (
+              <span className="hpw-vg-payline-center">
+                ★ {(t('bestPriceGuaranteed') || 'BEST PRICE GUARANTEED').toUpperCase()} ★
+              </span>
+            )}
           </div>
         </div>
 
