@@ -238,10 +238,24 @@ export function track(event, data) {
  * tag, the booking flow's confirmation page, etc.) can fire custom
  * events without owning their own copy of the cookie / endpoint
  * plumbing. Idempotent — safe to call on every Widget mount.
+ *
+ * Also drains the pre-mount queue: if the host page installed a stub
+ *   window.HPW = { q: [], track: function() { HPW.q.push(arguments) } };
+ * any track() calls made before the widget bundle arrived (e.g. a
+ * GTM tag firing on a fast SPA navigation) get replayed once the
+ * real implementation is wired up. Standard analytics-SDK pattern.
  */
 export function exposeOnWindow() {
   if (typeof window === 'undefined') return;
-  // Don't clobber an existing HPW namespace if one is set up by the
-  // host page; just merge our methods in.
-  window.HPW = Object.assign(window.HPW || {}, { track });
+  const existing = window.HPW || {};
+  const queued = Array.isArray(existing.q) ? existing.q.slice() : [];
+  window.HPW = Object.assign(existing, { track });
+  delete window.HPW.q;
+  for (const args of queued) {
+    try {
+      track.apply(null, Array.from(args));
+    } catch {
+      // Drain failures must not break the widget.
+    }
+  }
 }
