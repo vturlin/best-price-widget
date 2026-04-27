@@ -621,7 +621,7 @@ export default function Widget({ config }) {
                     <path
                       d="M2.5 6.2 L5 8.5 L9.5 3.5"
                       fill="none"
-                      stroke={wax.mid}
+                      stroke={wax.edge}
                       strokeWidth="1.6"
                       strokeLinecap="round"
                       strokeLinejoin="round"
