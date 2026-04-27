@@ -141,8 +141,18 @@ function ensurePortalStyles() {
   document.head.appendChild(style);
 }
 
-function BookButtonPortal({ placeholderEl, href, onClick, label, brandColor }) {
+function BookButtonPortal({ placeholderEl, href, onClick, label, brandColor, variant }) {
   const [rect, setRect] = useState(null);
+
+  // Default-design styling: square corners, lighter weight, and a
+  // text colour that flips between white (dark brand) and black
+  // (light brand) for legible contrast on the button itself.
+  const isDefault = variant !== 'ticker';
+  const textColor = isDefault
+    ? (isColorDark(brandColor) ? '#FFFFFF' : '#000000')
+    : 'black';
+  const borderRadius = isDefault ? '0' : '8px';
+  const fontWeight = isDefault ? 400 : 500;
 
   useLayoutEffect(() => {
     // Panel just closed — drop the rect so the floating <a> unmounts
@@ -218,11 +228,11 @@ function BookButtonPortal({ placeholderEl, href, onClick, label, brandColor }) {
         alignItems: 'center',
         justifyContent: 'center',
         background: brandColor,
-        color: 'black',
+        color: textColor,
         border: 0,
-        borderRadius: '8px',
+        borderRadius,
         fontSize: '13px',
-        fontWeight: 500,
+        fontWeight,
         fontFamily: 'inherit',
         letterSpacing: '0.06em',
         textTransform: 'uppercase',
@@ -747,6 +757,7 @@ export default function Widget({ config }) {
         onClick={handleBook}
         label={`${t('bookNow')} →`}
         brandColor={config.brandColor || '#1a1a1a'}
+        variant={config.widgetDesign || 'default'}
       />
     </div>
   );
