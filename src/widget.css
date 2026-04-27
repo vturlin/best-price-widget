@@ -537,7 +537,7 @@
   border: 0;
   border-radius: 999px;              /* fully rounded pill */
   background: var(--hpw-brand);
-  color: white;
+  color: black;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   cursor: pointer;
   box-shadow:
@@ -900,8 +900,8 @@
 /* Close button — plain x, no circle, transparent background */
 .hpw-close {
   position: absolute;
-  top: -7px;
-  right: -4px;
+  top: -3px;
+  right: 3px;
   display: grid;
   place-items: center;
   padding: 0;
