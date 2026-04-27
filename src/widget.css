@@ -693,6 +693,28 @@
   text-transform: uppercase;
 }
 
+/* When the kicker also serves as the date-picker trigger, make it look
+   subtly interactive without breaking the editorial type. */
+.hpw-tk-kicker-btn {
+  background: transparent;
+  border: 0;
+  padding: 4px 6px;
+  margin: -4px -6px;
+  border-radius: 2px;
+  cursor: pointer;
+  color: var(--tk-text-mute);
+  transition: background 120ms ease, color 120ms ease;
+}
+.hpw-tk-kicker-btn:hover,
+.hpw-tk-kicker-btn.is-open {
+  background: rgba(245, 233, 214, 0.06);
+  color: var(--tk-text);
+}
+.hpw-tk-kicker-btn:focus-visible {
+  outline: 1px solid var(--tk-down);
+  outline-offset: 2px;
+}
+
 .hpw-tk-livestamp {
   display: inline-flex;
   align-items: center;
@@ -929,7 +951,9 @@
   box-shadow:
     0 14px 40px rgba(58, 40, 24, 0.18),
     0 0 0 1px rgba(58, 40, 24, 0.07);
-  overflow: hidden;
+  /* No overflow:hidden — the date-picker popover anchors to a child
+     and may extend past the panel edge; the stamp medallion stays
+     within the hero's local box anyway. */
   font-family: inherit;
   /* Open reveal — opacity + small slide. Stamp animates separately
      via its own keyframes with a slight overshoot. */
@@ -958,12 +982,27 @@
 .hpw-v5-close:hover { opacity: 0.7; }
 .hpw-v5-close:focus-visible { outline: 2px solid var(--v5-ink); outline-offset: 2px; }
 
-/* Date strip */
+/* Date strip — clickable trigger that opens the date-picker popover */
 .hpw-v5-dates {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 4px 8px;
+  margin: -4px -8px;
   font-size: 12px;
+  background: transparent;
+  border: 0;
+  border-radius: 2px;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.hpw-v5-dates:hover { background: var(--v5-rule); }
+.hpw-v5-dates.is-open { background: var(--v5-rule); }
+.hpw-v5-dates:focus-visible {
+  outline: 2px solid var(--v5-ink);
+  outline-offset: 1px;
 }
 .hpw-v5-dates svg { color: var(--v5-muted); flex-shrink: 0; }
 .hpw-v5-dates-range { font-weight: 500; color: var(--v5-ink); }
@@ -2150,6 +2189,34 @@
 
 .hpw-datepicker-popover .rdp-weekdays {
   margin-bottom: 2px;
+}
+
+/* Calendar popover: overlay positioning for the V5 stamp & ticker
+   designs. The legacy default placement (in normal flow) still applies
+   when neither variant matches. Both variants use position:absolute
+   from .hpw-stay (which is already position:relative) so the popover
+   floats over panel content rather than displacing it. */
+.hpw-design-default .hpw-v5 .hpw-datepicker-popover,
+.hpw-design-ticker .hpw-datepicker-popover {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 8px;
+  z-index: 10;
+  border-radius: 8px;
+  padding: 10px 6px 6px;
+}
+
+.hpw-design-default .hpw-v5 .hpw-datepicker-popover {
+  background: var(--v5-surface, #FAF4E8);
+  border-color: var(--v5-rule, rgba(58, 40, 24, 0.12));
+  box-shadow: 0 12px 32px rgba(58, 40, 24, 0.18);
+}
+
+.hpw-design-ticker .hpw-datepicker-popover {
+  background: #0A0A0A;
+  border-color: rgba(245, 233, 214, 0.10);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
 }
 
 /* Size variants */

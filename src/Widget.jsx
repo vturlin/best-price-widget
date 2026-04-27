@@ -539,7 +539,7 @@ export default function Widget({ config }) {
         expanded && 'hpw-expanded',
         isMobile && 'hpw-mobile',
         isMobile && scrolledDown && !expanded && 'hpw-scrolled-away',
-        darkTheme && 'hpw-dark',
+        (darkTheme || config.widgetDesign === 'ticker') && 'hpw-dark',
       ].filter(Boolean).join(' ')}
       style={brandStyle}
     >
@@ -560,10 +560,20 @@ export default function Widget({ config }) {
           locale={locale}
           checkIn={checkIn}
           checkOut={checkOut}
+          nights={nights}
           formatDate={formatDate}
           formatCurrency={formatCurrency}
           brandAccent={config.brandColor || '#C9A87A'}
           bookBtnPlaceholderRef={setBookBtnPlaceholderEl}
+          onDatesChange={(newCheckIn, newCheckOut) => {
+            setCheckIn(newCheckIn);
+            setCheckOut(newCheckOut);
+            trackDatesChanged(
+              newCheckIn,
+              newCheckOut,
+              daysBetween(newCheckIn, newCheckOut)
+            );
+          }}
           t={t}
         />
       )}
@@ -678,6 +688,15 @@ export default function Widget({ config }) {
           formatCurrency={formatCurrency}
           currency={currency}
           onClose={handleClose}
+          onDatesChange={(newCheckIn, newCheckOut) => {
+            setCheckIn(newCheckIn);
+            setCheckOut(newCheckOut);
+            trackDatesChanged(
+              newCheckIn,
+              newCheckOut,
+              daysBetween(newCheckIn, newCheckOut)
+            );
+          }}
           bookBtnPlaceholderRef={setBookBtnPlaceholderEl}
         />
       )}
@@ -707,7 +726,7 @@ export default function Widget({ config }) {
  * Clicking the summary button starts a new cycle in 'checkin' step.
  * Click before check-in is silently ignored in 'checkout' step.
  */
-function StayPicker({ checkIn, checkOut, nights, locale, onChange, t }) {
+function StayPicker({ checkIn, checkOut, nights, locale, onChange, t, renderTrigger }) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState('checkin');
   const [pendingCheckIn, setPendingCheckIn] = useState(null);
@@ -789,23 +808,32 @@ function StayPicker({ checkIn, checkOut, nights, locale, onChange, t }) {
     ? [{ before: new Date() }, { before: parseISODate(pendingCheckIn) }, parseISODate(pendingCheckIn)]
     : { before: new Date() };
 
+  // Default trigger keeps backwards-compat with any caller that
+  // didn't pass a renderTrigger prop. V5 and ticker variants pass
+  // their own design-specific triggers.
+  const triggerNode = renderTrigger ? (
+    renderTrigger({ onClick: handleToggle, open })
+  ) : (
+    <button
+      type="button"
+      className="hpw-stay-summary"
+      onClick={handleToggle}
+    >
+      <span className="hpw-stay-label">{t('yourStay')}</span>
+      <span className="hpw-stay-value">
+        {formatDate(checkIn, locale)}
+        <span className="hpw-stay-arrow">→</span>
+        {formatDate(checkOut, locale)}
+      </span>
+      <span className="hpw-stay-nights">
+        {nights} {nights > 1 ? t('nights') : t('night')}
+      </span>
+    </button>
+  );
+
   return (
     <div className="hpw-stay" ref={wrapRef}>
-      <button
-        type="button"
-        className="hpw-stay-summary"
-        onClick={handleToggle}
-      >
-        <span className="hpw-stay-label">{t('yourStay')}</span>
-        <span className="hpw-stay-value">
-          {formatDate(checkIn, locale)}
-          <span className="hpw-stay-arrow">→</span>
-          {formatDate(checkOut, locale)}
-        </span>
-        <span className="hpw-stay-nights">
-          {nights} {nights > 1 ? t('nights') : t('night')}
-        </span>
-      </button>
+      {triggerNode}
 
       {open && (
         <div className="hpw-datepicker-popover">
@@ -872,10 +900,12 @@ function TickerVariant({
   locale,
   checkIn,
   checkOut,
+  nights,
   formatDate,
   formatCurrency,
   brandAccent,
   bookBtnPlaceholderRef,
+  onDatesChange,
   t,
 }) {
   // Cheapest competitor drives savings + count-down start. Falls back
@@ -954,9 +984,25 @@ function TickerVariant({
       >
         <div className="hpw-tk-panel-inner">
           <div className="hpw-tk-header">
-            <span className="hpw-tk-kicker">
-              LIVE RATE · {formatDate(checkIn, locale)}–{formatDate(checkOut, locale)}
-            </span>
+            <StayPicker
+              checkIn={checkIn}
+              checkOut={checkOut}
+              nights={nights}
+              locale={locale}
+              onChange={onDatesChange}
+              t={t}
+              renderTrigger={({ onClick, open }) => (
+                <button
+                  type="button"
+                  className={'hpw-tk-kicker hpw-tk-kicker-btn ' + (open ? 'is-open' : '')}
+                  onClick={onClick}
+                  aria-expanded={open}
+                  aria-label={(t && t('yourStay')) || 'Your stay'}
+                >
+                  LIVE RATE · {formatDate(checkIn, locale)}–{formatDate(checkOut, locale)}
+                </button>
+              )}
+            />
             <span className="hpw-tk-livestamp" aria-hidden="true">
               <span className="hpw-tk-live-dot" />
               <span>LIVE</span>
@@ -1115,6 +1161,7 @@ function V5StampPanel({
   formatCurrency,
   currency,
   onClose,
+  onDatesChange,
   bookBtnPlaceholderRef,
 }) {
   // Surface palette from config with V5 defaults. Hotel brand wins;
@@ -1187,21 +1234,38 @@ function V5StampPanel({
         </svg>
       </button>
 
-      <div className="hpw-v5-dates">
-        <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
-          <rect x="1.5" y="2.5" width="9" height="8" rx="1"
-                fill="none" stroke="currentColor" strokeWidth="1" />
-          <path d="M1.5 5 L10.5 5 M4 1.5 L4 3 M8 1.5 L8 3"
-                stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
-        </svg>
-        <span className="hpw-v5-dates-range">
-          {formatDate(checkIn, locale)} → {formatDate(checkOut, locale)}
-        </span>
-        <span className="hpw-v5-dates-sep">·</span>
-        <span className="hpw-v5-dates-nights">
-          {nights} {nights > 1 ? t('nights') : t('night')}
-        </span>
-      </div>
+      <StayPicker
+        checkIn={checkIn}
+        checkOut={checkOut}
+        nights={nights}
+        locale={locale}
+        onChange={onDatesChange}
+        t={t}
+        renderTrigger={({ onClick, open }) => (
+          <button
+            type="button"
+            className={'hpw-v5-dates ' + (open ? 'is-open' : '')}
+            onClick={onClick}
+            aria-expanded={open}
+            aria-label={t('yourStay') || 'Your stay'}
+          >
+            <svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true">
+              <rect x="1.5" y="2.5" width="9" height="8" rx="1"
+                    fill="none" stroke="currentColor" strokeWidth="1" />
+              <path d="M1.5 5 L10.5 5 M4 1.5 L4 3 M8 1.5 L8 3"
+                    stroke="currentColor" strokeWidth="1" strokeLinecap="round" />
+            </svg>
+            <span className="hpw-v5-dates-range">
+              {formatDate(checkIn, locale)} → {formatDate(checkOut, locale)}
+            </span>
+            <span className="hpw-v5-dates-sep">·</span>
+            <span className="hpw-v5-dates-nights">
+              {nights} {nights > 1 ? t('nights') : t('night')}
+            </span>
+          </button>
+        )}
+      />
+
 
       <div className="hpw-v5-hero">
         <div className="hpw-v5-kicker">{t('directRate') || 'Direct rate'}</div>
