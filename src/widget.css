@@ -36,18 +36,19 @@
      --hpw-shadow: 0 14px 28px -12px rgba(26, 26, 26, 0.28),
                    0 5px 10px -5px rgba(26, 26, 26, 0.16),
                    0 0 0 1px rgba(26, 26, 26, 0.04);
-     /* Base scale: previously 1.0 / 1.1 / 1.2 across small/medium/large.
-        Whole range shifted down by 15% (multiplied by 0.85) so the
-        default size sits less heavy on the page. Relative spacing
-        between variants preserved. */
-     --hpw-scale: 0.85;
+     /* Base scale: original 1.0 / 1.1 / 1.2 across small/medium/large
+        was too heavy on the page; the whole range is multiplied by
+        0.85 * 0.9 = 0.765, so the default ends up ~24% smaller than
+        the very first iteration. Relative spacing between variants
+        is preserved. */
+     --hpw-scale: 0.765;
    }
 
    /* Size variants — driven by config.size (small | medium | large).
       transform-origin is set per position so the widget scales outward
       from its anchor corner, not its visual center. */
-   .hpw-container.hpw-size-medium { --hpw-scale: 0.935; }
-   .hpw-container.hpw-size-large  { --hpw-scale: 1.02; }
+   .hpw-container.hpw-size-medium { --hpw-scale: 0.8415; }
+   .hpw-container.hpw-size-large  { --hpw-scale: 0.918; }
 
    .hpw-pos-bottom-right  { right: 14px; bottom: 14px; transform-origin: bottom right; transform: scale(var(--hpw-scale)); }
    .hpw-pos-bottom-left   { left: 14px;  bottom: 14px; transform-origin: bottom left;  transform: scale(var(--hpw-scale)); }
