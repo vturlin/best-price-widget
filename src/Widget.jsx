@@ -1006,19 +1006,22 @@ function TickerVariant({
   onDatesChange,
   t,
 }) {
-  // Cheapest competitor drives savings + count-down start. Falls back
-  // to a placeholder spread if rates aren't loaded yet so the rail
-  // stays populated rather than flashing empty.
-  const items = competitors.length
+  // realItems: actual API competitors. Drives the panel table and the
+  // savings calculation — never use fabricated numbers here, those
+  // would surface as "Booking.com €X" rows the user reads as truth.
+  // streamItems: the closed-rail marquee only. Falls back to OTA
+  // names (without prices) so the rail isn't empty while rates load.
+  const realItems = competitors;
+  const streamItems = competitors.length
     ? competitors
     : [
-        { name: 'Booking.com', price: directPrice ? Math.round(directPrice * 1.18) : 0 },
-        { name: 'Expedia',     price: directPrice ? Math.round(directPrice * 1.21) : 0 },
-        { name: 'Hotels.com',  price: directPrice ? Math.round(directPrice * 1.16) : 0 },
-        { name: 'Agoda',       price: directPrice ? Math.round(directPrice * 1.13) : 0 },
+        { name: 'Booking.com', price: null },
+        { name: 'Expedia',     price: null },
+        { name: 'Hotels.com',  price: null },
+        { name: 'Agoda',       price: null },
       ];
 
-  const cheapest = items.reduce(
+  const cheapest = realItems.reduce(
     (min, c) => (c.price && c.price < min ? c.price : min),
     Infinity
   );
@@ -1030,8 +1033,8 @@ function TickerVariant({
       ? Math.round((savings / cheapest) * 100)
       : 0;
 
-  const marqueeDuration = Math.max(20, items.length * 4);
-  const trackItems = items.concat(items).concat(items);
+  const marqueeDuration = Math.max(20, streamItems.length * 4);
+  const trackItems = streamItems.concat(streamItems).concat(streamItems);
 
   // Count-down: cheapest → direct over 1200ms ease-out cubic when
   // opening; reset to cheapest when closing so the next open replays
@@ -1069,7 +1072,7 @@ function TickerVariant({
     ? 'Close best-price panel'
     : hasCheapest && savings > 0
       ? 'Open best-price panel — direct rate beats ' +
-        items.length + ' sites by ' +
+        realItems.length + ' sites by ' +
         formatCurrency(savings, currency, locale)
       : (t && t('openWidget')) || 'Open best-price panel';
 
@@ -1127,7 +1130,7 @@ function TickerVariant({
               <span role="columnheader">Rate</span>
               <span role="columnheader">Δ</span>
             </div>
-            {items.map((ota, i) => {
+            {realItems.map((ota, i) => {
               const diff = directPrice ? ota.price - directPrice : 0;
               return (
                 <div key={'ota-' + i} className="hpw-tk-table-row" role="row">
@@ -1192,19 +1195,24 @@ function TickerVariant({
             style={{ animationDuration: marqueeDuration + 's' }}
           >
             {trackItems.map((ota, i) => {
-              const diff = directPrice ? ota.price - directPrice : 0;
+              const hasPrice = ota.price != null;
+              const diff = hasPrice && directPrice ? ota.price - directPrice : 0;
               const last = i === trackItems.length - 1;
               return (
                 <span key={i} className="hpw-tk-stream-item">
                   <span className="hpw-tk-stream-name">
                     {String(ota.name).toUpperCase()}
                   </span>
-                  <span className="hpw-tk-stream-price">
-                    {formatCurrency(ota.price, currency, locale)}
-                  </span>
-                  <span className="hpw-tk-stream-up">
-                    +{formatCurrency(diff, currency, locale)}
-                  </span>
+                  {hasPrice && (
+                    <>
+                      <span className="hpw-tk-stream-price">
+                        {formatCurrency(ota.price, currency, locale)}
+                      </span>
+                      <span className="hpw-tk-stream-up">
+                        +{formatCurrency(diff, currency, locale)}
+                      </span>
+                    </>
+                  )}
                   {!last && <span className="hpw-tk-stream-sep">·</span>}
                 </span>
               );
