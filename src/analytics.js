@@ -31,7 +31,7 @@ function push(eventName, payload = {}) {
   window[dlName] = window[dlName] || [];
   window[dlName].push({
     event: prefix + eventName,
-    hotel_id: configRef._hotelId || null,
+    hotel_id: configRef._hotelId || configRef.hotelName || null,
     ...payload,
   });
 }

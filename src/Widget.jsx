@@ -332,7 +332,7 @@ export default function Widget({ config }) {
   }, [config.locale, config.defaultLocale, config.enabledLocales?.join(',')]);
   // Init analytics once
   useEffect(() => {
-    initAnalytics({config, _hotelId: config._hotelId || config.hotelName });
+    initAnalytics(config);
   }, [config]);
 
   // Init first-party tracker + fire widget_loaded once. Skipped in
