@@ -80,9 +80,19 @@ function toISODate(d) {
 }
 
 function parseISODate(s) {
-  // Treat YYYY-MM-DD as UTC midnight to avoid timezone drift
+  // UTC midnight: used for date math (addDays, daysBetween) and for
+  // Dates handed to data.js, which iterates with getUTC* / setUTC*.
   const [y, m, d] = s.split('-').map(Number);
   return new Date(Date.UTC(y, m - 1, d));
+}
+
+// Local midnight: used at the react-day-picker boundary only. rdp
+// reads/writes Dates in local time, so a UTC-midnight Date drifts to
+// the previous day in any timezone west of UTC (e.g. Apr 28 UTC →
+// Apr 27 16:00 PST → rdp highlights Apr 27).
+function parseISODateLocal(s) {
+  const [y, m, d] = s.split('-').map(Number);
+  return new Date(y, m - 1, d);
 }
 
 function addDays(isoStr, n) {
@@ -884,16 +894,16 @@ function StayPicker({ checkIn, checkOut, nights, locale, onChange, t, renderTrig
   let modifiers = {};
 
   if (step === 'checkout' && pendingCheckIn) {
-    selected = parseISODate(pendingCheckIn);
+    selected = parseISODateLocal(pendingCheckIn);
     // Mark everything after check-in as eligible (for visual hint)
     modifiers = {
-      checkinSelected: parseISODate(pendingCheckIn),
+      checkinSelected: parseISODateLocal(pendingCheckIn),
     };
   }
 
   // Disabled dates: past, AND in checkout step, dates <= pendingCheckIn
   const disabled = step === 'checkout' && pendingCheckIn
-    ? [{ before: new Date() }, { before: parseISODate(pendingCheckIn) }, parseISODate(pendingCheckIn)]
+    ? [{ before: new Date() }, { before: parseISODateLocal(pendingCheckIn) }, parseISODateLocal(pendingCheckIn)]
     : { before: new Date() };
 
   // Default trigger keeps backwards-compat with any caller that
