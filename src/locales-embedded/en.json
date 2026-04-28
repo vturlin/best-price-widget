@@ -34,6 +34,8 @@
   "night": "night",
   "nights": "nights",
   "youSave": "You save",
+  "directRate": "Direct rate",
+  "noFees": "No fees",
   "compareWith": "Compare with",
   "bookNow": "Book now",
   "fallbackText": "Book direct for the best available rate.",
