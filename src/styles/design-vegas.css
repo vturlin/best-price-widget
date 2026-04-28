@@ -168,7 +168,7 @@
   transition: opacity 200ms ease;
 }
 
-/* Riche: doubled rows top + bottom (.hpw-vg-bulbs-double renders 2× spans) */
+/* Riche: <VegasBulbs /> is rendered twice; this styles the second row. */
 .hpw-vg-riche .hpw-vg-bulbs + .hpw-vg-bulbs {
   margin-top: -2px;
   opacity: 0.7;
