@@ -291,6 +291,7 @@ export default function Widget({ config }) {
   const [otasExpanded, setOtasExpanded] = useState(false);
   const rootRef = useRef(null);
   const [bookBtnPlaceholderEl, setBookBtnPlaceholderEl] = useState(null);
+  const [pickerOpen, setPickerOpen] = useState(false);
 
   // ─── Derived values ────────────────────────────────────────────────
   const t = i18n.t;
@@ -612,6 +613,7 @@ export default function Widget({ config }) {
           formatCurrency={formatCurrency}
           brandAccent={config.brandColor || '#C9A87A'}
           bookBtnPlaceholderRef={setBookBtnPlaceholderEl}
+          onPickerOpenChange={setPickerOpen}
           onDatesChange={(newCheckIn, newCheckOut) => {
             setCheckIn(newCheckIn);
             setCheckOut(newCheckOut);
@@ -745,6 +747,7 @@ export default function Widget({ config }) {
             );
           }}
           bookBtnPlaceholderRef={setBookBtnPlaceholderEl}
+          onPickerOpenChange={setPickerOpen}
         />
       )}
 
@@ -789,15 +792,22 @@ export default function Widget({ config }) {
 
       {/* Single Book button overlay anchor at the widget root. Whichever
           variant currently owns the ref (default panel placeholder, ticker
-          CTA, or vegas CTA) is the one this floating <a> follows. */}
-      <BookButtonPortal
-        placeholderEl={bookBtnPlaceholderEl}
-        href={reserveHref}
-        onClick={handleBook}
-        label={`${t('bookNow')} →`}
-        brandColor={config.brandColor || '#1a1a1a'}
-        variant={config.widgetDesign || 'default'}
-      />
+          CTA, or vegas CTA) is the one this floating <a> follows.
+          Hidden while the date-picker calendar is open: the portal lives
+          in document.body at z-index max-int, the calendar stays inside
+          Shadow DOM (capped at the container's z-index 2147483000), so
+          the calendar would otherwise render below the Book button on
+          mobile where the panel is full-width. */}
+      {!pickerOpen && (
+        <BookButtonPortal
+          placeholderEl={bookBtnPlaceholderEl}
+          href={reserveHref}
+          onClick={handleBook}
+          label={`${t('bookNow')} →`}
+          brandColor={config.brandColor || '#1a1a1a'}
+          variant={config.widgetDesign || 'default'}
+        />
+      )}
     </div>
   );
 }
@@ -813,11 +823,18 @@ export default function Widget({ config }) {
  * Clicking the summary button starts a new cycle in 'checkin' step.
  * Click before check-in is silently ignored in 'checkout' step.
  */
-function StayPicker({ checkIn, checkOut, nights, locale, onChange, t, renderTrigger }) {
+function StayPicker({ checkIn, checkOut, nights, locale, onChange, t, renderTrigger, onOpenChange }) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState('checkin');
   const [pendingCheckIn, setPendingCheckIn] = useState(null);
   const wrapRef = useRef(null);
+
+  // Bubble open state up so the Widget root can hide the Book button
+  // portal — without this, the calendar popover ends up under the
+  // light-DOM portal on mobile (full-width panel = same screen area).
+  useEffect(() => {
+    if (onOpenChange) onOpenChange(open);
+  }, [open, onOpenChange]);
 
   // Close popover on outside click
   useEffect(() => {
@@ -999,6 +1016,7 @@ function TickerVariant({
   brandAccent,
   bookBtnPlaceholderRef,
   onDatesChange,
+  onPickerOpenChange,
   t,
 }) {
   // realItems: actual API competitors. Drives the panel table and the
@@ -1086,6 +1104,7 @@ function TickerVariant({
               nights={nights}
               locale={locale}
               onChange={onDatesChange}
+              onOpenChange={onPickerOpenChange}
               t={t}
               renderTrigger={({ onClick, open }) => (
                 <button
@@ -1265,6 +1284,7 @@ function V5StampPanel({
   onClose,
   onDatesChange,
   bookBtnPlaceholderRef,
+  onPickerOpenChange,
 }) {
   // Surface = the admin-configured Background color (with the V5
   // cream as the fallback only when nothing is configured). Ink auto-
@@ -1346,6 +1366,7 @@ function V5StampPanel({
         nights={nights}
         locale={locale}
         onChange={onDatesChange}
+        onOpenChange={onPickerOpenChange}
         t={t}
         renderTrigger={({ onClick, open }) => (
           <button
