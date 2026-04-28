@@ -132,6 +132,25 @@ function formatDate(isoStr, locale) {
   }
 }
 
+// ─── Booking-engine self-detection ──────────────────────────────────
+// True when the host page is the operator's own booking engine, i.e.
+// the visitor is already deep in the conversion funnel. Compares the
+// current hostname to the reserveUrl's host (exact or subdomain). The
+// widget keeps showing the price comparison + savings (reassurance is
+// "hyper-important" in checkout) but the Book CTA is suppressed —
+// asking the user to "Book direct" while they're already booking
+// direct is at best noise and at worst loops them out of the flow.
+function isOnBookingEngine(reserveUrl) {
+  if (typeof window === 'undefined' || !reserveUrl) return false;
+  try {
+    const reserveHost = new URL(reserveUrl).hostname.toLowerCase();
+    const currentHost = window.location.hostname.toLowerCase();
+    return currentHost === reserveHost || currentHost.endsWith('.' + reserveHost);
+  } catch {
+    return false;
+  }
+}
+
 // ─── Book button portal ─────────────────────────────────────────────
 // Renders the Book button anchor into document.body (light DOM), pinned
 // over a shadow-DOM placeholder via getBoundingClientRect. Needed so the
@@ -550,6 +569,10 @@ export default function Widget({ config }) {
   const currency = rates?.currency || config.currency || 'EUR';
   const status = rates?.status || 'loading';
   const showFallback = status === 'fallback' || !directChannel;
+  const onBookingEngine = useMemo(
+    () => isOnBookingEngine(config.reserveUrl),
+    [config.reserveUrl]
+  );
 
   // Rendered as the Book button's href so the user's trusted click can be
   // decorated by GTM's cross-domain linker (synthetic clicks are ignored).
@@ -614,6 +637,7 @@ export default function Widget({ config }) {
           brandAccent={config.brandColor || '#C9A87A'}
           bookBtnPlaceholderRef={setBookBtnPlaceholderEl}
           onPickerOpenChange={setPickerOpen}
+          onBookingEngine={onBookingEngine}
           onDatesChange={(newCheckIn, newCheckOut) => {
             setCheckIn(newCheckIn);
             setCheckOut(newCheckOut);
@@ -748,6 +772,7 @@ export default function Widget({ config }) {
           }}
           bookBtnPlaceholderRef={setBookBtnPlaceholderEl}
           onPickerOpenChange={setPickerOpen}
+          onBookingEngine={onBookingEngine}
         />
       )}
 
@@ -786,6 +811,7 @@ export default function Widget({ config }) {
           currency={currency}
           onClose={handleClose}
           bookBtnPlaceholderRef={setBookBtnPlaceholderEl}
+          onBookingEngine={onBookingEngine}
           t={t}
         />
       )}
@@ -793,12 +819,10 @@ export default function Widget({ config }) {
       {/* Single Book button overlay anchor at the widget root. Whichever
           variant currently owns the ref (default panel placeholder, ticker
           CTA, or vegas CTA) is the one this floating <a> follows.
-          Hidden while the date-picker calendar is open: the portal lives
-          in document.body at z-index max-int, the calendar stays inside
-          Shadow DOM (capped at the container's z-index 2147483000), so
-          the calendar would otherwise render below the Book button on
-          mobile where the panel is full-width. */}
-      {!pickerOpen && (
+          Hidden while the date-picker calendar is open (z-index conflict
+          on mobile full-width panel) or when the host page IS the
+          booking engine itself (the Book CTA is redundant in checkout). */}
+      {!pickerOpen && !onBookingEngine && (
         <BookButtonPortal
           placeholderEl={bookBtnPlaceholderEl}
           href={reserveHref}
@@ -1017,6 +1041,7 @@ function TickerVariant({
   bookBtnPlaceholderRef,
   onDatesChange,
   onPickerOpenChange,
+  onBookingEngine,
   t,
 }) {
   // realItems: actual API competitors. Drives the panel table and the
@@ -1168,15 +1193,18 @@ function TickerVariant({
           </div>
 
           {/* CTA placeholder — BookButtonPortal at widget-root level
-              overlays the real anchor here. */}
-          <div
-            ref={bookBtnPlaceholderRef}
-            className="hpw-tk-cta"
-            style={{ background: brandAccent, color: '#1A1410' }}
-            aria-hidden="true"
-          >
-            Lock this rate →
-          </div>
+              overlays the real anchor here. Skipped when the host page
+              IS the booking engine itself. */}
+          {!onBookingEngine && (
+            <div
+              ref={bookBtnPlaceholderRef}
+              className="hpw-tk-cta"
+              style={{ background: brandAccent, color: '#1A1410' }}
+              aria-hidden="true"
+            >
+              Lock this rate →
+            </div>
+          )}
 
           <div className="hpw-tk-footer">Powered by d·edge</div>
         </div>
@@ -1285,6 +1313,7 @@ function V5StampPanel({
   onDatesChange,
   bookBtnPlaceholderRef,
   onPickerOpenChange,
+  onBookingEngine,
 }) {
   // Surface = the admin-configured Background color (with the V5
   // cream as the fallback only when nothing is configured). Ink auto-
@@ -1449,19 +1478,22 @@ function V5StampPanel({
 
       {/* CTA placeholder — BookButtonPortal at widget-root overlays the
           real <a> on top of this. Color tokens applied here so the
-          floating anchor inherits the look. */}
-      <div
-        ref={bookBtnPlaceholderRef}
-        className="hpw-v5-cta"
-        aria-hidden="true"
-      >
-        {t('bookNow') || 'Book direct'}
-        <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
-          <path d="M2.5 7 L11 7 M7 3 L11 7 L7 11"
-                fill="none" stroke="currentColor" strokeWidth="1.4"
-                strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </div>
+          floating anchor inherits the look. Skipped when the host page
+          IS the booking engine itself. */}
+      {!onBookingEngine && (
+        <div
+          ref={bookBtnPlaceholderRef}
+          className="hpw-v5-cta"
+          aria-hidden="true"
+        >
+          {t('bookNow') || 'Book direct'}
+          <svg width="14" height="14" viewBox="0 0 14 14" aria-hidden="true">
+            <path d="M2.5 7 L11 7 M7 3 L11 7 L7 11"
+                  fill="none" stroke="currentColor" strokeWidth="1.4"
+                  strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </div>
+      )}
 
       <div className="hpw-v5-footer">{t('poweredBy') || 'Powered by D-EDGE'}</div>
     </div>
@@ -1610,6 +1642,7 @@ function VegasSlot({
   currency,
   onClose,
   bookBtnPlaceholderRef,
+  onBookingEngine,
   t,
 }) {
   // ── Animation state machine ────────────────────────────────────────
@@ -1822,16 +1855,19 @@ function VegasSlot({
           </button>
 
           {/* CTA placeholder — BookButtonPortal at the widget root overlays
-              the real <a> on top of this. */}
-          <div
-            ref={bookBtnPlaceholderRef}
-            className="hpw-vg-cta"
-            aria-hidden="true"
-          >
-            BOOK DIRECT {directPrice
-              ? formatCurrency(directPrice, currency, locale)
-              : ''} →
-          </div>
+              the real <a> on top of this. Skipped when the host page IS
+              the booking engine itself. */}
+          {!onBookingEngine && (
+            <div
+              ref={bookBtnPlaceholderRef}
+              className="hpw-vg-cta"
+              aria-hidden="true"
+            >
+              BOOK DIRECT {directPrice
+                ? formatCurrency(directPrice, currency, locale)
+                : ''} →
+            </div>
+          )}
         </div>
       </div>
     </div>
