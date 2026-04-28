@@ -104,12 +104,10 @@ export function normalizeConfig(raw) {
     // Whole-widget design variant. 'default' = wax-seal toggle +
     // V5 stamp panel; 'ticker' = full-width bottom rail + dark
     // Bloomberg-style panel; 'vegas' = bordeaux/gold slot machine.
-    // Backwards-compat: read either widgetDesign (current) or
-    // toggleDesign (previous name) so older configs keep working.
     widgetDesign:
-      raw.widgetDesign === 'ticker' || raw.toggleDesign === 'ticker'
+      raw.widgetDesign === 'ticker'
         ? 'ticker'
-        : raw.widgetDesign === 'vegas' || raw.toggleDesign === 'vegas'
+        : raw.widgetDesign === 'vegas'
           ? 'vegas'
           : 'default',
     // Vegas sub-variant: ornament density inside the slot-machine design.
@@ -152,12 +150,7 @@ export function normalizeConfig(raw) {
     // window.HPW_TRACKER_ENDPOINT. When true, the widget posts
     // widget_loaded / widget_opened / book_clicked, gated on
     // window.HPW_TRACKER_CONSENT === true.
-    //
-    // Backwards-compat: legacy configs that carried a non-empty
-    // trackerEndpoint string are treated as enabled.
-    trackerEnabled:
-      raw.trackerEnabled === true ||
-      (typeof raw.trackerEndpoint === 'string' && raw.trackerEndpoint.length > 0),
+    trackerEnabled: raw.trackerEnabled === true,
 
     // Preview mode (admin-only, never in published configs)
     _preview: raw._preview === true,
