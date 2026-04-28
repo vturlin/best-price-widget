@@ -268,7 +268,9 @@ export default function Widget({ config }) {
   const [checkOut, setCheckOut] = useState(tomorrowISO());
   const [rates, setRates] = useState(null);       // loaded rates summary
   const [loading, setLoading] = useState(true);
-  const [isMobile, setIsMobile] = useState(false);
+  const [isMobile, setIsMobile] = useState(
+    () => typeof window !== 'undefined' && window.innerWidth < 640
+  );
   const [scrolledDown, setScrolledDown] = useState(false);
   const [i18n, setI18n] = useState({ t: (k) => k, primary: 'en' });
   const [otasExpanded, setOtasExpanded] = useState(false);
@@ -575,6 +577,11 @@ export default function Widget({ config }) {
     .replace('{checkIn}', checkIn)
     .replace('{checkOut}', checkOut)
     .replace('{roomId}', '') || undefined;
+  // Defensive: only allow http(s). Stops a misconfigured operator
+  // template from rendering as e.g. `javascript:` in the Book anchor.
+  if (reserveHref && !/^https?:\/\//i.test(reserveHref)) {
+    reserveHref = undefined;
+  }
   if (reserveHref) {
     const uid = peekUid();
     if (uid) {

@@ -86,7 +86,9 @@ async function mount() {
   if (host.shadowRoot) return;
 
   const shadow = host.attachShadow({ mode: 'open' });
-  loadCss(shadow);
+  // Await before mounting React: otherwise the widget paints unstyled
+  // for one or more frames on slow networks until the <style> arrives.
+  await loadCss(shadow);
 
   const container = document.createElement('div');
   container.className = 'hpw-root';
