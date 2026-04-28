@@ -527,26 +527,6 @@ export default function Widget({ config }) {
     }
   }
 
-  function handleCheckInChange(e) {
-    const newCheckIn = e.target.value;
-    let newCheckOut = checkOut;
-    if (daysBetween(newCheckIn, checkOut) < 1) {
-      newCheckOut = addDays(newCheckIn, 1);
-    } else if (daysBetween(newCheckIn, checkOut) > 30) {
-      newCheckOut = addDays(newCheckIn, 30);
-    }
-    setCheckIn(newCheckIn);
-    setCheckOut(newCheckOut);
-    trackDatesChanged(newCheckIn, newCheckOut, daysBetween(newCheckIn, newCheckOut));
-  }
-
-  function handleCheckOutChange(e) {
-    const newCheckOut = e.target.value;
-    if (daysBetween(checkIn, newCheckOut) < 1) return;
-    if (daysBetween(checkIn, newCheckOut) > 30) return;
-    setCheckOut(newCheckOut);
-    trackDatesChanged(checkIn, newCheckOut, daysBetween(checkIn, newCheckOut));
-  }
 
   function handleBook() {
     trackReserveClicked({

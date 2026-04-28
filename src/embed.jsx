@@ -1,4 +1,3 @@
-import React from 'react';
 import { createRoot } from 'react-dom/client';
 import Widget from './Widget.jsx';
 
@@ -68,12 +67,6 @@ import { loadConfig } from './loader.js';
 
 async function mount() {
   const host = findMountNode();
-  if (!host) {
-    console.warn(
-      '[hotel-price-widget] Mount point not found. Add <div id="price-widget"></div> or let the widget auto-create it.'
-    );
-    return;
-  }
 
   let config;
   try {

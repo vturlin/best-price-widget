@@ -132,7 +132,7 @@ export function deriveWaxStops(brandColor) {
   const markColor = isLight ? '#1A1410' : '#F5E9D6';
   const ringColor = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(245,233,214,0.18)';
 
-  const out = { center, mid, edge, markColor, ringColor, isLight };
+  const out = { center, mid, edge, markColor, ringColor };
   cache.set(key, out);
   return out;
 }
@@ -172,7 +172,7 @@ export function deriveStampStops(brandColor) {
   const ringHi = isLight ? 'rgba(0,0,0,0.15)' : 'rgba(245,233,214,0.18)';
   const shadow = hexToRgbStr(face, 0.35);
 
-  const out = { face, edge, shadow, ink, ringHi, isLight };
+  const out = { face, edge, shadow, ink, ringHi };
   stampCache.set(key, out);
   return out;
 }
