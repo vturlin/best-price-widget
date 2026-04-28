@@ -40,16 +40,12 @@ const RTL_LOCALES = new Set(['ar', 'he', 'fa', 'ur']);
 // us read them without rewriting every JSON. Keys with no entry here
 // and no camelCase translation fall through to English.
 const CAMEL_TO_SNAKE = {
-  openWidget:             'open_price_comparison',
-  bestPriceGuaranteed:    'best_price_guaranteed',
-  loading:                'loading_rates',
-  priceOnOfficialWebsite: 'direct_on_our_site',
-  night:                  'night_one',
-  nights:                 'night_other',
-  hideChannels:           'show_fewer_channels',
-  showAllChannels:        'show_all_channels',
-  bookNow:                'reserve_direct',
-  yourStay:               'your_stay',
+  openWidget:          'open_price_comparison',
+  bestPriceGuaranteed: 'best_price_guaranteed',
+  night:               'night_one',
+  nights:              'night_other',
+  bookNow:             'reserve_direct',
+  yourStay:            'your_stay',
 };
 
 export function primaryTag(locale) {
