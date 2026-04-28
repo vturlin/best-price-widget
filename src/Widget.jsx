@@ -1783,7 +1783,7 @@ function VegasSlot({
             className="hpw-vg-spin"
             onClick={handleSpin}
             disabled={phase === 'spinning'}
-            aria-label="Spin again"
+            aria-label={t('spinAgain') || 'Spin again'}
           >
             <svg viewBox="0 0 16 16" aria-hidden="true">
               <path
