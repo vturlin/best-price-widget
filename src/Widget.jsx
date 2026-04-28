@@ -271,7 +271,6 @@ export default function Widget({ config }) {
   const [isMobile, setIsMobile] = useState(
     () => typeof window !== 'undefined' && window.innerWidth < 640
   );
-  const [scrolledDown, setScrolledDown] = useState(false);
   const [i18n, setI18n] = useState({ t: (k) => k, primary: 'en' });
   const [otasExpanded, setOtasExpanded] = useState(false);
   const rootRef = useRef(null);
@@ -433,19 +432,6 @@ export default function Widget({ config }) {
     return () => window.removeEventListener('resize', update);
   }, []);
 
-  // Scroll-hide on mobile
-  useEffect(() => {
-    if (!isMobile) return;
-    let lastY = window.scrollY;
-    const onScroll = () => {
-      const y = window.scrollY;
-      setScrolledDown(y > lastY && y > 100);
-      lastY = y;
-    };
-    window.addEventListener('scroll', onScroll, { passive: true });
-    return () => window.removeEventListener('scroll', onScroll);
-  }, [isMobile]);
-
   // Auto-open triggers
   useEffect(() => {
     // Preview-only override from the admin's Appearance tab. When set,
@@ -604,7 +590,6 @@ export default function Widget({ config }) {
         `hpw-size-${config.size || 'small'}`,
         expanded && 'hpw-expanded',
         isMobile && 'hpw-mobile',
-        isMobile && scrolledDown && !expanded && 'hpw-scrolled-away',
         (darkTheme || config.widgetDesign === 'ticker') && 'hpw-dark',
       ].filter(Boolean).join(' ')}
       style={brandStyle}
