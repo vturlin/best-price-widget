@@ -85,7 +85,7 @@ understate OTA totals and inflate the "savings" claim).
 | `csvUrl`           | string         | Google Sheets CSV publish URL.                                               |
 | `roomOptions`      | `{id, name}[]` | Rooms in the dropdown. `id` must match `room_id` in the sheet.               |
 | `default_room_id`  | string         | Which room is selected on load.                                              |
-| `reserveUrl`       | string         | Booking engine URL. Supports `{checkIn}`, `{checkOut}`, `{roomId}` tokens.   |
+| `reserveUrl`       | string         | Booking engine URL. Supports `{checkIn}`, `{checkOut}` tokens.               |
 | `currency`         | ISO 4217       | `'EUR'`, `'USD'`, `'GBP'`, `'JPY'`, etc.                                     |
 | `locale`           | BCP 47         | `'en-GB'`, `'fr-FR'`, `'de-DE'` — controls number & date formatting.         |
 | `brandColor`       | hex string     | Primary accent. Button text auto-contrasts (WCAG luminance).                 |

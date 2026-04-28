@@ -573,7 +573,8 @@ export default function Widget({ config }) {
   // attribute the sale back to this widget visit.
   let reserveHref = (config.reserveUrl || '')
     .replace('{checkIn}', checkIn)
-    .replace('{checkOut}', checkOut) || undefined;
+    .replace('{checkOut}', checkOut)
+    .replace('{roomId}', '') || undefined;
   if (reserveHref) {
     const uid = peekUid();
     if (uid) {

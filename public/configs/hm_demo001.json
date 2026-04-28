@@ -8,7 +8,7 @@
     10,
     9
   ],
-  "reserveUrl": "https://www-secure-hotel-booking.staging.d-edge.app/d-edge/hotel-le-charles-quint-/247C/fr-FR/RoomSelection?arrivalDate={checkIn}&departureDate={checkOut}&room={roomId}",
+  "reserveUrl": "https://www-secure-hotel-booking.staging.d-edge.app/d-edge/hotel-le-charles-quint-/247C/fr-FR/RoomSelection?arrivalDate={checkIn}&departureDate={checkOut}",
   "bookingEngineId": "",
   "useCustomReserveUrl": true,
   "currency": "EUR",
