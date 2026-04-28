@@ -77,8 +77,6 @@ export function normalizeConfig(raw) {
 
     // Identity
     hotelName: String(raw.hotelName || ''),
-    hotelDomain: String(raw.hotelDomain || ''),
-    logoUrl: String(raw.logoUrl || ''),
 
     // Data source (API-only)
     apiHotelId: Number.isInteger(raw.apiHotelId) ? raw.apiHotelId : null,
