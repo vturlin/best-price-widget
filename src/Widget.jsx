@@ -134,18 +134,32 @@ function formatDate(isoStr, locale) {
 
 // ─── Booking-engine self-detection ──────────────────────────────────
 // True when the host page is the operator's own booking engine, i.e.
-// the visitor is already deep in the conversion funnel. Compares the
-// current hostname to the reserveUrl's host (exact or subdomain). The
-// widget keeps showing the price comparison + savings (reassurance is
+// the visitor is already deep in the conversion funnel. The widget
+// keeps showing the price comparison + savings (reassurance is
 // "hyper-important" in checkout) but the Book CTA is suppressed —
 // asking the user to "Book direct" while they're already booking
 // direct is at best noise and at worst loops them out of the flow.
+//
+// Match strategy:
+//   1. Exact host match or subdomain (covers single-host engines).
+//   2. Both hosts share the D-EDGE booking-engine token
+//      `secure-hotel-booking` — covers sibling subdomains used at
+//      different stages of the funnel
+//      (`www-secure-hotel-booking.…` vs `beta-secure-hotel-booking.…`).
+const BOOKING_ENGINE_TOKEN = /(^|[.-])secure-hotel-booking(\.|-)/i;
+
 function isOnBookingEngine(reserveUrl) {
   if (typeof window === 'undefined' || !reserveUrl) return false;
   try {
     const reserveHost = new URL(reserveUrl).hostname.toLowerCase();
     const currentHost = window.location.hostname.toLowerCase();
-    return currentHost === reserveHost || currentHost.endsWith('.' + reserveHost);
+    if (currentHost === reserveHost || currentHost.endsWith('.' + reserveHost)) {
+      return true;
+    }
+    return (
+      BOOKING_ENGINE_TOKEN.test(currentHost) &&
+      BOOKING_ENGINE_TOKEN.test(reserveHost)
+    );
   } catch {
     return false;
   }
