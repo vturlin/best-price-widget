@@ -998,6 +998,12 @@ function isColorDark(cssColor) {
 //
 // Reuses the parent widget's BookButtonPortal — the CTA placeholder
 // element gets the bookBtnPlaceholderRef passed from Widget root.
+//
+// Copy is intentionally English-only (LIVE, EXPAND/COLLAPSE, Source,
+// Rate, Δ, "This site (direct)", "Lock this rate", "vs cheapest OTA",
+// etc.). The ticker design leans on a Bloomberg-terminal aesthetic
+// where the English jargon is part of the visual identity. Don't
+// route these through t() — that's a deliberate design choice.
 function TickerVariant({
   expanded,
   onToggle,
