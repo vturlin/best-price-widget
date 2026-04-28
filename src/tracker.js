@@ -88,7 +88,13 @@ function generateUid() {
     return crypto.randomUUID().replace(/-/g, '');
   }
   const buf = new Uint8Array(16);
-  (crypto?.getRandomValues || ((b) => b.fill(0)))(buf);
+  // .bind(crypto) — WebCrypto throws "Illegal invocation" if the
+  // function is detached from its receiver. Crashes inside this
+  // fallback on legacy Safari ~15.0-15.3 without it.
+  const fill = crypto?.getRandomValues
+    ? crypto.getRandomValues.bind(crypto)
+    : (b) => b.fill(0);
+  fill(buf);
   return Array.from(buf, (b) => b.toString(16).padStart(2, '0')).join('');
 }
 
