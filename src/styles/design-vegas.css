@@ -144,10 +144,8 @@
     inset 0 1px 0 rgba(245, 216, 117, 0.10);
 }
 .hpw-vg-sobre .hpw-vg-bulbs { display: none; }
-.hpw-vg-sobre .hpw-vg-title {
-  font-style: italic;
-  letter-spacing: 0.10em;
-}
+/* Italic + tighter spacing for the sobre variant lives next to the
+   .hpw-vg-title rule below, so the values stay co-located. */
 
 /* ----- Bulbs row (standard / riche / extravagant) ---------------------- */
 
@@ -222,22 +220,23 @@
   text-align: center;
   padding: 6px 0 4px;
 }
-.hpw-vg-kicker {
-  font-family: var(--vg-serif);
-  font-size: 9px;
-  letter-spacing: 0.42em;
-  color: var(--vg-gold);
-  text-transform: uppercase;
-}
 .hpw-vg-title {
   font-family: var(--vg-serif);
-  font-size: 22px;
+  /* clamp keeps the full "BEST PRICE GUARANTEED" string on a single
+     line on the 360px chassis (and on a sub-360px mobile width)
+     without manually picking different sizes per breakpoint. */
+  font-size: clamp(15px, 5.2vw, 20px);
   font-weight: 500;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
   color: var(--vg-gold);
   text-transform: uppercase;
   text-shadow: 0 0 6px rgba(245, 216, 117, 0.35);
-  margin-top: 1px;
+  white-space: nowrap;
+}
+/* Sobre keeps the italic identity even at the trimmed font-size. */
+.hpw-vg-sobre .hpw-vg-title {
+  font-style: italic;
+  letter-spacing: 0.08em;
 }
 
 /* Riche: corner ornaments via inline SVG slots in JSX */
@@ -459,14 +458,16 @@
   justify-content: center;
 }
 
-/* ----- Meta line (under chassis) -------------------------------------- */
+/* ----- Meta line (inside chassis, just under the bezel) --------------- */
+/* Lives between the bezel and the bottom bulbs row, so the colour has
+   to read on the bordeaux gradient (was sand-on-page-bg before). */
 
 .hpw-vg-meta {
   margin-top: 8px;
   font-family: var(--vg-mono);
   font-size: 9px;
   letter-spacing: 0.16em;
-  color: var(--vg-sand);
+  color: rgba(245, 233, 214, 0.55);
   text-align: center;
   text-transform: uppercase;
 }

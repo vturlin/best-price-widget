@@ -1703,9 +1703,8 @@ function VegasSlot({
               <VegasOrnament corner="tr" />
             </>
           )}
-          <div className="hpw-vg-kicker">★ HÔTEL ROYALE ★</div>
           <div className="hpw-vg-title">
-            {t('bestPriceGuaranteed') || 'Best Price'}
+            {(t('bestPriceGuaranteed') || 'Best Price Guaranteed').toUpperCase()}
           </div>
         </div>
 
@@ -1745,6 +1744,15 @@ function VegasSlot({
               </span>
             )}
           </div>
+        </div>
+
+        <div className="hpw-vg-meta">
+          {formatDate(checkIn, locale).toUpperCase()} → {formatDate(checkOut, locale).toUpperCase()}
+          {' · '}
+          {nights} {nights > 1 ? (t('nights') || 'NIGHTS').toUpperCase() : (t('night') || 'NIGHT').toUpperCase()}
+          {cheapestOtaName && cheapestOtaPrice && (
+            <> · vs {cheapestOtaName.toUpperCase()} {cheapestOtaPrice}</>
+          )}
         </div>
 
         {safeVariant === 'riche' && (
@@ -1791,15 +1799,6 @@ function VegasSlot({
               : ''} →
           </div>
         </div>
-      </div>
-
-      <div className="hpw-vg-meta">
-        {formatDate(checkIn, locale).toUpperCase()} → {formatDate(checkOut, locale).toUpperCase()}
-        {' · '}
-        {nights} {nights > 1 ? (t('nights') || 'NIGHTS').toUpperCase() : (t('night') || 'NIGHT').toUpperCase()}
-        {cheapestOtaName && cheapestOtaPrice && (
-          <> · vs {cheapestOtaName.toUpperCase()} {cheapestOtaPrice}</>
-        )}
       </div>
     </div>
   );
