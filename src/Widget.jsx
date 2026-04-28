@@ -173,48 +173,64 @@ function BookButtonPortal({ placeholderEl, href, onClick, label, brandColor, var
       return;
     }
 
-    // Only push a new rect into state when one of the four values
-    // actually changes. Avoids re-rendering 60×/sec under the rAF
-    // polling loop below, which would otherwise be wasteful.
-    const update = () => {
-      const r = placeholderEl.getBoundingClientRect();
-      setRect((prev) => {
-        if (
-          prev &&
-          prev.top === r.top &&
-          prev.left === r.left &&
-          prev.width === r.width &&
-          prev.height === r.height
-        ) {
-          return prev;
-        }
-        return r;
-      });
-    };
-    update();
-
-    // Track the placeholder's position continuously via rAF. The
-    // default V5 panel reveal animates `transform: translateY` (320ms)
-    // and the ticker panel animates `max-height` open/close (500ms);
-    // both move the placeholder without changing its size, so
-    // ResizeObserver alone is not enough. One getBoundingClientRect()
-    // per frame is cheap (~60Hz, ~0.1ms) and keeps the floating <a>
-    // glued to the placeholder no matter what triggers a layout shift.
+    // Track the placeholder via rAF only while it's animating. The
+    // V5 panel reveal animates `transform: translateY` (~320ms) and
+    // the ticker panel animates `max-height` (~500ms); both move the
+    // placeholder without changing its size, so ResizeObserver alone
+    // doesn't suffice. After the rect is stable for STABLE_FRAMES, we
+    // park the loop and restart it on scroll/resize/observer events.
+    // Without this, the ticker's always-mounted placeholder would
+    // keep the rAF spinning at 60fps for the lifetime of the page.
+    const STABLE_FRAMES = 5;
     let rafId = null;
+    let lastTop = null;
+    let lastLeft = null;
+    let lastWidth = null;
+    let lastHeight = null;
+    let stable = 0;
+
     const tick = () => {
-      update();
+      const r = placeholderEl.getBoundingClientRect();
+      const same =
+        r.top === lastTop &&
+        r.left === lastLeft &&
+        r.width === lastWidth &&
+        r.height === lastHeight;
+      if (same) {
+        stable++;
+        if (stable >= STABLE_FRAMES) {
+          rafId = null;
+          return;
+        }
+      } else {
+        stable = 0;
+        lastTop = r.top;
+        lastLeft = r.left;
+        lastWidth = r.width;
+        lastHeight = r.height;
+        setRect(r);
+      }
       rafId = requestAnimationFrame(tick);
     };
-    rafId = requestAnimationFrame(tick);
 
-    const ro = new ResizeObserver(update);
+    const start = () => {
+      if (rafId != null) return;
+      stable = 0;
+      rafId = requestAnimationFrame(tick);
+    };
+
+    start();
+
+    const ro = new ResizeObserver(start);
     ro.observe(placeholderEl);
-    window.addEventListener('resize', update);
+    window.addEventListener('resize', start);
+    window.addEventListener('scroll', start, { passive: true, capture: true });
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
       ro.disconnect();
-      window.removeEventListener('resize', update);
+      window.removeEventListener('resize', start);
+      window.removeEventListener('scroll', start, { capture: true });
     };
   }, [placeholderEl]);
 
