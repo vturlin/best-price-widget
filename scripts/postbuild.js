@@ -16,15 +16,10 @@ function copy(from, to) {
 
 console.log('\n📦 Post-build:');
 
-// Copy demo.html (with a fix: point scripts at ./ relative paths)
+// Copy demo.html
 const demoSrc = fs.readFileSync(path.join(root, 'public/demo.html'), 'utf8');
 fs.writeFileSync(path.join(dist, 'demo.html'), demoSrc);
 console.log(`  ✓ dist/demo.html`);
-
-// Copy sample sheet
-if (fs.existsSync(path.join(root, 'public/sample-sheet.csv'))) {
-  copy(path.join(root, 'public/sample-sheet.csv'), path.join(dist, 'sample-sheet.csv'));
-}
 
 // Size report
 console.log('\n📊 Bundle sizes:');

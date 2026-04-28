@@ -128,11 +128,9 @@ npm run build     # Produces dist/widget.js + dist/widget.css + dist/config.js
 │   └── widget.css      # Scoped styles (injected into shadow root)
 ├── public/
 │   ├── config.js       # Template config hoteliers customize
-│   ├── demo.html       # Standalone mock hotel page showing the widget
-│   └── sample-sheet.csv  # 90-day × 4-room × 5-OTA sample data
+│   └── demo.html       # Standalone mock hotel page showing the widget
 ├── scripts/
-│   ├── postbuild.js    # Copies config.js and demo.html into dist/
-│   └── gen-sample.mjs  # Regenerates sample-sheet.csv
+│   └── postbuild.js    # Copies config.js and demo.html into dist/
 ├── vite.config.js      # Builds IIFE bundle, bundles React in
 └── package.json
 ```
@@ -144,7 +142,6 @@ dist/
 ├── widget.js       # ~140kB min (~45kB gzipped) — React + ReactDOM bundled
 ├── widget.css      # Injected via Shadow DOM at runtime (served as a sibling for CDN cacheability)
 ├── config.js       # Copy your production config here
-├── sample-sheet.csv
 └── demo.html
 ```
 
