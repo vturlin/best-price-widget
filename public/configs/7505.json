@@ -1,0 +1,37 @@
+{
+  "hotelName": "Astotel",
+  "hotelDomain": "astotel.com",
+  "apiHotelId": 20917,
+  "apiCompetitorId": 1286,
+  "channelsEnabled": [
+    10,
+    17
+  ],
+  "reserveUrl": "https://www.secure-hotel-booking.com/d-edge/be/267/6671/fr-FR/RoomSelection?arrivalDate={checkIn}&departureDate={checkOut}",
+  "bookingEngineId": "267",
+  "useCustomReserveUrl": false,
+  "currency": "EUR",
+  "position": "bottom-right",
+  "size": "small",
+  "widgetDesign": "default",
+  "vegasVariant": "standard",
+  "brandColor": "#ffec5c",
+  "toggleColor": "",
+  "backgroundColor": "#faf7f2",
+  "enabledLocales": [
+    "en",
+    "fr",
+    "es",
+    "de",
+    "it"
+  ],
+  "defaultLocale": "en",
+  "autoOpenMode": "time",
+  "autoOpenDelay": 8,
+  "autoOpenScrollPercent": 50,
+  "analytics": {
+    "enabled": true,
+    "dataLayerName": "dataLayer"
+  },
+  "trackerEnabled": true
+}
